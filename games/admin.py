@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import *
+from .models import (Game, Author, GameTagCategory, GameTag, URL, URLCategory,
+                     GameURL, GameAuthorRole, GameAuthor)
 
 
 class GameAuthorAdmin(admin.TabularInline):
