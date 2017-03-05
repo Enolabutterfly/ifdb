@@ -1,0 +1,71 @@
+.content {
+    margin: 50px auto 0;
+    width: 1024px;
+}
+
+.root {
+    background-color: #f8f8f8;
+    color: #444;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 13px;
+    height: 100%;
+    overflow-x: visible;
+    position:absolute; top:0; left:0;
+    width: 100%;
+    z-index: 1;
+}
+
+#top-nav {
+    background-image: linear-gradient(to bottom,#e5e5e5,#dedede);
+    background-position: 0 0;
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    box-shadow: 0 1px 3px rgba(0,0,0,.3);
+    color: #212121;
+    height: 40px;
+    left: 0;
+    min-width: 1024px;
+    position: fixed;
+    text-align: center;
+    top: 0;
+    width: 100%;
+    z-index: 2;
+}
+
+#top-nav a:hover {
+    color: #111;
+}
+
+#top-nav a.current {
+    background-color: #f8f8f8;
+    border-color: rgba(0,0,0,.3);
+    border-style: solid;
+    border-width: 0 1px;
+}
+
+#top-nav a {
+    color: #666666;
+    display: inline-block;
+    font: bold 14px/40px 'Trebuchet MS', 'Helvetica Neue', Arial, Sans-Serif;
+    height: 40px;
+    min-width: 80px;
+    padding: 0 10px;
+    text-decoration: none;
+    text-transform: uppercase;
+}
+
+#top-nav > div {
+    display: inline-block;
+}
+
+#top-nav .spacer {
+    width: 60px;
+}
+
+#top-nav .loginbox {
+    margin-left: 20px;
+}
+
+.header {
+    font-size: 300%;
+}

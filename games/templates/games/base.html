@@ -1,0 +1,35 @@
+{% load tags %}
+
+<!DOCTYPE html>
+<html>
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" media="screen" href="/static/games.css" />
+    <head>
+        <title>db.ifiction.ru</title>
+    </head>
+    <body>
+        <div class="root">
+            <nav id="top-nav">
+                <a {% current 'index' %} href="/">Главная</a>
+                <a href="/">Игры</a>
+                <a href="http://ifiction.ru/">ifiction.ru</a>
+                <a href="http://forum.ifiction.ru/">Форум</a>
+                <a href="http://ifwiki.ru/">ifwiki.ru</a>
+                {% if user.is_authenticated %}
+                    <a href="/">Добавить&nbsp;игру</a>
+                {% endif %}
+                <div class="spacer"></div>
+                <div class="searchbox">
+                    <input>
+                    &#x1f50d;&#xFE0E;
+                </div>
+                <div class="loginbox">
+                    Войти
+                </div>
+            </nav>
+            <div class="content">
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+    </body>
+</html>
