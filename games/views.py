@@ -1,4 +1,4 @@
-from .models import GameTagCategory, Author
+from .models import GameAuthorRole, Author
 from django.http.response import JsonResponse
 from django.shortcuts import render
 
@@ -10,13 +10,20 @@ def index(request):
 def add_game(request):
     return render(request, 'games/add.html', {})
 
+########################
+# Json handlers below. #
+########################
+
 
 def authors(request):
-    res = {'categories': [], 'authors': []}
-    for x in GameTagCategory.objects.order_by('order', 'name').all():
-        res['categories'].append({'name': x.name, 'id': x.id})
+    res = {'roles': [], 'authors': [], 'value': []}
+    for x in GameAuthorRole.objects.order_by('order', 'title').all():
+        res['roles'].append({'title': x.title, 'id': x.id})
 
     for x in Author.objects.order_by('name').all():
         res['authors'].append({'name': x.name, 'id': x.id})
+
+    for x in range(1, 3):
+        res['value'].append({'author': x, 'role': x})
 
     return JsonResponse(res)
