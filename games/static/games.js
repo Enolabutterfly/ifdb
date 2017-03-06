@@ -65,3 +65,25 @@
     });
 
 })(jQuery);
+
+function PostRedirect(url, data) {
+    var form = $('<form method="POST" style="display:none;"/>');
+    form.attr('action', 'url');
+    var input = $('<input type="hidden" name="json"/>');
+    input.val(JSON.stringify(data));
+    input.appendTo(form);
+    form.appendTo(document.body);
+    form.submit();
+}
+
+function SubmitGameJson() {
+    var res = {};
+    res['title'] = $("#title").val();
+    if (res['title'] == '') {
+        $("#title_warning").show();
+        return;
+    }
+    res['description'] = $('#description').val();
+    res['release_date'] = $('#release_date').val();
+    PostRedirect('/store_game', res);
+}

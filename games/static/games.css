@@ -91,13 +91,23 @@
     font-style: italic;
 }
 
+#title_warning {
+    color: red;
+    display: none;
+    font-style: italic;
+}
+
 textarea#title {
     width: 670px;
 }
 
 textarea#description {
     width: 670px;
-    height: 480px;
+    height: 300px;
+}
+
+#import_url {
+    width: 550px;
 }
 
 .entry {
@@ -120,14 +130,26 @@ textarea#description {
 }
 
 button {
-    margin-top: 20px;
-    background-color: #888; /* Green */
+    background-color: #888;
     border: none;
     color: #ddd;
-    padding: 15px 32px;
     text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
     box-shadow: -2px 3px 2px rgba(0,0,0,0.2);
+    font-size: 14px;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+button#import_button {
+    float: right;
+    padding: 2px 4px;
+    margin-right: 5px;
+}
+
+button#submit {
+    font-size: 16px;
+    margin-top: 20px;
+    border: none;
+    padding: 15px 32px;
+    display: inline-block;
 }

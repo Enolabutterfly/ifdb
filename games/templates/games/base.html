@@ -15,9 +15,13 @@
             <nav id="top-nav">
                 <a {% current 'index' %} href="{% url 'index' %}">Главная</a>
                 <a href="/">Игры</a>
-                <a href="http://ifiction.ru/">ifiction.ru</a>
+                <!--  <a href="http://ifiction.ru/">ifiction.ru</a>
                 <a href="http://forum.ifiction.ru/">Форум</a>
                 <a href="http://ifwiki.ru/">ifwiki.ru</a>
+                -->
+                <a href="/">Авторы</a>
+                <a href="/">Движки</a>
+                <a href="/">Конкурсы</a>
                 {% if user.is_authenticated %}
                     <a {% current 'add_game' %} href="{% url 'add_game' %}">
                         Добавить&nbsp;игру
