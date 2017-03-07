@@ -66,12 +66,33 @@
 
 })(jQuery);
 
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue =
+                    decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+
 function PostRedirect(url, data) {
-    var form = $('<form method="POST" style="display:none;"/>');
-    form.attr('action', 'url');
+    var form = $('<form method="POST" style="display:none;" />');
+    form.attr('action', url);
     var input = $('<input type="hidden" name="json"/>');
     input.val(JSON.stringify(data));
     input.appendTo(form);
+    $('<input type="hidden" name="csrfmiddlewaretoken"/>')
+        .val(getCookie('csrftoken'))
+        .appendTo(form);
     form.appendTo(document.body);
     form.submit();
 }

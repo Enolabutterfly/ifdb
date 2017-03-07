@@ -1,12 +1,14 @@
 from .models import GameAuthorRole, Author
 from django.http.response import JsonResponse
 from django.shortcuts import render
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 
 def index(request):
     return render(request, 'games/index.html', {})
 
 
+@ensure_csrf_cookie
 def add_game(request):
     return render(request, 'games/add.html', {})
 
