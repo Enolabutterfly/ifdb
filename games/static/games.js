@@ -106,5 +106,5 @@ function SubmitGameJson() {
     }
     res['description'] = $('#description').val();
     res['release_date'] = $('#release_date').val();
-    PostRedirect('/store_game', res);
+    PostRedirect('/store_game/', res);
 }

@@ -1,7 +1,11 @@
-from .models import GameAuthorRole, Author
+from .models import GameAuthorRole, Author, Game
+from django.contrib.auth.decorators import login_required
 from django.http.response import JsonResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.views.decorators.csrf import ensure_csrf_cookie
+from dateutil.parser import parse as parse_date
+from datetime import datetime
+import json
 
 
 def index(request):
@@ -9,8 +13,31 @@ def index(request):
 
 
 @ensure_csrf_cookie
+@login_required
 def add_game(request):
     return render(request, 'games/add.html', {})
+
+
+def store_game(request):
+    if request.method != 'POST':
+        return render(request, 'games/error.html',
+                      {'message': 'Что-то не так!' + ' (1)'})
+    j = json.loads(request.POST.get('json'))
+    if not j['title']:
+        return render(request, 'games/error.html',
+                      {'message': 'У игры должно быть название.'})
+
+    g = Game()
+    g.title = j['title']
+    if j['description']:
+        g.description = j['description']
+    if j['release_date']:
+        g.release_date = parse_date(j['release_date'])
+    g.creation_time = datetime.now()
+    g.added_by = request.user
+    g.save()
+    # TODO(crem) Better redirect
+    return redirect('/')
 
 ########################
 # Json handlers below. #
