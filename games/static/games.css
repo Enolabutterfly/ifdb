@@ -201,3 +201,8 @@ button#submit {
     font-size: 13px;
     font-family: Arial;
 }
+
+.invalidinput {
+    border: 1px solid red;
+    background-color: #fdd;
+}

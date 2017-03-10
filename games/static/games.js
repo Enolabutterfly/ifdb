@@ -35,6 +35,10 @@
                 }
             });
 
+            input.on('input', function() {
+                input.removeClass('invalidinput');
+            });
+
             if (ops.showAll) {
                 var wasOpen = false;
                 button .on( "mousedown", function() {
@@ -55,6 +59,23 @@
 
         empty: function() {
             return this.input.val() == '';
+        },
+
+        value: function() {
+            var val = this.input.val();
+            if (val in this.options.optToId)
+                return this.options.optToId[val];
+            return val;
+        },
+
+        isValid: function() {
+            if (this.input.val() == '') {
+                this.input.addClass('invalidinput');
+                return false;
+            } else {
+                this.input.removeClass('invalidinput');
+                return true;
+            }
         }
     });
 
@@ -113,6 +134,12 @@
             if (obj.delicon) obj.ondel(obj);
         });
 
+        obj.IsValid = function() {
+            var a1 = cats.suggest('isValid');
+            var a2 = vals.suggest('isValid');
+            return a1 && a2;
+        }
+
         return obj;
     }
 
@@ -129,6 +156,7 @@
             var vals = ops.values;
 
             var objs = [];
+            ops.objs = objs;
 
             function OnDel(obj) {
                 for (var i = 0; i < objs.length-1; ++i) {
@@ -170,6 +198,23 @@
 
                 el.element.appendTo(this.element);
             }
+        },
+
+        isValid: function() {
+            var isValid = true;
+            for (var i = 0; i < this.options.objs.length-1; ++i) {
+                isValid &= this.options.objs[i].IsValid();
+            }
+            return isValid;
+        },
+
+        values: function() {
+            var res = [];
+            for (var i = 0; i < this.options.objs.length-1; ++i) {
+                var o = this.options.objs[i];
+                res.push({o.cats.suggest('value'), o.vals.suggest('value')]);
+            }
+            return res;
         }
     });
 
@@ -236,11 +281,16 @@ function PostRedirect(url, data) {
 function SubmitGameJson() {
     var res = {};
     res['title'] = $("#title").val();
+    var isValid = true;
     if (res['title'] == '') {
         $("#title_warning").show();
-        return;
+        isValid = false;
     }
+    isValid &= $('#authors').propSelector('isValid');
+    if (!isValid) return;
+
     res['description'] = $('#description').val();
     res['release_date'] = $('#release_date').val();
+    res['authors'] = $('#authors').propSelector('values');
     PostRedirect('/store_game/', res);
 }
