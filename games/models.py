@@ -24,6 +24,16 @@ class Game(models.Model):
     # (GameComments)
     # (LoadLog) // For computing popularity
     # -(GamePopularity)
+    def FillAuthors(self, authors):
+        # TODO(crem) Erase before cration.
+        for role, author in authors:
+            r = GameAuthorRole.GetByNameOrId(role)
+            a = Author.GetByNameOrId(author)
+            ga = GameAuthor()
+            ga.game = self
+            ga.author = a
+            ga.role = r
+            ga.save()
 
 
 class URL(models.Model):
@@ -71,14 +81,28 @@ class Author(models.Model):
 
     name = models.CharField(max_length=255)
 
+    @staticmethod
+    def GetByNameOrId(val):
+        if isinstance(val, int):
+            return Author.objects.get(id=val)
+        obj, _ = Author.objects.get_or_create(name=val)
+        return obj
+
 
 class GameAuthorRole(models.Model):
     def __str__(self):
         return self.title
 
-    symbolic_id = models.SlugField()
+    symbolic_id = models.SlugField(null=True, blank=True)
     title = models.CharField(max_length=255)
     order = models.SmallIntegerField(default=0)
+
+    @staticmethod
+    def GetByNameOrId(val):
+        if isinstance(val, int):
+            return GameAuthorRole.objects.get(id=val)
+        obj, _ = GameAuthorRole.objects.get_or_create(title=val)
+        return obj
 
 
 class GameAuthor(models.Model):

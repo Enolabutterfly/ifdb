@@ -212,7 +212,7 @@
             var res = [];
             for (var i = 0; i < this.options.objs.length-1; ++i) {
                 var o = this.options.objs[i];
-                res.push({o.cats.suggest('value'), o.vals.suggest('value')]);
+                res.push([o.cats.suggest('value'), o.vals.suggest('value')]);
             }
             return res;
         }

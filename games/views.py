@@ -36,6 +36,7 @@ def store_game(request):
     g.creation_time = datetime.now()
     g.added_by = request.user
     g.save()
+    g.FillAuthors(j['authors'])
     # TODO(crem) Better redirect
     return redirect('/')
 
@@ -56,3 +57,4 @@ def authors(request):
         res['value'].append({'author': x, 'role': x})
 
     return JsonResponse(res)
+
