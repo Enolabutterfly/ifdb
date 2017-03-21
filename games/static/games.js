@@ -30,14 +30,17 @@
                     .appendTo(this.element);
             }
             if (!ops.allowNew) {
-                input.prop("readonly", true).on('mousedown', function() {
+                input.prop("readonly", true);
+            }
+            input.on('mousedown', function() {
+                if (input.prop("readonly")) {
                     if (!input.autocomplete("widget").is(":visible")) {
                         input.autocomplete('search', '');
                     } else {
                         input.autocomplete('close');
                     }
-                });
-            }
+                }
+            });
             ops.list = [];
             for (var key in ops.optToId) {
                 if (ops.optToId.hasOwnProperty(key)) {
@@ -91,6 +94,26 @@
             return val;
         },
 
+        txtvalue: function(newVal) {
+            return this.input.val(newVal);
+        },
+
+        optToId: function(newVal) {
+            var ops = this.options;
+            ops.optToId = newVal;
+            ops.list = [];
+            for (var key in ops.optToId) {
+                if (ops.optToId.hasOwnProperty(key)) {
+                    ops.list.push(key);
+                }
+            }
+            this.input.autocomplete("option", "source", ops.list);
+        },
+
+        allowNew: function(newVal) {
+            this.input.prop("readonly", newVal);
+        },
+
         isValid: function() {
             if (this.input.val() == '') {
                 this.input.addClass('invalidinput');
@@ -102,7 +125,9 @@
         }
     });
 
-    function CreatePair(catToId, valToId, cat, val, showAllVal, allowNewVal) {
+    function CreatePair(catToId, valToId, cat, val,
+                        allowAllCat, showAllVal,
+                        catsToValsToId, allowNewValCats) {
         var entry = $('<div class="entry"></div>');
 
         var cats = $('<span class="narrow-list"/>')
@@ -110,14 +135,15 @@
                 minLength: 0,
                 optToId: catToId,
                 id: cat,
-                showAll: true
+                showAll: true,
+                allowNew: allowAllCat
             });
 
         var vals = $('<span class="wide-list"/>')
             .suggest({
-                optToId: valToId,
+                optToId: catsToValsToId ? [] : valToId,
                 id: val,
-                showAll: showAllVal
+                showAll: showAllVal,
             });
 
         var delicon = $('<span class="ico">&#10006;</span>')
@@ -153,6 +179,29 @@
         cats.on('creminput', CheckInput);
         vals.on('creminput', CheckInput);
 
+        function UpdateVals() {
+            var catId = cats.suggest('value');
+            if (typeof(catId) != 'number') {
+                vals.suggest('txtvalue', '');
+                vals.suggest('optToId', {});
+                vals.suggest('allowNew', false);
+                return;
+            }
+            var valToId = catsToValsToId[catId];
+            var v = vals.suggest('txtvalue');
+            var allowNew = allowNewValCats.indexOf(catId) != -1;
+            if (!allowNew && !valToId.hasOwnProperty(v)) {
+                vals.suggest('txtvalue', '');
+            }
+            vals.suggest('allowNew', allowNew);
+            vals.suggest('optToId', valToId);
+        };
+
+        if (catsToValsToId) {
+            UpdateVals();
+            cats.on('creminput'. UpdateVals);
+        }
+
         delicon.click(function() {
             if (obj.delicon) obj.ondel(obj);
         });
@@ -171,6 +220,7 @@
             idToCat: {},
             idToVal: {},
             catToVals: undefined,
+            allowNewValCats: undefined,
             _catToId: {},
             _valToId: {},
             values: [],
@@ -202,7 +252,8 @@
                 if (obj == objs[objs.length-1]) {
                     obj.delicon.show();
                     var el = CreatePair(ops._catToId, ops._valToId,
-                                        '', '', ops.showAllVals);
+                                    '', '', ops.allowNewCat, ops.showAllVals,
+                                    ops.catToVals, ops.allowNewValCats);
                     el.delicon.hide();
                     el.element.appendTo(self.element);
                     objs.push(el);
@@ -218,7 +269,8 @@
                     v = vals[i];
                 }
                 var el = CreatePair(ops._catToId, ops._valToId,
-                                    v[0], v[1], ops.showAllVals);
+                                v[0], v[1], ops.allowNewCat, ops.showAllVals,
+                                ops.catToVals, ops.allowNewValCats);
                 if (i == vals.length) {
                     el.delicon.hide();
                 }
@@ -284,6 +336,7 @@ function BuildTags(element) {
         var cats = {};
         var vals = {};
         var cats2vals = {};
+        var openCats = [];
         var vs = [];
 
         for (var i = 0; i < data['categories'].length; ++i) {
@@ -297,15 +350,18 @@ function BuildTags(element) {
                 vals[w['id']] = w['name'];
             }
             cats2vals[v['id']] = catVals;
+            if (v['allow_new_tags']) {
+                openCats.push(v['id']);
+            }
         }
-        console.log(cats);
-        console.log(vals);
         element.propSelector({
             idToCat: cats,
             idToVal: vals,
             catToVals: cats2vals,
+            allowNewValCats: openCats,
             values: vs,
-            showAllVals: true
+            showAllVals: true,
+            allowNewCat: false
         });
     });
 }
