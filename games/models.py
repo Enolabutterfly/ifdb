@@ -17,7 +17,7 @@ class Game(models.Model):
     edit_time = models.DateTimeField(_('Last edit'), null=True, blank=True)
     is_hidden = models.BooleanField(_('Hidden'), default=False)
     is_readonly = models.BooleanField(_('Readonly'), default=False)
-    tags = models.ManyToManyField('GameTag')
+    tags = models.ManyToManyField('GameTag', null=True, blank=True)
     added_by = models.ForeignKey(User)
 
     # -(GameContestEntry)
@@ -45,6 +45,41 @@ class Game(models.Model):
             val = GameTag.GetByNameOrId(value, cat)
             self.tags.add(val)
         self.save()
+
+    def GetAuthors(self):
+        authors = {}
+        roles = []
+        for x in GameAuthor.objects.filter(game=self):
+            if x.role in authors:
+                authors[x.role].append(x.author)
+            else:
+                roles.append(x.role)
+                authors[x.role] = [x.author]
+        roles.sort(key=lambda x: x.order)
+        res = []
+        for r in roles:
+            res.append({'role': r, 'authors': authors[r]})
+        return res
+
+    def GetTags(self):
+        tags = {}
+        cats = []
+        for x in self.tags.all():
+            if not x.show_in_details:
+                continue
+            category = x.category
+            if not category.show_in_details:
+                continue
+            if category in tags:
+                tags[category].append(x)
+            else:
+                cats.append(category)
+                tags[category] = [x]
+        cats.sort(key=lambda x: x.order)
+        res = []
+        for r in cats:
+            res.append({'category': r, 'tags': tags[r]})
+        return res
 
 
 class URL(models.Model):
@@ -105,7 +140,6 @@ class GameAuthorRole(models.Model):
 
     title = models.CharField(max_length=255)
     order = models.SmallIntegerField(default=0)
-    is_key_role = models.BooleanField(default=False)
 
     @staticmethod
     def GetByNameOrId(val):

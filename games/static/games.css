@@ -96,9 +96,30 @@
     font-style: italic;
 }
 
-.gametitle {
+.game-auxinfo {
+    font-style: italic;
+}
+
+.game-description {
+    font-size: 120%;
+    margin-bottom: 1em;
+}
+
+.game-title {
     color: #31322D;
-    font-size: 160%;
+    font-weight: bold;
+    font-size: 2.5em;
+    margin-bottom: 3em;
+    margin-top: 1em;
+}
+
+.prop-category {
+    font-size: 90%;
+    color: #625B61;
+}
+
+.prop-value {
+    color: #31322D;
     font-weight: bold;
 }
 
@@ -212,3 +233,4 @@ button#submit {
     border: 1px solid red;
     background-color: #fdd;
 }
+

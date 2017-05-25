@@ -8,6 +8,16 @@ from datetime import datetime
 from django.http import Http404
 from django.core.exceptions import ObjectDoesNotExist
 import json
+import markdown
+
+
+def FormatDate(x):
+    if not x:
+        return None
+    return '%d %s %d' % (x.day, ['января', 'февраля', 'марта', 'апреля', 'мая',
+                                 'июня', 'июля', 'августа', 'сентября',
+                                 'октября', 'ноября', 'декабря'][x.month],
+                         x.year)
 
 
 def index(request):
@@ -49,7 +59,24 @@ def store_game(request):
 def show_game(request, game_id):
     try:
         game = Game.objects.get(id=game_id)
-        return render(request, 'games/game.html', {'title': game.title})
+        release_date = FormatDate(game.release_date)
+        last_edit_date = FormatDate(game.edit_time)
+        added_date = FormatDate(game.creation_time)
+        authors = game.GetAuthors()
+        md = markdown.markdown(
+            game.description,
+            ['markdown.extensions.extra', 'markdown.extensions.meta',
+             'markdown.extensions.smarty', 'markdown.extensions.wikilinks'])
+        tags = game.GetTags()
+        return render(request, 'games/game.html', {
+            'added_date': added_date,
+            'authors': authors,
+            'game': game,
+            'last_edit_date': last_edit_date,
+            'markdown': md,
+            'release_date': release_date,
+            'tags': tags,
+        })
     except Game.DoesNotExist:
         raise Http404()
     return redirect('/')
