@@ -336,22 +336,53 @@
 
         var desc_el = $('<input class="descinput" placeholder="Описание">');
         var url_el = $('<input class="urlinput" placeholder="URL">');
+        var or_el = $('<span>или</span>');
         var button_el = $('<button id="upload_button">Закачать</button>');
         var delicon = $('<span class="ico">&#10006;</span>');
         desc_el.appendTo(entry);
         delicon.appendTo(entry);
         cats.appendTo(entry);
         url_el.appendTo(entry);
+        or_el.appendTo(entry);
         button_el.appendTo(entry);
-
 
         var obj = {
             element: entry,
             delicon: delicon,
+            cats: cats,
+            url: url_el,
+            description: desc_el,
             // onempty  -- When loses focus and is empty
             // oninput - when first char appeared
             // ondel - when delete button is pressed.
         };
+
+        obj.Destroy = function() {
+            obj.element.remove();
+        }
+
+        function CheckEmpty() {
+            if (cats.suggest('empty') && url_el.val() == '' &&
+                desc_el.val() == '' && obj.onempty)
+                obj.onempty(obj);
+        }
+
+        cats.focusout(CheckEmpty);
+        url_el.focusout(CheckEmpty);
+        desc_el.focusout(CheckEmpty);
+
+        function CheckInput() {
+            if (obj.onchar)
+                obj.onchar(obj);
+        }
+        cats.on('creminput', CheckInput);
+        url_el.on('keydown', CheckInput);
+        desc_el.on('keydown', CheckInput);
+
+        delicon.click(function() {
+            if (obj.delicon) obj.ondel(obj);
+        });
+
         return obj;
     }
 
@@ -361,10 +392,35 @@
             values: [],
         },
         _create: function() {
+            var self = this;
             var cats = this.options.categories;
             var vals = this.options.values;
 
             var objs = [];
+
+            function OnDel(obj) {
+                for (var i = 0; i < objs.length-1; ++i) {
+                    if (obj === objs[i]) {
+                        obj.Destroy();
+                        objs.splice(i, 1);
+                        return;
+                    }
+                }
+            }
+
+            function OnInput(obj) {
+                if (obj == objs[objs.length-1]) {
+                    obj.delicon.show();
+                    var el = CreateUrlEntry(cats, '', '', '');
+                    el.delicon.hide();
+                    el.element.appendTo(self.element);
+                    objs.push(el);
+                    el.ondel = OnDel;
+                    el.onempty = OnDel;
+                    el.onchar = OnInput;
+                }
+            }
+
             for (var i = 0; i < vals.length + 1; ++i) {
                 var v = ['', '', ''];
                 if (i < vals.length) {
@@ -375,6 +431,11 @@
                     el.delicon.hide();
                 }
                 objs.push(el);
+
+                el.ondel = OnDel;
+                el.onempty = OnDel;
+                el.onchar = OnInput;
+
                 el.element.appendTo(this.element);
             }
         },

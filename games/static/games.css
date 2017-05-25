@@ -241,7 +241,9 @@ button#submit {
 }
 
 .urlinput {
-    width: 58%;
+    width: 350px;
+    margin-right: 0.2em;
+    margin-bottom: 0.7em;
 }
 
 .descinput {

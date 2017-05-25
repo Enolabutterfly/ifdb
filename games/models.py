@@ -94,6 +94,7 @@ class URL(models.Model):
     is_broken = models.BooleanField(default=False)
     creation_date = models.DateTimeField()
     use_count = models.IntegerField(default=0)
+    file_size = models.IntegerField(null=True, blank=True)
     creator = models.ForeignKey(User, null=True, blank=True)
 
 
