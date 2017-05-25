@@ -148,13 +148,13 @@ textarea#description {
 
 .narrow-list {
     display: inline-block;
-    width: 40%;
+    width: 30%;
 }
 
 .wide-list {
     display: inline-block;
     margin: 0 5px;
-    width: 50%;
+    width: 60%;
 }
 
 .suggestinput {
@@ -216,6 +216,12 @@ button#import_button {
     margin-right: 5px;
 }
 
+button#upload_button {
+    margin-left: 5px;
+    margin-right: 5px;
+    padding: 2px 4px;
+}
+
 button#submit {
     font-size: 16px;
     margin-top: 20px;
@@ -234,3 +240,16 @@ button#submit {
     background-color: #fdd;
 }
 
+.urlinput {
+    width: 58%;
+}
+
+.descinput {
+    width: 655px;
+    margin-top: 0.2em;
+    margin-right: 0.2em;
+}
+
+input::placeholder {
+    color: #C2C1BB;
+}

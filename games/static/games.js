@@ -15,18 +15,21 @@
             minLength: 1,
             id: -1,
             showAll: false,
-            allowNew: true
+            allowNew: true,
+            placeholder: '',
         },
 
         _create: function() {
             var ops = this.options;
             if (ops.showAll) {
                 var input = $('<input class="suggestinput-icon">')
+                    .attr('placeholder', ops.placeholder)
                     .appendTo(this.element);
                 var button = $('<span class="ico">&#9660;</span>')
                     .appendTo(this.element);
             } else {
                 var input = $('<input class="suggestinput">')
+                    .attr('placeholder', ops.placeholder)
                     .appendTo(this.element);
             }
             if (!ops.allowNew) {
@@ -131,7 +134,8 @@
 
     function CreatePair(catToId, valToId, cat, val,
                         allowAllCat, showAllVal,
-                        catsToValsToId, allowNewValCats) {
+                        catsToValsToId, allowNewValCats,
+                        catPlaceholder, valPlaceholder) {
         var entry = $('<div class="entry"></div>');
 
         var cats = $('<span class="narrow-list"/>')
@@ -140,7 +144,8 @@
                 optToId: catToId,
                 id: cat,
                 showAll: true,
-                allowNew: allowAllCat
+                allowNew: allowAllCat,
+                placeholder: catPlaceholder,
             });
 
         var vals = $('<span class="wide-list"/>')
@@ -149,6 +154,7 @@
                 optToId: catsToValsToId ? [] : valToId,
                 id: val,
                 showAll: showAllVal,
+                placeholder: valPlaceholder,
             });
 
         var delicon = $('<span class="ico">&#10006;</span>')
@@ -231,6 +237,8 @@
             values: [],
             allowNewCat: true,
             showAllVals: false,
+            catPlaceholder: '',
+            valPlaceholder: '',
         },
         _create: function() {
             var self = this;
@@ -258,7 +266,8 @@
                     obj.delicon.show();
                     var el = CreatePair(ops._catToId, ops._valToId,
                                     '', '', ops.allowNewCat, ops.showAllVals,
-                                    ops.catToVals, ops.allowNewValCats);
+                                    ops.catToVals, ops.allowNewValCats,
+                                    ops.catPlaceholder, ops.valPlaceholder);
                     el.delicon.hide();
                     el.element.appendTo(self.element);
                     objs.push(el);
@@ -275,7 +284,8 @@
                 }
                 var el = CreatePair(ops._catToId, ops._valToId,
                                 v[0], v[1], ops.allowNewCat, ops.showAllVals,
-                                ops.catToVals, ops.allowNewValCats);
+                                ops.catToVals, ops.allowNewValCats,
+                                ops.catPlaceholder, ops.valPlaceholder);
                 if (i == vals.length) {
                     el.delicon.hide();
                 }
@@ -307,6 +317,69 @@
         }
     });
 
+    function CreateUrlEntry(categories, cat, url, desc) {
+        var entry = $('<div class="entry"></div>');
+        var catToId = {};
+        for (var i = 0; i < categories.length; ++i) {
+            catToId[categories[i]['title']] = categories[i]['id'];
+        }
+
+        var cats = $('<span class="narrow-list"/>')
+            .suggest({
+                minLength: 0,
+                optToId: catToId,
+                id: cat,
+                showAll: true,
+                allowNew: false,
+                placeholder: 'Тип',
+            });
+
+        var desc_el = $('<input class="descinput" placeholder="Описание">');
+        var url_el = $('<input class="urlinput" placeholder="URL">');
+        var button_el = $('<button id="upload_button">Закачать</button>');
+        var delicon = $('<span class="ico">&#10006;</span>');
+        desc_el.appendTo(entry);
+        delicon.appendTo(entry);
+        cats.appendTo(entry);
+        url_el.appendTo(entry);
+        button_el.appendTo(entry);
+
+
+        var obj = {
+            element: entry,
+            delicon: delicon,
+            // onempty  -- When loses focus and is empty
+            // oninput - when first char appeared
+            // ondel - when delete button is pressed.
+        };
+        return obj;
+    }
+
+    $.widget("crem.urlUpload", {
+        options: {
+            categories: {},
+            values: [],
+        },
+        _create: function() {
+            var cats = this.options.categories;
+            var vals = this.options.values;
+
+            var objs = [];
+            for (var i = 0; i < vals.length + 1; ++i) {
+                var v = ['', '', ''];
+                if (i < vals.length) {
+                    v = vals[i];
+                }
+                var el = CreateUrlEntry(cats, v[0], v[1], v[2]);
+                if (i == vals.length) {
+                    el.delicon.hide();
+                }
+                objs.push(el);
+                el.element.appendTo(this.element);
+            }
+        },
+    });
+
 })(jQuery);
 
 function BuildAuthors(element) {
@@ -331,7 +404,9 @@ function BuildAuthors(element) {
         element.propSelector({
             idToCat: cats,
             idToVal: vals,
-            values: vs
+            values: vs,
+            catPlaceholder: 'Роль',
+            valPlaceholder: 'Имя',
         });
     });
 }
@@ -363,8 +438,16 @@ function BuildTags(element) {
             allowNewValCats: openCats,
             values: vs,
             showAllVals: true,
-            allowNewCat: false
+            allowNewCat: false,
+            catPlaceholder: 'Категория',
+            valPlaceholder: 'Свойство',
         });
+    });
+}
+
+function BuildLinks(element) {
+    $.getJSON('/json/linktypes', function(data) {
+        element.urlUpload({'categories': data['categories']});
     });
 }
 
@@ -384,7 +467,6 @@ function GetCookie(name) {
     }
     return cookieValue;
 }
-
 
 function PostRedirect(url, data) {
     var form = $('<form method="POST" style="display:none;" />');

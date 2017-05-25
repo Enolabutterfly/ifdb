@@ -1,4 +1,5 @@
-from .models import GameAuthorRole, Author, Game, GameTagCategory, GameTag
+from .models import (GameAuthorRole, Author, Game, GameTagCategory, GameTag,
+                     URLCategory)
 from django.contrib.auth.decorators import login_required
 from django.http.response import JsonResponse
 from django.shortcuts import render, redirect
@@ -112,4 +113,15 @@ def tags(request):
                 'name': y.name,
             })
         res['categories'].append(val)
+    return JsonResponse(res)
+
+
+def linktypes(request):
+    res = {'categories': []}
+    for x in URLCategory.objects.all():
+        if not x.allow_in_editor:
+            continue
+        res['categories'].append({'id': x.id,
+                                  'title': x.title,
+                                  'uploadable': x.allow_cloning})
     return JsonResponse(res)

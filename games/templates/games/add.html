@@ -15,7 +15,9 @@
         <textarea id="title"></textarea>
     </div>
     <div class="leftpane">
-        <div class="fieldname">Изображения</div>
+        <div class="fieldname">Изображения и ссылки</div>
+        <div id="links"></div>
+        <script type="text/javascript">BuildLinks($('#links'));</script>
     </div>
     <div class="leftpane">
         <div class="fieldname">Описание</div>
@@ -23,9 +25,6 @@
             Можно использовать разметку markdown (как в википедии).
         </div>
         <textarea id="description"></textarea>
-    </div>
-    <div class="leftpane">
-        <div class="fieldname">Ссылки</div>
     </div>
     <div class="leftpane">
         <button id="submit">Сохранить</button>
