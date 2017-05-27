@@ -102,6 +102,7 @@ class URL(models.Model):
 
     local_url = models.CharField(null=True, blank=True, max_length=255)
     original_url = models.CharField(null=True, blank=True, max_length=255)
+    original_filename = models.CharField(null=True, blank=True, max_length=255)
     content_type = models.CharField(null=True, blank=True, max_length=255)
     ok_to_clone = models.BooleanField(default=True)
     is_uploaded = models.BooleanField(default=False)
