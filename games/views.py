@@ -1,5 +1,5 @@
 from .models import (GameAuthorRole, Author, Game, GameTagCategory, GameTag,
-                     URLCategory)
+                     URLCategory, URL)
 from django.contrib.auth.decorators import login_required
 from django.http.response import JsonResponse
 from django.shortcuts import render, redirect
@@ -8,8 +8,12 @@ from dateutil.parser import parse as parse_date
 from datetime import datetime
 from django.http import Http404
 from django.core.exceptions import ObjectDoesNotExist
+from django.conf import settings
+from django.utils.crypto import get_random_string
+from django.core.files.storage import FileSystemStorage
 import json
 import markdown
+import os
 
 
 def FormatDate(x):
@@ -126,3 +130,24 @@ def linktypes(request):
                                   'title': x.title,
                                   'uploadable': x.allow_cloning})
     return JsonResponse(res)
+
+
+def upload(request):
+    file = request.FILES['file']
+    fs = FileSystemStorage()
+    filename = fs.save(file.name, file, max_length=64)
+    file_url = fs.url(filename)
+    url_full = request.build_absolute_uri(file_url)
+
+    url = URL()
+    url.local_url = file_url
+    url.original_url = url_full
+    url.content_type = file.content_type
+    url.ok_to_clone = False
+    url.is_uploaded = True
+    url.creation_date = datetime.now()
+    url.file_size = fs.size(filename)
+    url.creator = request.user
+    url.save()
+
+    return JsonResponse({'url': url_full})

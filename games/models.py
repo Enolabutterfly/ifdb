@@ -1,4 +1,3 @@
-import uuid
 from datetime import datetime
 from django.db import models
 from django.contrib.auth.models import User
@@ -101,11 +100,11 @@ class URL(models.Model):
     def __str__(self):
         return "%s" % (self.original_url)
 
-    symbolic_id = models.SlugField(max_length=16)
+    local_url = models.CharField(null=True, blank=True, max_length=255)
     original_url = models.CharField(null=True, blank=True, max_length=255)
     content_type = models.CharField(null=True, blank=True, max_length=255)
-    has_local = models.BooleanField(default=False)
     ok_to_clone = models.BooleanField(default=True)
+    is_uploaded = models.BooleanField(default=False)
     is_broken = models.BooleanField(default=False)
     creation_date = models.DateTimeField()
     use_count = models.IntegerField(default=0)
@@ -120,7 +119,6 @@ class URL(models.Model):
                 'ok_to_clone': allow_cloning,
                 'creation_date': datetime.now(),
                 'creator': user,
-                'symbolic_id': str(uuid.uuid1()),
             })[0]
 
 

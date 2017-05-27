@@ -342,13 +342,57 @@
         var url_el = $('<input class="urlinput" placeholder="URL">');
         var or_el = $('<span>или</span>');
         var button_el = $('<button id="upload_button">Закачать</button>');
+        var file_el = $('<input type="file" style="display:none;">');
         var delicon = $('<span class="ico">&#10006;</span>');
+        var progress = $('<progress></progress>').hide();
         desc_el.appendTo(entry);
         delicon.appendTo(entry);
         cats.appendTo(entry);
         url_el.appendTo(entry);
         or_el.appendTo(entry);
         button_el.appendTo(entry);
+        file_el.appendTo(entry);
+        progress.appendTo(entry);
+
+        button_el.click(function(){file_el.click();});
+        file_el.change(function() {
+            if (file_el.val() == '') return;
+            progress.show();
+            var formData = new FormData();
+            formData.append('csrfmiddlewaretoken', GetCookie('csrftoken'));
+            console.log(file_el);
+            formData.append('file', file_el[0].files[0]);
+            var req = $.ajax({
+                url: '/json/upload/',
+                type: 'POST',
+                data: formData,
+                cache: false,
+                contentType: false,
+                processData: false,
+                dataType: 'json',
+                xhr: function() {
+                    var myXhr = $.ajaxSettings.xhr();
+                    if (myXhr.upload) {
+                    myXhr.upload.addEventListener('progress', function(e) {
+                        if (e.lengthComputable) {
+                            $('progress').attr({
+                                value: e.loaded,
+                                max: e.total,
+                                });
+                            }
+                        } , false);
+                    }
+                    return myXhr;
+                },
+            });
+            req.done(function(json) {
+                url_el.val(json.url);
+            });
+            req.fail(function(jqXHR, textStatus) {
+                progress.hide();
+                alert('Что-то не закачалось: ' + textStatus);
+            });
+        });
 
         var obj = {
             element: entry,
