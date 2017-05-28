@@ -3,54 +3,59 @@
     <script src="/static/editor.js"></script>
 {% endblock %}
 {% block content %}
-    <div class="leftpane">
-        <div class="fieldname">Импортировать</div>
-        <div class="fieldcomment">
-            Стащить описание с другого ресурса.
-            Пока поддерживается только плут и ifwiki.
+    <div class="content-box">
+        <div class="leftpane">
+            <div class="fieldname">Импортировать</div>
+            <div class="fieldcomment">
+                Стащить описание с другого ресурса.
+                Пока поддерживается только плут и ifwiki.
+            </div>
+            <div id="import_warning">Ошибка.</div>
+            <input id="import_url" placeholder="URL, например http://urq.plut.info/node/1988"/>
+            <button id="import_button">Импортировать</button>
+            <script type="text/javascript">
+            $('#import_button').click(ImportGame);
+            </script>
         </div>
-        <div id="import_warning">Ошибка.</div>
-        <input id="import_url" placeholder="URL, например http://urq.plut.info/node/1988"/>
-        <button id="import_button">Импортировать</button>
-        <script type="text/javascript">
-        $('#import_button').click(ImportGame);
-        </script>
-    </div>
-    <div class="leftpane">
-        <div class="fieldname">Название</div>
-        <div id="title_warning">Название не может быть пустым.</div>
-        <textarea id="title"></textarea>
-    </div>
-    <div class="leftpane">
-        <div class="fieldname">Изображения и ссылки</div>
-        <div id="links"></div>
-        <script type="text/javascript">BuildLinks($('#links'));</script>
-    </div>
-    <div class="leftpane">
-        <div class="fieldname">Описание</div>
-        <div class="fieldcomment">
-            Можно использовать разметку markdown.
+        <div class="leftpane">
+            <div class="fieldname">Название</div>
+            <div id="title_warning">Название не может быть пустым.</div>
+            <textarea id="title"></textarea>
         </div>
-        <textarea id="description"></textarea>
-    </div>
-    <div class="leftpane">
-        <button id="submit">Сохранить</button>
-        <script type="text/javascript">
-        $('#submit').click(SubmitGameJson);
-        </script>
-    </div>
-    <div class="rightpane">
-        <div class="fieldname">Дата релиза</div>
-        <input type="date" id="release_date">
-    </div>
-    <div class="rightpane">
-        <div class="fieldname">Авторы</div>
-        <div id="authors"></div>
-        <script type="text/javascript">BuildAuthors($('#authors'));</script>
-    </div>
-    <div class="rightpane">
-        <div class="fieldname">Свойства</div>
-        <div id="tags"></div>
-        <script type="text/javascript">BuildTags($('#tags'));</script>
+        <div class="leftpane">
+            <div class="fieldname">Изображения и ссылки</div>
+            <div id="links"></div>
+            <script type="text/javascript">BuildLinks($('#links'));</script>
+        </div>
+        <div class="leftpane">
+            <div class="fieldname">Описание</div>
+            <div class="fieldcomment">
+                Можно использовать разметку markdown.
+            </div>
+            <textarea id="description"></textarea>
+        </div>
+        <div class="leftpane">
+            <button id="submit">Сохранить</button>
+            <script type="text/javascript">
+            $('#submit').click(SubmitGameJson);
+            </script>
+        </div>
+        <div class="rightpane">
+            <div class="fieldname">Дата релиза</div>
+            <input type="date" id="release_date">
+        </div>
+        <div class="rightpane">
+            <div class="fieldname">Авторы</div>
+            <div id="authors"></div>
+            <script type="text/javascript">
+                BuildAuthors($('#authors'));
+            </script>
+        </div>
+        <div class="rightpane">
+            <div class="fieldname">Свойства</div>
+            <div id="tags"></div>
+            <script type="text/javascript">BuildTags($('#tags'));</script>
+        </div>
+        <div style="clear: both;"></div>
     </div>
 {% endblock %}

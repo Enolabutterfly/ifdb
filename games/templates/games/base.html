@@ -14,7 +14,7 @@
         <div class="root">
             <nav id="top-nav">
                 <a {% current 'index' %} href="{% url 'index' %}">Главная</a>
-                <a href="/">Игры</a>
+                <a href="{% url 'list_games' %}">Игры</a>
                 <!--  <a href="http://ifiction.ru/">ifiction.ru</a>
                 <a href="http://forum.ifiction.ru/">Форум</a>
                 <a href="http://ifwiki.ru/">ifwiki.ru</a>
@@ -41,7 +41,6 @@
             </nav>
             <div class="content">
                 {% block content %}{% endblock %}
-                <div style="clear: both;"></div>
             </div>
         </div>
     </body>

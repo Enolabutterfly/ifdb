@@ -90,6 +90,15 @@ def show_game(request, game_id):
         raise Http404()
     return redirect('/')
 
+
+def list_games(request):
+    res = []
+    for x in Game.objects.all().order_by('-creation_time'):
+        if not request.perm(x.view_perm):
+            continue
+        res.append({'id': x.id, 'title': x.title})
+    return render(request, 'games/list.html', {'games': res})
+
 ########################
 # Json handlers below. #
 ########################

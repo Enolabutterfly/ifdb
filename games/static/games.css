@@ -9,6 +9,9 @@ a {
 .content {
     margin: 50px auto 0;
     width: 1024px;
+}
+
+.content-box {
     border: 1px solid #31322d;
     background-color: #F2F1EB;
     padding: 20px;
@@ -119,6 +122,38 @@ a {
     font-size: 2.5em;
     margin-bottom: 3em;
     margin-top: 1em;
+}
+
+a.gamelist-thumb {
+    background-color: #F2F1EB;
+    box-shadow: 0 1px 3px rgba(0,0,0,.3);
+    color: #31322D;
+    display: block;
+    float: left;
+    font-weight: bold;
+    height: 180px;
+    margin: 10px;
+    overflow: hidden;
+    padding: 20px;
+    text-decoration: none;
+    width: 180px;
+    padding: 0;
+}
+
+a.gamelist-thumb .poster-container {
+    height: 110px;
+    overflow: hidden;
+}
+
+a.gamelist-thumb .title-container {
+    margin: 0;
+    height: 100%;
+    padding: 5px;
+    border-top: 1px solid #b1b0ab;
+}
+
+a.gamelist-thumb img.poster {
+    width: 100%;
 }
 
 .prop-category {
