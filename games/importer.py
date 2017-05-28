@@ -31,7 +31,7 @@ def Import(url):
     return {'error': 'Ссылка на неизвестный ресурс.'}
 
 
-def CategorizeUrl(url, desc):
+def CategorizeUrl(url, desc=''):
     purl = urlparse(url)
     cat_slug = 'unknown'
     if purl.hostname == 'ifwiki.ru':
@@ -108,14 +108,14 @@ PLUT_DOWNLOAD_LINK = re.compile(
     r'<td><span class="file"><img class="file-icon" [^>]+> '
     r'<a href="([^"]+)"[^>]*>([^<]*)</a>')
 
-MARKDOWN_LINK = re.compile(r'\[([^\]]*)\]\((.*?[^\\])\)')
+MARKDOWN_LINK = re.compile(r'\[([^\]]*)\]\((.*?[^\\])\)|<([^> ]+)>')
 
 
 def ParseFields(html):
     res = []
     for m in PLUT_FIELD.finditer(html):
         for n in PLUT_FIELD_ITEM.finditer(m.group()):
-            res.append([m.group(1), n.group(1)])
+            res.append([unescape(m.group(1)), unescape(n.group(1))])
     return res
 
 
@@ -174,7 +174,11 @@ def ImportFromPlut(url, html):
     # if 'desc' in res. Parse the rest of links
     if 'desc' in res:
         for m in MARKDOWN_LINK.finditer(res['desc']):
-            x = CategorizeUrl(MdUnescape(m.group(2)), MdUnescape(m.group(1)))
+            if m.group(3):
+                x = CategorizeUrl(m.group(3))
+            else:
+                x = CategorizeUrl(
+                    MdUnescape(m.group(2)), MdUnescape(m.group(1)))
             if x:
                 res['urls'].append(x)
 
