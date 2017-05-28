@@ -1,15 +1,16 @@
 from .models import (GameAuthorRole, Author, Game, GameTagCategory, GameTag,
                      URLCategory, URL)
-from django.contrib.auth.decorators import login_required
-from django.http.response import JsonResponse
-from django.shortcuts import render, redirect
-from django.views.decorators.csrf import ensure_csrf_cookie
-from dateutil.parser import parse as parse_date
+from .importer import Import
 from datetime import datetime
-from django.http import Http404
+from dateutil.parser import parse as parse_date
+from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.files.storage import FileSystemStorage
-from .importer import Import
+from django.http import Http404
+from django.http.response import JsonResponse
+from django.shortcuts import render, redirect
+from django.urls import reverse
+from django.views.decorators.csrf import ensure_csrf_cookie
 import json
 import markdown
 
@@ -56,8 +57,7 @@ def store_game(request):
         g.FillAuthors(j['authors'])
     except ObjectDoesNotExist:
         raise Http404()
-    # TODO(crem) Better redirect
-    return redirect('/')
+    return redirect(reverse('show_game', kwargs={'game_id': g.id}))
 
 
 def show_game(request, game_id):
