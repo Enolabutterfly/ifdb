@@ -31,10 +31,10 @@
                     <a href="/adminz">Админка</a>
                 {% endif %}
                 <div class="spacer"></div>
-                <div class="searchbox">
+                <!-- <div class="searchbox">
                     <input placeholder="Поиск">
                     &#x1f50d;&#xFE0E;
-                </div>
+                </div> -->
                     {% if user.is_authenticated %}
                         <form class="loginbox" method="post" action="{% url 'logout' %}">
                         {% csrf_token %}
