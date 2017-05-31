@@ -41,7 +41,7 @@ class Permissioner:
 def perm_required(perm):
     def real_decorator(f):
         def middleware(request):
-            request.perm.Ensure(f)
+            request.perm.Ensure(perm)
             return f(request)
 
         return middleware

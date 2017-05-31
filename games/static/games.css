@@ -16,6 +16,7 @@ a {
     background-color: #F2F1EB;
     padding: 20px;
     box-shadow: -3px 4px 2px rgba(0,0,0,0.2);
+    border-radius: 2.5px;
 }
 
 input[type="date"],input[type="text"],input[type="password"],
@@ -117,6 +118,21 @@ input:not([type]),textarea {
     margin-left: 686px;
 }
 
+.rightpane button,
+.rightpane input[type="submit"] {
+    display: block;
+    margin: auto;
+}
+
+.rightpane .minutes {
+    width: 40px;
+}
+
+.rightpane .hours {
+    width: 50px;
+}
+
+
 .fieldname {
     font-size: 120%;
     text-transform: uppercase;
@@ -161,6 +177,7 @@ a.gamelist-thumb {
     text-decoration: none;
     width: 180px;
     padding: 0;
+    border-radius: 2px;
 }
 
 a.gamelist-thumb .poster-container {
@@ -187,6 +204,12 @@ a.gamelist-thumb img.poster {
 .prop-value {
     color: #31322D;
     font-weight: bold;
+}
+
+.prop-comment {
+    color: #625B61;
+    font-size: 90%;
+    text-align: center;
 }
 
 #title_warning,#import_warning {
@@ -328,7 +351,7 @@ input::placeholder {
     color: #C2C1BB;
 }
 
-.password_error {
+.error {
     color: red;
 }
 

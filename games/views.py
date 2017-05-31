@@ -1,5 +1,5 @@
 from .models import (GameAuthorRole, Author, Game, GameTagCategory, GameTag,
-                     URLCategory, URL)
+                     URLCategory, URL, GameVotes)
 from .importer import Import
 from datetime import datetime
 from dateutil.parser import parse as parse_date
@@ -12,8 +12,11 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.views.decorators.csrf import ensure_csrf_cookie
 from ifdb.permissioner import perm_required
+from statistics import mean, median
 import json
 import markdown
+
+PERM_ADD_GAME = '@auth'  # Also for file upload, game import, vote
 
 
 def FormatDate(x):
@@ -31,13 +34,14 @@ def index(request):
 
 @ensure_csrf_cookie
 @login_required
-@perm_required('@auth')
+@perm_required(PERM_ADD_GAME)
 def add_game(request):
     return render(request, 'games/add.html', {})
 
 
-@perm_required('@auth')
+@perm_required(PERM_ADD_GAME)
 def store_game(request):
+    # !!!!!!!!!! PERMISSIONS TO STORE / EDIT GAME
     if request.method != 'POST':
         return render(request, 'games/error.html',
                       {'message': 'Что-то не так!' + ' (1)'})
@@ -63,6 +67,32 @@ def store_game(request):
     return redirect(reverse('show_game', kwargs={'game_id': g.id}))
 
 
+@perm_required(PERM_ADD_GAME)
+def vote_game(request):
+    if request.method != 'POST':
+        return render(request, 'games/error.html',
+                      {'message': 'Что-то не так!' + ' (2)'})
+    game = Game.objects.get(id=int(request.POST.get('game_id')))
+
+    try:
+        obj = GameVotes.objects.get(game=game, user=request.user)
+        obj.edit_time = datetime.now()
+    except GameVotes.DoesNotExist:
+        obj = GameVotes()
+        obj.game = game
+        obj.user = request.user
+        obj.creation_time = datetime.now()
+
+    obj.game_finished = bool(request.POST.get('finished', None))
+    obj.edit_time = datetime.now()
+    obj.play_time_mins = (
+        int(request.POST.get('hours')) * 60 + int(request.POST.get('minutes')))
+    obj.star_rating = int(request.POST.get('score'))
+    obj.save()
+
+    return redirect(reverse('show_game', kwargs={'game_id': game.id}))
+
+
 def show_game(request, game_id):
     try:
         game = Game.objects.get(id=game_id)
@@ -76,6 +106,7 @@ def show_game(request, game_id):
             ['markdown.extensions.extra', 'markdown.extensions.meta',
              'markdown.extensions.smarty', 'markdown.extensions.wikilinks'])
         tags = game.GetTagsForDetails(request.perm)
+        votes = GetGameScore(game, request.user)
         return render(request, 'games/game.html', {
             'added_date': added_date,
             'authors': authors,
@@ -85,6 +116,7 @@ def show_game(request, game_id):
             'release_date': release_date,
             'tags': tags,
             'links': links,
+            'votes': votes,
         })
     except Game.DoesNotExist:
         raise Http404()
@@ -98,6 +130,29 @@ def list_games(request):
             continue
         res.append({'id': x.id, 'title': x.title})
     return render(request, 'games/list.html', {'games': res})
+
+
+@perm_required(PERM_ADD_GAME)
+def upload(request):
+    file = request.FILES['file']
+    fs = FileSystemStorage()
+    filename = fs.save(file.name, file, max_length=64)
+    file_url = fs.url(filename)
+    url_full = request.build_absolute_uri(file_url)
+
+    url = URL()
+    url.local_url = file_url
+    url.original_url = url_full
+    url.original_filename = file.name
+    url.content_type = file.content_type
+    url.ok_to_clone = False
+    url.is_uploaded = True
+    url.creation_date = datetime.now()
+    url.file_size = fs.size(filename)
+    url.creator = request.user
+    url.save()
+
+    return JsonResponse({'url': url_full})
 
 ########################
 # Json handlers below. #
@@ -143,29 +198,6 @@ def linktypes(request):
     return JsonResponse(res)
 
 
-@perm_required('@auth')
-def upload(request):
-    file = request.FILES['file']
-    fs = FileSystemStorage()
-    filename = fs.save(file.name, file, max_length=64)
-    file_url = fs.url(filename)
-    url_full = request.build_absolute_uri(file_url)
-
-    url = URL()
-    url.local_url = file_url
-    url.original_url = url_full
-    url.original_filename = file.name
-    url.content_type = file.content_type
-    url.ok_to_clone = False
-    url.is_uploaded = True
-    url.creation_date = datetime.now()
-    url.file_size = fs.size(filename)
-    url.creator = request.user
-    url.save()
-
-    return JsonResponse({'url': url_full})
-
-
 def Importer2Json(r):
     res = {}
     for x in ['title', 'desc', 'release_date']:
@@ -205,7 +237,7 @@ def Importer2Json(r):
     return res
 
 
-@perm_required('@auth')
+@perm_required(PERM_ADD_GAME)
 def doImport(request):
     raw_import = Import(request.GET.get('url'))
     if ('error' in raw_import):
@@ -216,3 +248,65 @@ def doImport(request):
     except:
         return JsonResponse({'error':
                              'Что-то поломалось, хотя не должно было.'})
+
+
+################################################
+# Returns:
+# - avg_rating
+# - stars[5]
+# - played_count
+# - finished_count
+# - played_hours
+# - played_mins
+# - finished_hours
+# - finished_mins
+# - user_played
+# - user_hours
+# - user_mins
+# - user_score
+def GetGameScore(game, user=None):
+    res = {'user_played': False}
+    if user and not user.is_authenticated:
+        user = None
+    finished_votes = []
+    finished_times = []
+    played_votes = []
+    played_times = []
+    res['user_hours'] = '0'
+    res['user_mins'] = ''
+    res['user_score'] = ''
+    res['user_finished'] = False
+
+    for v in GameVotes.objects.filter(game=game):
+        played_votes.append(v.star_rating)
+        played_times.append(v.play_time_mins)
+        if v.game_finished:
+            finished_votes.append(v.star_rating)
+            finished_times.append(v.play_time_mins)
+        if v.user == user:
+            res['user_played'] = True
+            res['user_hours'] = v.play_time_mins // 60
+            res['user_mins'] = v.play_time_mins % 60
+            res['user_score'] = v.star_rating
+            res['user_finished'] = v.game_finished
+
+    res['played_count'] = len(played_votes)
+    if played_votes:
+        avg = round(mean(played_votes) * 10)
+        res['avg_rating'] = ("%3.1f" % (avg / 10.0)).replace('.', ',')
+        res['stars'] = [10] * (avg // 10)
+        if avg % 10 != 0:
+            res['stars'].append(avg % 10)
+        res['stars'].extend([0] * (5 - len(res['stars'])))
+
+        t = round(median(played_times))
+        res['played_hours'] = t // 60
+        res['played_mins'] = t % 60
+
+    res['finished_count'] = len(finished_votes)
+    if finished_votes:
+        t = round(median(finished_times))
+        res['finished_hours'] = t // 60
+        res['finished_mins'] = t % 60
+
+    return res

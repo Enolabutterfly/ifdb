@@ -8,7 +8,7 @@
     </div>
     <form method="post" action="{% url 'login' %}" class="password_form">
         {% if form.errors %}
-            <p class="password_error">
+            <p class="perror">
                 Пароль не подошёл.<br>Попробуй ещё повводить.
             </p>
         {% endif %}

@@ -6,6 +6,7 @@ from . import views
 urlpatterns = [
     url(r'^index/$', views.index, name='index'),
     url(r'^game/add/', views.add_game, name='add_game'),
+    url(r'^game/vote/', views.vote_game, name='vote_game'),
     url(r'^game/store/', views.store_game, name='store_game'),
     url(r'^game/$', views.list_games, name='list_games'),
     url(r'^game/(?P<game_id>\d+)/', views.show_game, name='show_game'),

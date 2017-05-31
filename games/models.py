@@ -237,3 +237,16 @@ class GameTag(models.Model):
                 name=val, category=category)[0]
         else:
             return GameTag.objects.get(name=val, category=category)
+
+
+class GameVotes(models.Model):
+    class Meta:
+        unique_together = (('game', 'user'), )
+
+    game = models.ForeignKey(Game, db_index=True)
+    user = models.ForeignKey(User, db_index=True)
+    creation_time = models.DateTimeField()
+    edit_time = models.DateTimeField(null=True, blank=True)
+    game_finished = models.BooleanField()
+    play_time_mins = models.IntegerField()
+    star_rating = models.SmallIntegerField()
