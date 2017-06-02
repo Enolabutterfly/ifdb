@@ -26,6 +26,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if IS_PROD:
     SECRET_KEY = open('/home/ifdb/configs/django-secret.txt').read().strip()
     DEBUG = False
+    # TODO(crem) remove that 10.162.2.2
     ALLOWED_HOSTS = ['db.mooskagh.com', '10.162.2.2']
     DATABASES = {
         'default': {

@@ -1,4 +1,4 @@
-/* https://coolors.co/ceff1a-42cafd-31322d-625b61-f2f1eb
+/*
    https://coolors.co/ceff1a-00487c-31322d-625b61-f2f1eb
 */
 
@@ -18,6 +18,69 @@ a {
     box-shadow: -3px 4px 2px rgba(0,0,0,0.2);
     border-radius: 2.5px;
 }
+
+.comment-box {
+    margin: 1em 0 2em;
+}
+
+.comment-input {
+    margin-right: 0px;
+    text-align: right;
+    padding: 0;
+}
+
+.comment-input input[type="submit"] {
+    margin: 5px 0 0;
+}
+
+.comment-input input[type="text"] {
+    font-family: monospace;
+    display: block;
+    width: 100%;
+}
+
+.comment-input textarea {
+    display: block;
+    width: 99.4%;
+    min-height: 2em;
+}
+
+.comment-subj {
+    color: #31322D;
+    font-weight: bold;
+    font-size: 110%;
+}
+
+.comment-nick {
+    font-size: 90%;
+    color: #625B61;
+}
+
+.comment-description {
+    margin-left: 0em;
+}
+
+.comment-body {
+    margin: 0.5em 0;
+}
+
+.comment-header {
+    /* background-color: #EAE9E3; */
+    background: linear-gradient(to right, #E8E7E1, #f2f1eb);
+    border-radius: 2.5px;
+    padding: 5px;
+}
+
+.comment-footer {
+    font-size: 80%;
+}
+
+
+.comment-time {
+    font-style: italic;
+}
+
+.comment-input
 
 input[type="date"],input[type="text"],input[type="password"],
 input:not([type]),textarea {
@@ -347,7 +410,7 @@ button#submit {
     margin-right: 0.2em;
 }
 
-input::placeholder {
+.gameedit input::placeholder {
     color: #C2C1BB;
 }
 
