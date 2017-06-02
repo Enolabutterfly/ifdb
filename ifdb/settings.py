@@ -24,7 +24,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 if IS_PROD:
-    SECRET_KEY = open('/home/ifdb/config/django-secret.txt').read().strip()
+    SECRET_KEY = open('/home/ifdb/configs/django-secret.txt').read().strip()
     DEBUG = False
     ALLOWED_HOSTS = ['db.mooskagh.com']
     DATABASES = {
@@ -32,7 +32,7 @@ if IS_PROD:
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
             'NAME': 'ifdb',
             'USER': 'ifdb',
-            'PASSWORD': open('/home/ifdb/config/db-pass.txt').read().strip(),
+            'PASSWORD': open('/home/ifdb/configs/db-pass.txt').read().strip(),
             'HOST': 'localhost',
             'PORT': '',
         }
