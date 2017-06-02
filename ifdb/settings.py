@@ -33,7 +33,7 @@ if IS_PROD:
             'NAME': 'ifdb',
             'USER': 'ifdb',
             'PASSWORD': open('/home/ifdb/configs/db-pass.txt').read().strip(),
-            'HOST': 'localhost',
+            'HOST': '',
             'PORT': '',
         }
     }
