@@ -5,7 +5,8 @@ from . import views
 
 urlpatterns = [
     url(r'^index/$', views.index, name='index'),
-    url(r'^game/add/', views.add_game, name='add_game'),
+    # TODO Make it game/add
+    url(r'^gameadd/', views.add_game, name='add_game'),
     url(r'^game/vote/', views.vote_game, name='vote_game'),
     url(r'^game/store/', views.store_game, name='store_game'),
     url(r'^game/comment/', views.comment_game, name='comment_game'),

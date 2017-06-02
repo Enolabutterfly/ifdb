@@ -112,10 +112,10 @@ def show_game(request, game_id):
         added_date = FormatDate(game.creation_time)
         authors = game.GetAuthors()
         links = game.GetURLs()
-        md = markdown.markdown(
-            game.description,
-            ['markdown.extensions.extra', 'markdown.extensions.meta',
-             'markdown.extensions.smarty', 'markdown.extensions.wikilinks'])
+        md = markdown.markdown(game.description, [
+            'markdown.extensions.extra', 'markdown.extensions.meta',
+            'markdown.extensions.smarty', 'markdown.extensions.wikilinks'
+        ]) if game.description else ''
         tags = game.GetTagsForDetails(request.perm)
         votes = GetGameScore(game, request.user)
         return render(request, 'games/game.html', {
