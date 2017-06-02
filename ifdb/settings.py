@@ -11,7 +11,10 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 """
 
 import os
+import socket
 import os.path
+
+IS_PROD = socket.gethostname() == 'ribby.mooskagh.com'
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -20,12 +23,34 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'l3uja(27m53i#c)#9ziwmf*3n^e59eieal=3i$z0j@&$0i$!hr'
+if IS_PROD:
+    SECRET_KEY = open('/home/ifdb/config/django-secret.txt').read().strip()
+    DEBUG = False
+    ALLOWED_HOSTS = ['db.mooskagh.com']
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': 'ifdb',
+            'USER': 'ifdb',
+            'PASSWORD': open('/home/ifdb/config/db-pass.txt').read().strip(),
+            'HOST': 'localhost',
+            'PORT': '',
+        }
+    }
+    MEDIA_ROOT = os.path.abspath('/home/ifdb/uploads')
+    STATIC_ROOT = os.path.abspath('/home/ifdb/static')
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = []
+else:
+    SECRET_KEY = 'l3uja(27m53i#c)#9ziwmf*3n^e59eieal=3i$z0j@&$0i$!hr'
+    DEBUG = True
+    ALLOWED_HOSTS = []
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        }
+    }
+    MEDIA_ROOT = os.path.abspath('./uploads')
 
 # Application definition
 
@@ -69,13 +94,6 @@ WSGI_APPLICATION = 'ifdb.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
-}
-
 # Password validation
 # https://docs.djangoproject.com/en/1.10/ref/settings/#auth-password-validators
 
@@ -109,12 +127,9 @@ USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = True
+USE_TZ = False
 
 MEDIA_URL = '/uploads/'
-
-if DEBUG:
-    MEDIA_ROOT = os.path.abspath('./uploads')
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
