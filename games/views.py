@@ -24,7 +24,7 @@ def FormatDate(x):
         return None
     return '%d %s %d' % (x.day, ['января', 'февраля', 'марта', 'апреля', 'мая',
                                  'июня', 'июля', 'августа', 'сентября',
-                                 'октября', 'ноября', 'декабря'][x.month],
+                                 'октября', 'ноября', 'декабря'][x.month - 1],
                          x.year)
 
 
@@ -128,10 +128,7 @@ def show_game(request, game_id):
         added_date = FormatDate(game.creation_time)
         authors = game.GetAuthors()
         links = game.GetURLs()
-        md = markdown.markdown(game.description, [
-            'markdown.extensions.extra', 'markdown.extensions.meta',
-            'markdown.extensions.smarty', 'markdown.extensions.wikilinks'
-        ]) if game.description else ''
+        md = GetMarkdown(game.description)
         tags = game.GetTagsForDetails(request.perm)
         votes = GetGameScore(game, request.user)
         comments = GetGameComments(game, request.user)
@@ -278,6 +275,18 @@ def doImport(request):
         return JsonResponse({'error':
                              'Что-то поломалось, хотя не должно было.'})
 
+############################################################################
+# Aux functions below
+############################################################################
+
+
+def GetMarkdown(content):
+    return markdown.markdown(content, [
+        'markdown.extensions.extra', 'markdown.extensions.meta',
+        'markdown.extensions.smarty', 'markdown.extensions.wikilinks',
+        'del_ins'
+    ]) if content else ''
+
 
 ################################################
 # Returns:
@@ -360,10 +369,7 @@ def GetGameComments(game, user=None):
             'created': FormatTime(v.creation_time),
             'edited': FormatTime(v.edit_time),
             'subj': v.subject,
-            'text': markdown.markdown(v.text, [
-                'markdown.extensions.extra', 'markdown.extensions.meta',
-                'markdown.extensions.smarty', 'markdown.extensions.wikilinks'
-            ]),
+            'text': GetMarkdown(v.text),
             # TODO: is_deleted
         })
 

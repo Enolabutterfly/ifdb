@@ -5,6 +5,9 @@ AUTHOR_ROLES = [
     ['author', 'Автор'],
     ['artist', 'Художник'],
     ['tester', 'Тестировщик'],
+    ['translator', 'Переводчик'],
+    ['character', 'Персонаж'],
+    ['member', 'Участник (прочие)'],
 ]
 
 TAG_CATS = [
