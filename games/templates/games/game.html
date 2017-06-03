@@ -251,13 +251,36 @@
                     <img src="/static/duck10.png" />
                     &mdash; изумительная игра!
                 </label><br>
-                Я играло в эту игру
-                <input class="hours" type="number" min="0" max="9999"
+                Я играло в эту игру<br>
+                <span class="vote-timeselect hours">0</span>
+                <span class="vote-timeselect hours">1</span>
+                <span class="vote-timeselect hours">2</span>
+                <span class="vote-timeselect hours">3</span>
+                <span class="vote-timeselect hours">4</span>
+                <span class="vote-timeselect hours">5</span>
+                <input id="hours" type="number" min="0" max="9999"
                 name="hours" value="{{votes.user_hours}}" required>
-                час.
-                <input class="minutes" type="number" min="0" max="59"
+                <script type="text/javascript">
+                    $('.vote-timeselect.hours').click(function(event) {
+                        $('#hours').val($(this).text());
+                    })
+                </script>
+                часов и<br>
+                <span class="vote-timeselect minutes">0</span>
+                <span class="vote-timeselect minutes">5</span>
+                <span class="vote-timeselect minutes">10</span>
+                <span class="vote-timeselect minutes">15</span>
+                <span class="vote-timeselect minutes">20</span>
+                <span class="vote-timeselect minutes">30</span>
+                <span class="vote-timeselect minutes">45</span>
+                <input id="minutes" type="number" min="0" max="59"
                 name="minutes" value="{{votes.user_mins}}" required>
-                мин.<br>
+                <script type="text/javascript">
+                    $('.vote-timeselect.minutes').click(function(event) {
+                        $('#minutes').val($(this).text());
+                    })
+                </script>
+                минут.<br>
                 <input type="checkbox" name="finished" id="scoref"
                 {% if votes.user_finished %}checked{% endif %}/>
                 <label for="scoref">Я прошло эту игру до конца.</label>

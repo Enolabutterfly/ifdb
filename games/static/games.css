@@ -191,11 +191,11 @@ input:not([type]),textarea {
     margin: auto;
 }
 
-.rightpane .minutes {
-    width: 40px;
+.rightpane #minutes {
+    width: 50px;
 }
 
-.rightpane .hours {
+.rightpane #hours {
     width: 50px;
 }
 
@@ -443,4 +443,16 @@ progress::-moz-progress-bar {
 
 progress::-webkit-progress-value {
     background-color: #00487c !important;
+}
+
+.vote-timeselect {
+    background-color: #00487c;
+    border-radius: 2.5px;
+    color: #f2f1eb;
+    cursor: pointer;
+    display: inline-block;
+    margin: 2px;
+    min-width: 1.2em;
+    padding: 2px;
+    text-align: center;
 }
