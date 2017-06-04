@@ -558,9 +558,7 @@
             var res = [];
             for (var i = 0; i < this.options.objs.length-1; ++i) {
                 var o = this.options.objs[i];
-                res.push({'category': o.cats.suggest('value'),
-                          'description': o.desc.val(),
-                          'url': o.url.val()});
+                res.push([o.cats.suggest('value'), o.desc.val(), o.url.val()]);
             }
             return res;
         },
@@ -731,6 +729,9 @@ function SubmitGameJson() {
     res['authors'] = $('#authors').propSelector('values');
     res['properties'] = $('#tags').propSelector('values');
     res['links'] = $('#links').urlUpload('values');
+
+    var game_id = $('.gameedit').attr('game-id');
+    if (game_id) res['game_id'] = game_id
     PostRedirect('/game/store/', res);
 }
 

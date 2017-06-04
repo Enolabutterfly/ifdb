@@ -135,16 +135,6 @@ class URL(models.Model):
     file_size = models.IntegerField(null=True, blank=True)
     creator = models.ForeignKey(User, null=True, blank=True)
 
-    @staticmethod
-    def GetOrCreate(url, allow_cloning, user):
-        return URL.objects.get_or_create(
-            original_url=url,
-            defaults={
-                'ok_to_clone': allow_cloning,
-                'creation_date': datetime.now(),
-                'creator': user,
-            })[0]
-
 
 class URLCategory(models.Model):
     class Meta:
@@ -272,7 +262,6 @@ class GameVote(models.Model):
     class Meta:
         unique_together = (('game', 'user'), )
         default_permissions = ()
-
 
     def __str__(self):
         return "%s: %s (%d)" % (self.user, self.game, self.star_rating)

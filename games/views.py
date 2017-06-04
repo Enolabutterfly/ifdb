@@ -1,10 +1,10 @@
 from .models import (GameAuthorRole, Author, Game, GameTagCategory, GameTag,
-                     URLCategory, URL, GameVote, GameComment)
+                     URLCategory, URL, GameURL, GameVote, GameComment,
+                     GameAuthor)
 from .importer import Import
 from datetime import datetime
 from dateutil.parser import parse as parse_date
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import ObjectDoesNotExist
 from django.core.files.storage import FileSystemStorage
 from django.http import Http404
 from django.http.response import JsonResponse
@@ -54,31 +54,36 @@ def edit_game(request, game_id):
     return render(request, 'games/edit.html', {'game_id': game.id})
 
 
-@perm_required(PERM_ADD_GAME)
 def store_game(request):
-    # TODO !!!!!!!!!! PERMISSIONS TO STORE / EDIT GAME
     if request.method != 'POST':
         return render(request, 'games/error.html',
                       {'message': 'Что-то не так!' + ' (1)'})
     j = json.loads(request.POST.get('json'))
+
     if not j['title']:
         return render(request, 'games/error.html',
                       {'message': 'У игры должно быть название.'})
-    try:
+
+    if ('game_id' in j):
+        g = Game.objects.get(id=j['game_id'])
+        request.perm.Ensure(g.edit_perm)
+        g.edit_time = datetime.now()
+    else:
+        request.perm.Ensure(PERM_ADD_GAME)
         g = Game()
-        g.title = j['title']
-        if j['description']:
-            g.description = j['description']
-        if j['release_date']:
-            g.release_date = parse_date(j['release_date'])
         g.creation_time = datetime.now()
         g.added_by = request.user
-        g.save()
-        g.FillUrls(j['links'], request.user)
-        g.StoreTags(j['properties'], request.perm)
-        g.StoreAuthors(j['authors'])
-    except ObjectDoesNotExist:
-        raise Http404()
+
+    g.title = j['title']
+    g.description = j['description'] or None
+    g.release_date = (parse_date(j['release_date'])
+                      if j['release_date'] else None)
+
+    g.save()
+    UpdateGameUrls(request, g, j['links'], 'game_id' in j)
+    UpdateGameTags(request, g, j['properties'], 'game_id' in j)
+    UpdateGameAuthors(request, g, j['authors'], 'game_id' in j)
+
     return redirect(reverse('show_game', kwargs={'game_id': g.id}))
 
 
@@ -437,3 +442,131 @@ def GetGameComments(game, user=None):
         x[1:] = sorted(x[1:], key=lambda t: t['created'])
 
     return [x for y in clusters for x in y]
+
+
+def UpdateGameAuthors(request, game, authors, update):
+    existing_authors = {}  # (role_id, author_id) -> GameAuthor_id
+    if update:
+        for x in game.gameauthor_set.all():
+            existing_authors[(x.role_id, x.author_id)] = x.id
+
+    authors_to_add = []  # (role_id, author_id)
+    for (role, author) in authors:
+        if not isinstance(role, int):
+            role = GameAuthorRole.objects.get_or_create(title=role)[0].id
+        if not isinstance(author, int):
+            author = Author.objects.get_or_create(name=author)[0].id
+        t = (role, author)
+        if t in existing_authors:
+            del existing_authors[t]
+        else:
+            authors_to_add.append(t)
+
+    if authors_to_add:
+        objs = []
+        for role, author in authors_to_add:
+            obj = GameAuthor()
+            obj.game = game
+            obj.author_id = author
+            obj.role_id = role
+            objs.append(obj)
+        GameAuthor.objects.bulk_create(objs)
+
+    if existing_authors:
+        GameAuthor.objects.filter(
+            id__in=list(existing_authors.values())).delete()
+
+
+def UpdateGameTags(request, game, tags, update):
+    existing_tags = set()  # tag_id
+    if update:
+        for x in game.tags.select_related('category').all():
+            if not request.perm(x.category.show_in_edit_perm):
+                continue
+            existing_tags.add(x.id)
+
+    if tags:
+        id_to_cat = {}
+        name_to_cat = {}
+        for x in GameTagCategory.objects.all():
+            id_to_cat[x.id] = x
+            name_to_cat[x.name] = x
+
+        tags_to_add = []  # (tag_id)
+        for x in tags:
+            if not isinstance(x[0], int):
+                x[0] = name_to_cat[x[0]]
+
+            if not isinstance(x[1], int):
+                cat = id_to_cat[x[0]]
+                if cat.allow_new_tags:
+                    x[1] = GameTag.objects.get_or_create(
+                        name=x[1], category=cat)[0].id
+                else:
+                    x[1] = GameTag.objects.get(name=x[1], category=cat)
+
+            if x[1] in existing_tags:
+                existing_tags.remove(x[1])
+            else:
+                tags_to_add.append(x[1])
+
+        if tags_to_add:
+            game.tags.add(*tags_to_add)
+
+    if existing_tags:
+        game.tags.filter(id__in=existing_tags).delete()
+
+
+def UpdateGameUrls(request, game, data, update):
+    existing_urls = {}  # (cat_id, gameurl_desc, url_text) -> gameurl_id
+    if update:
+        for x in game.gameurl_set.select_related('url').all():
+            existing_urls[(x.category_id, x.description or '',
+                           x.url.original_url)] = x.id
+
+    records_to_add = []  # (cat_id, gameurl_desc, url_text)
+    urls_to_add = []  # (url_text, cat_id)
+    for x in data:
+        t = tuple(x)
+        if t in existing_urls:
+            del existing_urls[t]
+        else:
+            records_to_add.append(t)
+            urls_to_add.append((t[2], int(t[0])))
+
+    if records_to_add:
+        url_to_id = {}
+        for u in URL.objects.filter(original_url__in=next(zip(*urls_to_add))):
+            url_to_id[u.original_url] = u.id
+
+        cats_to_check = set()
+        for u, c in urls_to_add:
+            if u not in url_to_id:
+                cats_to_check.add(c)
+
+        cat_to_cloneable = {}
+        for c in URLCategory.objects.filter(id__in=cats_to_check):
+            cat_to_cloneable[c.id] = c.allow_cloning
+
+        for u, c in urls_to_add:
+            if u not in url_to_id:
+                url = URL()
+                url.original_url = u
+                url.creation_date = datetime.now()
+                url.creator = request.user
+                url.ok_to_clone = cat_to_cloneable[c]
+                url.save()
+                url_to_id[u] = url.id
+
+        objs = []
+        for (cat, desc, url) in records_to_add:
+            obj = GameURL()
+            obj.category_id = cat
+            obj.url_id = url_to_id[url]
+            obj.game = game
+            obj.description = desc or None
+            objs.append(obj)
+        GameURL.objects.bulk_create(objs)
+
+    if existing_urls:
+        GameURL.objects.filter(id__in=list(existing_urls.values())).delete()
