@@ -220,6 +220,7 @@ def tags(request):
                'name': x.name,
                'allow_new_tags': x.allow_new_tags,
                'tags': []}
+        # TODO(crem) Optimize this.
         for y in (GameTag.objects.filter(category=x).order_by('order',
                                                               'name')):
             val['tags'].append({
@@ -317,11 +318,6 @@ def doImport(request):
     if ('error' in raw_import):
         return JsonResponse({'error': raw_import['error']})
     return JsonResponse(Importer2Json(raw_import))
-    try:
-        return Importer2Json(raw_import)
-    except:
-        return JsonResponse({'error':
-                             'Что-то поломалось, хотя не должно было.'})
 
 ############################################################################
 # Aux functions below

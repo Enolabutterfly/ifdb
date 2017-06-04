@@ -110,7 +110,7 @@ class URLCategory(models.Model):
         return self.title
 
     symbolic_id = models.SlugField(
-        max_length=32, null=True, blank=True, db_index=True)
+        max_length=32, null=True, blank=True, db_index=True, unique=True)
     title = models.CharField(max_length=255, db_index=True)
     allow_cloning = models.BooleanField(default=True)
     order = models.SmallIntegerField(default=0)
@@ -147,7 +147,7 @@ class GameAuthorRole(models.Model):
         return self.title
 
     symbolic_id = models.SlugField(
-        max_length=32, null=True, blank=True, db_index=True)
+        max_length=32, null=True, blank=True, db_index=True, unique=True)
     title = models.CharField(max_length=255, db_index=True)
     order = models.SmallIntegerField(default=100)
 
@@ -172,7 +172,7 @@ class GameTagCategory(models.Model):
         return self.name
 
     symbolic_id = models.SlugField(
-        max_length=32, null=True, blank=True, db_index=True)
+        max_length=32, null=True, blank=True, db_index=True, unique=True)
     name = models.CharField(max_length=255, db_index=True)
     allow_new_tags = models.BooleanField(default=True)
     show_in_edit_perm = models.CharField(max_length=255, default='@all')
@@ -183,13 +183,14 @@ class GameTagCategory(models.Model):
 
 class GameTag(models.Model):
     class Meta:
+        unique_together = (('category', 'name'), )
         default_permissions = ()
 
     def __str__(self):
         return "%s: %s" % (self.category, self.name)
 
     symbolic_id = models.SlugField(
-        max_length=32, null=True, blank=True, db_index=True)
+        max_length=32, null=True, blank=True, db_index=True, unique=True)
     category = models.ForeignKey(GameTagCategory)
     name = models.CharField(max_length=255, db_index=True)
     order = models.SmallIntegerField(default=0)
