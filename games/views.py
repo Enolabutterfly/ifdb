@@ -43,7 +43,15 @@ def index(request):
 @login_required
 @perm_required(PERM_ADD_GAME)
 def add_game(request):
-    return render(request, 'games/add.html', {})
+    return render(request, 'games/edit.html', {})
+
+
+@ensure_csrf_cookie
+@login_required
+def edit_game(request, game_id):
+    game = Game.objects.get(id=game_id)
+    request.perm.Ensure(game.edit_perm)
+    return render(request, 'games/edit.html', {'game_id': game.id})
 
 
 @perm_required(PERM_ADD_GAME)
@@ -133,6 +141,9 @@ def show_game(request, game_id):
         votes = GetGameScore(game, request.user)
         comments = GetGameComments(game, request.user)
         return render(request, 'games/game.html', {
+            'edit_perm': request.perm(game.edit_perm),
+            'comment_perm': request.perm(game.comment_perm),
+            'delete_perm': False,
             'added_date': added_date,
             'authors': authors,
             'game': game,
@@ -146,7 +157,6 @@ def show_game(request, game_id):
         })
     except Game.DoesNotExist:
         raise Http404()
-    return redirect('/')
 
 
 def list_games(request):
@@ -193,7 +203,7 @@ def authors(request):
     for x in Author.objects.order_by('name').all():
         res['authors'].append({'name': x.name, 'id': x.id})
 
-    return JsonResponse(res)
+    return res
 
 
 def tags(request):
@@ -212,7 +222,7 @@ def tags(request):
                 'name': y.name,
             })
         res['categories'].append(val)
-    return JsonResponse(res)
+    return res
 
 
 def linktypes(request):
@@ -221,6 +231,15 @@ def linktypes(request):
         res['categories'].append({'id': x.id,
                                   'title': x.title,
                                   'uploadable': x.allow_cloning})
+    return res
+
+
+def json_gameinfo(request):
+    res = {
+        'authortypes': authors(request),
+        'tagtypes': tags(request),
+        'linktypes': linktypes(request),
+    }
     return JsonResponse(res)
 
 

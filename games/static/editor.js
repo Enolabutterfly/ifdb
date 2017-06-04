@@ -606,72 +606,74 @@
 
 })(jQuery);
 
-function BuildAuthors(element) {
-    $.getJSON('/json/authors/', function(data) {
-        var cats = {};
-        var vals = {};
-        var vs = [];
+function BuildAuthors(element, data) {
+    var cats = {};
+    var vals = {};
+    var vs = [];
 
-        for (var i = 0; i < data['roles'].length; ++i) {
-            var v = data['roles'][i];
-            cats[v['id']] = v['title'];
-        }
-        for (var i = 0; i < data['authors'].length; ++i) {
-            var v = data['authors'][i];
-            vals[v['id']] = v['name'];
-        }
-        for (var i = 0; i < data['value'].length; ++i) {
-            var v = data['value'][i];
-            vs.push([v['role'], v['author']]);
-        }
+    for (var i = 0; i < data['roles'].length; ++i) {
+        var v = data['roles'][i];
+        cats[v['id']] = v['title'];
+    }
+    for (var i = 0; i < data['authors'].length; ++i) {
+        var v = data['authors'][i];
+        vals[v['id']] = v['name'];
+    }
+    for (var i = 0; i < data['value'].length; ++i) {
+        var v = data['value'][i];
+        vs.push([v['role'], v['author']]);
+    }
 
-        element.propSelector({
-            idToCat: cats,
-            idToVal: vals,
-            values: vs,
-            catPlaceholder: 'Роль',
-            valPlaceholder: 'Имя',
-        });
+    element.propSelector({
+        idToCat: cats,
+        idToVal: vals,
+        values: vs,
+        catPlaceholder: 'Роль',
+        valPlaceholder: 'Имя',
     });
 }
 
-function BuildTags(element) {
-    $.getJSON('/json/tags/', function(data) {
-        var cats = {};
-        var cats2vals = {};
-        var openCats = [];
-        var vs = [];
+function BuildTags(element, data) {
+    var cats = {};
+    var cats2vals = {};
+    var openCats = [];
+    var vs = [];
 
-        for (var i = 0; i < data['categories'].length; ++i) {
-            var v = data['categories'][i];
-            cats[v['id']] = v['name'];
-            var v = data['categories'][i];
-            var catVals = {};
-            for (var j = 0; j < v['tags'].length; ++j) {
-                var w = v['tags'][j];
-                catVals[w['name']] = w['id'];
-            }
-            cats2vals[v['id']] = catVals;
-            if (v['allow_new_tags']) {
-                openCats.push(v['id']);
-            }
+    for (var i = 0; i < data['categories'].length; ++i) {
+        var v = data['categories'][i];
+        cats[v['id']] = v['name'];
+        var v = data['categories'][i];
+        var catVals = {};
+        for (var j = 0; j < v['tags'].length; ++j) {
+            var w = v['tags'][j];
+            catVals[w['name']] = w['id'];
         }
-        element.propSelector({
-            idToCat: cats,
-            catToVals: cats2vals,
-            allowNewValCats: openCats,
-            values: vs,
-            showAllVals: true,
-            allowNewCat: false,
-            catPlaceholder: 'Категория',
-            valPlaceholder: 'Свойство',
-        });
+        cats2vals[v['id']] = catVals;
+        if (v['allow_new_tags']) {
+            openCats.push(v['id']);
+        }
+    }
+    element.propSelector({
+        idToCat: cats,
+        catToVals: cats2vals,
+        allowNewValCats: openCats,
+        values: vs,
+        showAllVals: true,
+        allowNewCat: false,
+        catPlaceholder: 'Категория',
+        valPlaceholder: 'Свойство',
     });
 }
 
-function BuildLinks(element) {
-    $.getJSON('/json/linktypes', function(data) {
-        element.urlUpload({'categories': data['categories']});
+function BuildLinks(element, data) {
+    element.urlUpload({'categories': data['categories']});
+}
+
+function InitEditor() {
+    $.getJSON('/json/gameinfo/', function(data) {
+        BuildAuthors($('#authors'), data['authortypes']);
+        BuildTags($('#tags'), data['tagtypes']);
+        BuildLinks($('#links'), data['linktypes']);
     });
 }
 
@@ -726,6 +728,31 @@ function SubmitGameJson() {
     PostRedirect('/game/store/', res);
 }
 
+function UpdateFields(data) {
+    if (data.hasOwnProperty('title')) {
+        $('#title').val(data['title']);
+    }
+    if (data.hasOwnProperty('desc')) {
+        var oldVal = $('#description').val();
+        if (oldVal) {
+            data['desc'] +=
+                '\n\n----- Previous content: \n\n' + data['desc'];
+        }
+        $('#description').val(data['desc']);
+    }
+    if (data.hasOwnProperty('release_date')) {
+        $('#release_date').val(data['release_date']);
+    }
+    if (data.hasOwnProperty('authors')) {
+        $('#authors').propSelector('merge', data['authors']);
+    }
+    if (data.hasOwnProperty('tags')) {
+        $('#tags').propSelector('merge', data['tags']);
+    }
+    if (data.hasOwnProperty('links')) {
+        $('#links').urlUpload('merge', data['links']);
+    }
+}
 
 function ImportGame() {
     var url = $('#import_url').val();
@@ -741,29 +768,7 @@ function ImportGame() {
             $('#import_warning').text(data['error']);
             return;
         }
-        if (data.hasOwnProperty('title')) {
-            $('#title').val(data['title']);
-        }
-        if (data.hasOwnProperty('desc')) {
-            var oldVal = $('#description').val();
-            if (oldVal) {
-                data['desc'] +=
-                    '\n\n----- Previous content: \n\n' + data['desc'];
-            }
-            $('#description').val(data['desc']);
-        }
-        if (data.hasOwnProperty('release_date')) {
-            $('#release_date').val(data['release_date']);
-        }
-        if (data.hasOwnProperty('authors')) {
-            $('#authors').propSelector('merge', data['authors']);
-        }
-        if (data.hasOwnProperty('tags')) {
-            $('#tags').propSelector('merge', data['tags']);
-        }
-        if (data.hasOwnProperty('links')) {
-            $('#links').urlUpload('merge', data['links']);
-        }
+        UpdateFields(data);
         $('#import_url').val('');
     });
 }

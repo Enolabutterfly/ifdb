@@ -399,6 +399,7 @@ class WikiParsingContext:
             return text  # Internal link without a category.
         role = m.group(1)
         name = m.group(2)
+        display_name = m.group(3)
 
         if role in IFWIKI_IGNORE_ROLES:
             return ''
@@ -410,7 +411,7 @@ class WikiParsingContext:
         else:
             # TODO log that
             self.authors.append({'role_slug': 'member', 'name': name})
-        return name
+        return display_name or name
 
     def ProcessGameinfo(self, params):
         for k, v in params.items():
@@ -698,3 +699,5 @@ def toolset_wiki(context):
             input(node.treeView() + "\n>")
 
     return locals()
+
+# TODO(Fail gracefully on exception)

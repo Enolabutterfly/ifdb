@@ -3,7 +3,7 @@
     <script src="/static/editor.js"></script>
 {% endblock %}
 {% block content %}
-    <div class="content-box gameedit">
+    <div class="content-box gameedit" game-id="{{game_id}}">
         <div class="leftpane">
             <div class="fieldname">Импортировать</div>
             <div class="fieldcomment">
@@ -25,7 +25,6 @@
         <div class="leftpane">
             <div class="fieldname">Изображения и ссылки</div>
             <div id="links"></div>
-            <script type="text/javascript">BuildLinks($('#links'));</script>
         </div>
         <div class="leftpane">
             <div class="fieldname">Описание</div>
@@ -47,15 +46,12 @@
         <div class="rightpane">
             <div class="fieldname">Авторы</div>
             <div id="authors"></div>
-            <script type="text/javascript">
-            BuildAuthors($('#authors'));
-            </script>
         </div>
         <div class="rightpane">
             <div class="fieldname">Свойства</div>
             <div id="tags"></div>
-            <script type="text/javascript">BuildTags($('#tags'));</script>
         </div>
+        <script type="text/javascript">InitEditor();</script>
         <div style="clear: both;"></div>
     </div>
 {% endblock %}
