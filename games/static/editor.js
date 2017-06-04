@@ -670,10 +670,16 @@ function BuildLinks(element, data) {
 }
 
 function InitEditor() {
-    $.getJSON('/json/gameinfo/', function(data) {
+    var params = {};
+    var game_id = $('.gameedit').attr('game-id');
+    if (game_id) params['game_id'] = game_id;
+
+    $.getJSON('/json/gameinfo/', params, function(data) {
         BuildAuthors($('#authors'), data['authortypes']);
         BuildTags($('#tags'), data['tagtypes']);
         BuildLinks($('#links'), data['linktypes']);
+
+        if (data.hasOwnProperty('gamedata')) UpdateFields(data['gamedata']);
     });
 }
 

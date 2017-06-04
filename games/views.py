@@ -240,6 +240,30 @@ def json_gameinfo(request):
         'tagtypes': tags(request),
         'linktypes': linktypes(request),
     }
+    game_id = request.GET.get('game_id', None)
+    if game_id:
+        g = {}
+        res['gamedata'] = g
+        game = Game.objects.get(id=game_id)
+        request.perm.Ensure(game.view_perm)
+        g['title'] = game.title or ''
+        g['desc'] = game.description or ''
+        g['release_date'] = str(game.release_date or '')
+
+        g['authors'] = []
+        for x in game.gameauthor_set.all():
+            g['authors'].append((x.role_id, x.author_id))
+
+        g['tags'] = []
+        for x in game.tags.select_related('category').all():
+            if not request.perm(x.category.show_in_edit_perm):
+                continue
+            g['tags'].append((x.category_id, x.id))
+
+        g['links'] = []
+        for x in game.gameurl_set.select_related('url').all():
+            g['links'].append(
+                (x.category_id, x.description or '', x.url.original_url))
     return JsonResponse(res)
 
 
