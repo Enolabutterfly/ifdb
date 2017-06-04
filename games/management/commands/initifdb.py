@@ -20,6 +20,7 @@ TAG_CATS = [
     ['source', 'Исходный код', False],
     ['price', 'Цена', False],
     ['competition', 'Участник конкурса', True],
+    ['ifid', 'IFID', True],
 ]
 
 TAGS = [

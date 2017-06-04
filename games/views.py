@@ -135,7 +135,7 @@ def comment_game(request):
 def show_game(request, game_id):
     try:
         game = Game.objects.get(id=game_id)
-        request.Ensure(game.view_perm)
+        request.perm.Ensure(game.view_perm)
         release_date = FormatDate(game.release_date)
         last_edit_date = FormatDate(game.edit_time)
         added_date = FormatDate(game.creation_time)

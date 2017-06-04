@@ -33,7 +33,7 @@ def DispatchImport(url):
     if IFWIKI_URL.match(url):
         return ImportFromIfWiki(url)
 
-    return None
+    return {'error': 'Ссылка на неизвестный ресурс.'}
 
 
 RE_WORD = re.compile('\w+')
@@ -67,13 +67,16 @@ def Import(seed_url):
     s_auth = set()
 
     def MergeImport(y, x):
-        for z in ['title', 'release_date']:
+        for z in ['title', 'release_date', 'error']:
             if z not in y and z in x:
                 y[z] = x[z]
 
         if 'desc' in x:
             if 'desc' in y:
-                y['desc'] += '\n\n---\n\n'
+                if 'header' in x:
+                    y['desc'] += x['header']
+                else:
+                    y['desc'] += '\n\n---\n\n'
             else:
                 y['desc'] = ''
             y['desc'] += x['desc']
@@ -105,6 +108,9 @@ def Import(seed_url):
 
         r = DispatchImport(url)
 
+        if 'priority' not in r:
+            r['priority'] = -1000
+
         append = False
         if 'title' in r:
             if title:
@@ -113,6 +119,8 @@ def Import(seed_url):
             else:
                 title = r['title']
                 append = True
+        elif not title:
+            append = True
 
         if append:
             res.append(r)
@@ -120,67 +128,60 @@ def Import(seed_url):
                 for x in r['urls']:
                     if x['urlcat_slug'] == 'game_page':
                         urls_to_check.add(x['url'])
-    if not res:
-        return {'error': 'Ссылка на неизвестный ресурс.'}
 
     res.sort(key=lambda x: x['priority'], reverse=True)
 
     r = {}
     for x in res:
         MergeImport(r, x)
+    if 'title' in r and 'error' in r:
+        del r['error']
     return r
+
+
+URL_CATEGORIZER_RULES = [  # hostname, path, query, slug, desc
+    ('', r'.*screenshot.*\.(png|jpg|gif|bmp|jpeg)', '', 'screenshot',
+     'Скриншот'),
+    ('', r'.*\.(png|jpg|gif|bmp|jpeg)', '', 'poster', 'Обложка'),
+    ('ifwiki.ru', '', '', 'game_page', 'Страница на IfWiki'),
+    ('urq.plut.info', '.*/files/.*', '', 'download_direct', 'Скачать с плута'),
+    ('urq.plut.info', '', '', 'game_page', 'Страница на плуте'),
+    ('yadi.sk', '', '', 'download_landing', 'Скачать с Яндекс.диска'),
+    ('rilarhiv.ru', '', '', 'download_direct', 'Скачать с РилАрхива'),
+    ('instead-games.ru', '.*/download/.*', '', 'download_direct',
+     'Скачать с инстеда'),
+    ('instead-games.ru', '', '', 'game_page', 'Страница на инстеде'),
+    ('instead.syscall.ru', '*/forum/.*', '', 'forum', 'Форум на инстеде'),
+    ('youtube.com', '', '', 'video', 'Видео игры'),
+    ('www.youtube.com', '', '', 'video', 'Видео игры'),
+    ('forum.ifiction.ru', '', '', 'forum', 'Обсуждение на форуме'),
+    ('qsp.su', '', '.*=dd_download.*', 'download_direct', 'Скачать с qsp.ru'),
+    ('qsp.su', '', '.', 'game_page', 'Игра на qsp.ru'),
+    (r'@.*\.github\.io', '', '', 'play_online', 'Играть онлайн'),
+    ('iplayif.com', '', '', 'play_online', 'Играть онлайн'),
+    ('', r'.*\.(zip|rar|z5)', '', 'download_direct', 'Ссылка для скачивания'),
+]
 
 
 def CategorizeUrl(url, desc='', category=None):
     purl = urlparse(url)
     cat_slug = 'unknown'
-    if purl.hostname == 'ifwiki.ru':
-        cat_slug = 'game_page'
+
+    for (host, path, query, slug, ddesc) in URL_CATEGORIZER_RULES:
+        if host:
+            if host.startswith('@'):
+                if not re.match(host[1:], purl.hostname):
+                    continue
+            elif host != purl.hostname:
+                continue
+        if path and not re.match(path, purl.path):
+            continue
+        if query and not re.match(query, purl.query):
+            continue
+        cat_slug = slug
         if not desc:
-            desc = 'Страница на IfWiki'
-        elif 'ifwiki' not in desc.lower():
-            desc = desc + ' (IfWiki)'
-
-    if purl.hostname == 'urq.plut.info':
-        if '/files/' in purl.path:
-            cat_slug = 'download_direct'
-            if not desc:
-                desc = 'Скачать с плута'
-        else:
-            cat_slug = 'game_page'
-            if not desc:
-                desc = 'Страница на плуте'
-            elif 'plut' not in desc.lower() and 'плут' not in desc.lower():
-                desc = desc + ' (плут)'
-
-    if purl.hostname == 'yadi.sk':
-        cat_slug = 'download_landing'
-
-    if purl.hostname == 'rilarhiv.ru':
-        cat_slug = 'download_direct'
-        if not desc:
-            desc = 'Скачать с РилАрхива'
-
-    if purl.hostname == 'instead-games.ru':
-        if '/download/' in purl.path:
-            cat_slug = 'download_direct'
-            if not desc:
-                desc = 'Скачать с Инстеда'
-        else:
-            cat_slug = 'game_page'
-            if not desc:
-                desc = 'Страница на инстеде'
-
-    if purl.hostname == 'instead.syscall.ru':
-        if '/forum/' in purl.path:
-            cat_slug = 'forum'
-            if not desc:
-                desc = 'Форум на инстеде'
-
-    if purl.hostname == 'www.youtube.com' or purl.hostname == 'youtube.com':
-        cat_slug = 'video'
-        if not desc:
-            desc = 'Видео игры'
+            desc = ddesc
+        break
 
     if category:
         cat_slug = category
@@ -269,6 +270,7 @@ def ImportFromPlut(url):
         tt = HTML2Text()
         tt.body_width = 0
         res['desc'] = tt.handle(m.group(1))
+        res['header'] = '\n\n---\n**=== Описание с плута ===**\n\n'
 
     m = PLUT_RELEASE.search(html)
     if m:
@@ -353,6 +355,7 @@ def ImportFromIfWiki(url):
 
     res['title'] = context.title
     res['desc'] = output.leaves()
+    res['header'] = '\n\n---\n**=== Описание с ifwiki ===**\n\n'
     if context.release_date:
         res['release_date'] = context.release_date
     if context.authors:
@@ -385,6 +388,8 @@ IFWIKI_COMPETITIONS = {'Конкурс': '',
                        'goldhamster': 'Золотой Хомяк ',
                        'qspcompo': 'QSP-Compo '}
 IFWIKI_IGNORE = ['ЗаглушкаТекста', 'ЗаглушкаСсылок']
+
+GAMEINFO_IGNORE = ['ширинаобложки', 'высотаобложки']
 
 
 class WikiParsingContext:
@@ -437,7 +442,19 @@ class WikiParsingContext:
             elif k == 'темы':
                 for t in [x.strip() for x in v.split(',')]:
                     self.tags.append({'cat_slug': 'genre', 'tag': t})
-            # TODO else log
+            elif k == 'обложка':
+                self.urls.append({'urlcat_slug': 'poster',
+                                  'description': 'Обложка',
+                                  'url': 'http://ifwiki.ru/files/%s' % v})
+            elif k == 'IFID':
+                self.tags.append({'cat_slug': 'ifid', 'tag': v})
+            elif k == '1' and not v.strip():
+                pass
+            elif k in GAMEINFO_IGNORE:
+                pass
+            else:
+                print('BBB', k, v)  # TODO(crem) Fail
+                # TODO else log
 
     def DispatchTemplate(self, name, params):
         if name == 'PAGENAME':
@@ -454,6 +471,9 @@ class WikiParsingContext:
             self.AddUrl(params['1'])
             return '[%s Ссылка на РилАрхив]' % params['1']
         if name in IFWIKI_IGNORE:
+            return ''
+        if name == 'Тема':
+            self.tags.append({'cat_slug': 'genre', 'tag': params['1']})
             return ''
         print('AAAAAAAAAAAAAAA', name, params)  # TODO(crem) Fail
         return ''
@@ -502,6 +522,8 @@ def toolset_wiki(context):
                   'italic_close': '_',
                   'strike': '~~',
                   'strike_close': '~~'}
+
+    autoclose_tags = {'br': '\n', }
 
     def collapse_list(list):
         i = 0
@@ -619,14 +641,25 @@ def toolset_wiki(context):
         node.value = '>'
 
     def render_tag_open(node):
-        node.value = style_tags[node.value[0].value]
+        if node.value[0].value in style_tags:
+            node.value = style_tags[node.value[0].value]
+        elif node.value[0].value in autoclose_tags:
+            node.value = autoclose_tags[node.value[0].value]
+        elif DEBG:
+            input(node.treeView() + "\n>")
+        else:
+            node.value = ''
 
     def render_tag_close(node):
-        node.value = style_tags[node.value[0].value]
+        render_tag_open(node)
 
     def render_tag_autoclose(node):
-        if DEBG:
+        if node.value[0].value in autoclose_tags:
+            node.value = autoclose_tags[node.value[0].value]
+        elif DEBG:
             input(node.treeView() + "\n>")
+        else:
+            node.value = ''
 
     def render_attribute(node):
         if DEBG:
