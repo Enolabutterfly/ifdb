@@ -130,9 +130,6 @@ USE_L10N = True
 
 USE_TZ = False
 
-MEDIA_URL = '/uploads/'
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/1.10/howto/static-files/
-
+FILE_UPLOAD_PERMISSIONS = 0o640
 STATIC_URL = '/static/'
+MEDIA_URL = '/uploads/'
