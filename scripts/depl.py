@@ -431,7 +431,7 @@ def GetNextVersion(ctx):
 
 
 def BuildVersionStr(major, minor, bugfix):
-    res = 'v%d.%d' % (major, minor)
+    res = 'v%d.%02d' % (major, minor)
     if bugfix:
         res += '.%d' % bugfix
     return res
