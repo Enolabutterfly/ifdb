@@ -203,6 +203,7 @@ def cli(ctx, start, list, steps):
     p.start = start
     p.list_only = list
     p.step_by_step = steps
+    p.cmd_name = ctx.info_name
 
 
 @cli.command()
