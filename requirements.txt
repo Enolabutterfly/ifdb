@@ -1,0 +1,7 @@
+mediawiki_parser==0.4.1
+click==6.6
+Django==1.11.1
+html2text==2016.9.19
+pijnu==20160727
+Markdown==2.6.8
+python_dateutil==2.6.0

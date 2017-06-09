@@ -26,8 +26,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if IS_PROD:
     SECRET_KEY = open('/home/ifdb/configs/django-secret.txt').read().strip()
     DEBUG = False
-    # TODO(crem) remove that 10.162.2.2
-    ALLOWED_HOSTS = ['db.mooskagh.com', '10.162.2.2']
+    ALLOWED_HOSTS = ['db.mooskagh.com', 'db-staging.mooskagh.com']
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -39,7 +38,10 @@ if IS_PROD:
         }
     }
     MEDIA_ROOT = os.path.abspath('/home/ifdb/uploads')
-    STATIC_ROOT = os.path.abspath('/home/ifdb/static')
+    if 'staging' in BASE_DIR:
+        STATIC_ROOT = os.path.abspath('/home/ifdb/staging/static')
+    else:
+        STATIC_ROOT = os.path.abspath('/home/ifdb/static')
 
 else:
     SECRET_KEY = 'l3uja(27m53i#c)#9ziwmf*3n^e59eieal=3i$z0j@&$0i$!hr'
