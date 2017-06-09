@@ -148,8 +148,7 @@ class Pipeline:
                         fg='green') + ' %s...' % task_f.__doc__)
                 if self.step_by_step:
                     if not click.confirm('Should I run it?'):
-                        idx += 1
-                        continue
+                        raise click.Abort
                 if task_f(context):
                     idx += 1
                     continue
@@ -177,13 +176,13 @@ class Pipeline:
 
 @click.group()
 @click.option('--start', '-s', default=1, type=int)
-@click.option('--list-only', '-l', is_flag=True)
+@click.option('--list', '-l', is_flag=True)
 @click.option('--steps', is_flag=True)
 @click.pass_context
-def cli(ctx, start, list_only, steps):
+def cli(ctx, start, list, steps):
     p = ctx.obj['pipeline']
     p.start = start
-    p.list_only = list_only
+    p.list_only = list
     p.step_by_step = steps
 
 
@@ -257,7 +256,7 @@ def stage(ctx, tag):
         RunCmdStep('%s %s/manage.py collectstatic --clear' % (python_dir,
                                                               django_dir)))
     p.AddStep(StagingDiff('static/'))
-    p.AddStep(RunCmdStep('uwsgi %s/configs/uwsgi-staging.ini') % DST_DIR)
+    p.AddStep(RunCmdStep('uwsgi %s/uwsgi-staging.ini' % DST_DIR))
     p.AddStep(CheckFromTemplate('nginx.tpl', 'nginx.conf'))
     p.AddStep(
         GetFromTemplate('nginx.tpl', 'nginx.conf', {'configs':
@@ -290,6 +289,7 @@ def deploy(ctx, hot):
     virtualenv_dir = os.path.join(ROOT_DIR, 'virtualenv')
     python_dir = os.path.join(virtualenv_dir, 'bin/python')
 
+    p.AddStep(ChDir(django_dir))
     p.AddStep(
         RunCmdStep(
             'git diff-index --quiet HEAD --',
@@ -313,7 +313,6 @@ def deploy(ctx, hot):
         p.AddStep(RunCmdStep('sudo /bin/systemctl reload nginx'))
         p.AddStep(RunCmdStep('sudo /bin/systemctl stop ifdb'))
 
-    p.AddStep(ChDir(django_dir))
     p.AddStep(RunCmdStep('git pull'))
 
     if not hot:
@@ -335,11 +334,6 @@ def deploy(ctx, hot):
     else:
         p.AddStep(RunCmdStep('sudo /bin/systemctl start ifdb'))
 
-    p.AddStep(
-        LoopStep(
-            RunCmdStep('sudo /bin/systemctl restart ifdb'),
-            'Check STAGING and reload if needed.'))
-
     if not hot:
         p.AddStep(
             GetFromTemplate('nginx.tpl', 'nginx.conf', {'configs':
@@ -350,8 +344,10 @@ def deploy(ctx, hot):
         p.AddStep(RunCmdStep('sudo /bin/systemctl reload nginx'))
 
     p.AddStep(
-        Message('Break NOW if anything is wrong',
-                'Check PROD and break if needed.'))
+        LoopStep(
+            RunCmdStep('sudo /bin/systemctl restart ifdb'),
+            'Check STAGING and reload if needed.'))
+
 
     if not hot:
         p.AddStep(
@@ -362,17 +358,21 @@ def deploy(ctx, hot):
                                                           'conf': 'deny'}]}))
         p.AddStep(RunCmdStep('sudo /bin/systemctl reload nginx'))
         p.AddStep(StopTimer)
+    p.AddStep(
+            Message('Break NOW if anything is wrong',
+                'Check PROD and break if needed.'))
 
     p.AddStep(GitTag)
-    p.AddStep(RunCmdStep('git push origin master'))
+    p.AddStep(RunCmdStep('git push --tags origin master'))
     p.AddStep(WriteVersionConfig)
     p.Run()
 
 
 def WriteVersionConfig(ctx):
     """Write current version into config."""
+    cnt = ctx['new-version']
     with open(os.path.join(ROOT_DIR, 'configs/version.txt'), 'w') as f:
-        f.write(ctx['new-version'])
+        f.write(cnt)
     return True
 
 
@@ -414,7 +414,7 @@ def StopTimer(ctx):
 
 def GetNextVersion(ctx):
     """Determine Next Version"""
-    version_re = re.compile(r'v(\d+).(\d+).(\d+)?')
+    version_re = re.compile(r'v(\d+)\.(\d+)(?:\.(\d+))?')
     cnt = open(os.path.join(ROOT_DIR, 'configs/version.txt')).read().strip()
     m = version_re.match(cnt)
     if not m:
@@ -433,7 +433,7 @@ def GetNextVersion(ctx):
         try:
             r = int(r) - 1
             if 0 <= r < len(variants):
-                ctx['new-version'] = BuildVersionStr(*v[r])
+                ctx['new-version'] = BuildVersionStr(*variants[r])
                 return True
         except:
             pass
