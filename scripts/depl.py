@@ -143,7 +143,8 @@ class Pipeline:
         with open(self.StateFileName(), 'w') as f:
             f.write(json.dumps(self.context))
 
-    def Run(self):
+    def Run(self, cmd_name):
+        self.cmd_name = cmd_name
         if self.list_only:
             for i, n in enumerate(self.steps):
                 click.secho('%2d. %s' % (i + 1, n.__doc__))
@@ -203,7 +204,6 @@ def cli(ctx, start, list, steps):
     p.start = start
     p.list_only = list
     p.step_by_step = steps
-    p.cmd_name = ctx.info_name
 
 
 @cli.command()
@@ -229,7 +229,7 @@ def red(ctx, message):
                                                       'conf': 'deny'}]}))
     p.AddStep(RunCmdStep('sudo /bin/systemctl reload nginx'))
     p.AddStep(RunCmdStep('sudo /bin/systemctl stop ifdb'))
-    p.Run()
+    p.Run('red')
 
 
 @cli.command()
@@ -245,7 +245,7 @@ def green(ctx):
                                                       'conf': 'deny'}]}))
     p.AddStep(RunCmdStep('sudo /bin/systemctl start ifdb'))
     p.AddStep(RunCmdStep('sudo /bin/systemctl reload nginx'))
-    p.Run()
+    p.Run('green')
 
 
 @cli.command()
@@ -297,7 +297,7 @@ def stage(ctx, tag):
                                                       'conf': 'deny'}]}))
     p.AddStep(RunCmdStep('sudo /bin/systemctl reload nginx'))
     p.AddStep(RunCmdStep('uwsgi --stop /tmp/uwsgi-ifdb-staging.pid'))
-    p.Run()
+    p.Run('stage')
 
 
 @cli.command()
@@ -384,7 +384,7 @@ def deploy(ctx, hot):
     p.AddStep(GitTag)
     p.AddStep(RunCmdStep('git push --tags origin master'))
     p.AddStep(WriteVersionConfig)
-    p.Run()
+    p.Run('deploy')
 
 
 def WriteVersionConfig(ctx):
