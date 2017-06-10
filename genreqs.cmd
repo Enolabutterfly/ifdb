@@ -1,1 +1,1 @@
-pipreqs . --encoding=utf-8 --force
+pipreqs . --encoding=utf-8 --force --debug
