@@ -63,40 +63,51 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         for x in AUTHOR_ROLES:
             (slug, desc) = x
-            self.stdout.write('Author role: %s (%s)' % (slug, desc))
-            y = GameAuthorRole()
-            y.symbolic_id = slug
-            y.title = desc
-            y.save()
+            self.stdout.write(
+                'Author role: %s (%s)... ' % (slug, desc), ending='')
+            _, created = GameAuthorRole.objects.update_or_create(
+                symbolic_id=slug, defaults={'title': desc})
+            if created:
+                self.stdout.write(self.style.SUCCESS('created.'))
+            else:
+                self.stdout.write(self.style.WARNING('already exists.'))
 
         for x in TAG_CATS:
             (slug, desc, allow_new, *perm) = x
-            self.stdout.write('Tag cat: %s (%s)' % (slug, desc))
-            y = GameTagCategory()
-            y.symbolic_id = slug
-            y.name = desc
-            y.allow_new_tags = allow_new
+            self.stdout.write('Tag cat: %s (%s)... ' % (slug, desc), ending='')
+            updates = {'name': desc, 'allow_new_tags': allow_new}
             if perm:
-                y.show_in_edit_perm = perm[0]
-                y.show_in_search_perm = perm[0]
-                y.show_in_details_perm = perm[0]
-            y.save()
+                updates['show_in_edit_perm'] = perm[0]
+                updates['show_in_search_perm'] = perm[0]
+                updates['show_in_details_perm'] = perm[0]
+            _, created = GameTagCategory.objects.update_or_create(
+                symbolic_id=slug, defaults=updates)
+            if created:
+                self.stdout.write(self.style.SUCCESS('created.'))
+            else:
+                self.stdout.write(self.style.WARNING('already exists.'))
 
         for x in TAGS:
             (cat, slug, desc) = x
-            self.stdout.write('Tag: %s (%s)' % (slug, desc))
+            self.stdout.write('Tag: %s (%s)... ' % (slug, desc), ending='')
             c = GameTagCategory.objects.get(symbolic_id=cat)
-            y = GameTag()
-            y.symbolic_id = slug
-            y.category = c
-            y.name = desc
-            y.save()
+            _, created = GameTag.objects.update_or_create(
+                symbolic_id=slug, category=c, defaults={'name': desc})
+            if created:
+                self.stdout.write(self.style.SUCCESS('created.'))
+            else:
+                self.stdout.write(self.style.WARNING('already exists.'))
 
         for x in URL_CATS:
             (slug, desc, cloneable) = x
-            self.stdout.write('Url: %s (%s)' % (slug, desc))
-            y = URLCategory()
-            y.symbolic_id = slug
-            y.title = desc
-            y.allow_cloning = cloneable
-            y.save()
+            self.stdout.write('Url: %s (%s)... ' % (slug, desc), ending='')
+            _, created = URLCategory.objects.update_or_create(
+                symbolic_id=slug,
+                defaults={
+                    'title': desc,
+                    'allow_cloning': cloneable
+                })
+            if created:
+                self.stdout.write(self.style.SUCCESS('created.'))
+            else:
+                self.stdout.write(self.style.WARNING('already exists.'))
