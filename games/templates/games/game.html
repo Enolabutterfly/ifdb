@@ -178,36 +178,40 @@
                             {{ votes.played_mins|rupl:"минута,минуты,минут" }}
                         </td>
                     </tr>
-                    <tr>
-                        <td class="prop-category">
-                            Время прохождения:
-                        </td>
-                        <td class="prop-value">
-                            {{ votes.finished_hours|rupl:"час,часа,часов" }}
-                            {{ votes.finished_mins|rupl:"минута,минуты,минут" }}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td class="prop-category">
-                            ({{ votes.finished_count|rupl:"человек,человека,человек" }})
-                        </td>
-                    </tr>
+                    {% if votes.finished_count > 0 %}
+                        <tr>
+                            <td class="prop-category">
+                                Время прохождения:
+                            </td>
+                            <td class="prop-value">
+                                {{ votes.finished_hours|rupl:"час,часа,часов" }}
+                                {{ votes.finished_mins|rupl:"минута,минуты,минут" }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td class="prop-category">
+                                ({{ votes.finished_count|rupl:"человек,человека,человек" }})
+                            </td>
+                        </tr>
+                    {% endif %}
                 </table>
             {% endif %}
             {% if comment_perm %}
                 {% if votes.user_played %}
-                    <div class="prop-comment">
-                        (ваша оценка: {{ votes.user_score }},
-                        {% if votes.user_finished %}
-                            вы прошли игру за
-                        {% else %}
-                            вы играли в эту игру
-                        {% endif %}
-                        {{votes.user_hours}} ч.
-                        {{votes.user_mins}} м.)
-                    </div>
-                    <button id="voting_button">Изменить</button>
+                    {% comment %}
+                        <div class="prop-comment">
+                            (ваша оценка: {{ votes.user_score }},
+                            {% if votes.user_finished %}
+                                вы прошли игру за
+                            {% else %}
+                                вы играли в эту игру
+                            {% endif %}
+                            {{votes.user_hours}} ч.
+                            {{votes.user_mins}} м.)
+                        </div>
+                    {% endcomment %}
+                    <button id="voting_button">Изменить мой голос</button>
                 {% else %}
                     {% if votes.played_count == 0 %}
                         <button id="voting_button">Я в это играло</button>
