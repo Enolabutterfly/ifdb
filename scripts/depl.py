@@ -304,9 +304,12 @@ def stage(ctx, tag):
 
 @cli.command()
 @click.option('--hot', is_flag=True)
-@click.option('--new-version/--no-new-version', required=True, is_flag=True)
+@click.option('--new-version/--no-new-version', default=None, is_flag=True)
 @click.pass_context
 def deploy(ctx, hot, new_version):
+    if new_version is None:
+        click.secho('Please specify --[no-]new-version!', fg='red', bold=True)
+        raise click.Abort
     p = ctx.obj['pipeline']
     django_dir = os.path.join(ROOT_DIR, 'django')
     virtualenv_dir = os.path.join(ROOT_DIR, 'virtualenv')
