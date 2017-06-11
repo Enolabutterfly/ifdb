@@ -485,7 +485,8 @@ def GetNextVersion(ctx):
     v = GetCurrentVersion()
     if not v:
         return None
-    variants = [(v[0], v[1], v[2] + 1), (v[0], v[1] + 1, 0), (v[0] + 1, 0, 0)]
+    variants = [(v[0], v[1], v[2] + 1), (v[0], v[1] + 1, 0),
+                (v[0], v[1] + 2, 0), (v[0] + 1, 0, 0)]
     while True:
         click.secho("Current version is %s. What will be the new one?" %
                     BuildVersionStr(*v))
