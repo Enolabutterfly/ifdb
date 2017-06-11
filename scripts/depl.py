@@ -599,6 +599,7 @@ def CreateStaging(ctx):
 
 def KillStaging(ctx):
     """Remove staging directory is exists"""
+    RunCmdStep('uwsgi --stop /tmp/uwsgi-ifdb-staging.pid')(ctx)
     d = os.path.join(STAGING_DIR)
     if os.path.isdir(d):
         shutil.rmtree(d)
