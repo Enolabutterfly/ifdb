@@ -138,6 +138,8 @@ class Pipeline:
             if click.confirm('Forgotten state found. Restore?'):
                 with open(self.StateFileName()) as f:
                     self.context = json.loads(f.read())
+                    if 'chdir' in self.context:
+                        os.chdir(self.context['chdir'])
 
     def StoreState(self):
         with open(self.StateFileName(), 'w') as f:
@@ -302,10 +304,12 @@ def stage(ctx, tag):
 
 @cli.command()
 @click.option('--hot', is_flag=True)
-@click.option(
-    '--new-version/--no-new-version', prompt=True, is_flag=True)
+@click.option('--new-version/--no-new-version', default=None, is_flag=True)
 @click.pass_context
 def deploy(ctx, hot, new_version):
+    if new_version is None:
+        click.secho('Please specify --[no-]new-version!', fg='red', bold=True)
+        raise click.Abort
     p = ctx.obj['pipeline']
     django_dir = os.path.join(ROOT_DIR, 'django')
     virtualenv_dir = os.path.join(ROOT_DIR, 'virtualenv')
@@ -339,6 +343,7 @@ def deploy(ctx, hot, new_version):
     p.AddStep(RunCmdStep('git pull'))
 
     if new_version:
+        p.AddStep(RunCmdStep('git fetch upstream master:master'))
         p.AddStep(RunCmdStep('git merge --no-ff master'))
         p.AddStep(GetNextVersion)
 
@@ -349,9 +354,14 @@ def deploy(ctx, hot, new_version):
         p.AddStep(
             RunCmdStep('%s %s/manage.py migrate' % (python_dir, django_dir)))
 
-    p.AddStep(
-        RunCmdStep('%s %s/manage.py collectstatic --clear' % (python_dir,
-                                                              django_dir)))
+    if hot:
+        p.AddStep(
+            RunCmdStep('%s %s/manage.py collectstatic' % (python_dir,
+                                                          django_dir)))
+    else:
+        p.AddStep(
+            RunCmdStep('%s %s/manage.py collectstatic --clear' % (python_dir,
+                                                                  django_dir)))
     if not hot:
         p.AddStep(
             RunCmdStep('%s %s/manage.py initifdb' % (python_dir, django_dir)))
@@ -397,6 +407,7 @@ def deploy(ctx, hot, new_version):
 
     p.AddStep(JumpIfExists('new-version', if_false=2))
     p.AddStep(WriteVersionConfigAndGitTag)
+
     p.AddStep(RunCmdStep('git push --tags origin release'))
 
     p.Run('deploy')
@@ -465,8 +476,8 @@ def GetCurrentVersion():
             "version.txt contents is [%s], doesn't parse as version" % cnt,
             fg='red')
         return None
-    return (int(m.group(1)), int(m.group(2)), int(m.group(2))
-            if m.group(2) else 0)
+    return (int(m.group(1)), int(m.group(2)), int(m.group(3))
+            if m.group(3) else 0)
 
 
 def GetNextVersion(ctx):
@@ -476,7 +487,8 @@ def GetNextVersion(ctx):
         return None
     variants = [(v[0], v[1], v[2] + 1), (v[0], v[1] + 1, 0), (v[0] + 1, 0, 0)]
     while True:
-        click.secho("Current version is %s. What will be the new one?" % cnt)
+        click.secho("Current version is %s. What will be the new one?" %
+                    BuildVersionStr(*v))
         for i, n in enumerate(variants):
             click.secho("%d. %s" % (i + 1, BuildVersionStr(*n)), fg='yellow')
         r = click.prompt('', prompt_suffix='>>>>>>> ')
@@ -584,6 +596,7 @@ def StagingDiff(filename):
 def ChDir(whereto):
     def f(ctx):
         os.chdir(whereto)
+        ctx['chdir'] = whereto
         return True
 
     f.__doc__ = "Change directory to %s" % whereto
