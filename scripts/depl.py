@@ -349,7 +349,12 @@ def deploy(ctx, hot, new_version):
         p.AddStep(
             RunCmdStep('%s %s/manage.py migrate' % (python_dir, django_dir)))
 
-    p.AddStep(
+    if hot:
+        p.AddStep(
+        RunCmdStep('%s %s/manage.py collectstatic' % (python_dir,
+                                                              django_dir)))
+    else:
+        p.AddStep(
         RunCmdStep('%s %s/manage.py collectstatic --clear' % (python_dir,
                                                               django_dir)))
     if not hot:
@@ -466,8 +471,8 @@ def GetCurrentVersion():
             "version.txt contents is [%s], doesn't parse as version" % cnt,
             fg='red')
         return None
-    return (int(m.group(1)), int(m.group(2)), int(m.group(2))
-            if m.group(2) else 0)
+    return (int(m.group(1)), int(m.group(2)), int(m.group(3))
+            if m.group(3) else 0)
 
 
 def GetNextVersion(ctx):
@@ -477,7 +482,7 @@ def GetNextVersion(ctx):
         return None
     variants = [(v[0], v[1], v[2] + 1), (v[0], v[1] + 1, 0), (v[0] + 1, 0, 0)]
     while True:
-        click.secho("Current version is %s. What will be the new one?" % cnt)
+        click.secho("Current version is %s. What will be the new one?" % BuildVersionStr(*v))
         for i, n in enumerate(variants):
             click.secho("%d. %s" % (i + 1, BuildVersionStr(*n)), fg='yellow')
         r = click.prompt('', prompt_suffix='>>>>>>> ')
