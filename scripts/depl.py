@@ -304,7 +304,7 @@ def stage(ctx, tag):
 
 @cli.command()
 @click.option('--hot', is_flag=True)
-@click.option('--new-version/--no-new-version', prompt=True, is_flag=True)
+@click.option('--new-version/--no-new-version', required=True, is_flag=True)
 @click.pass_context
 def deploy(ctx, hot, new_version):
     p = ctx.obj['pipeline']
