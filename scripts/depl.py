@@ -138,6 +138,8 @@ class Pipeline:
             if click.confirm('Forgotten state found. Restore?'):
                 with open(self.StateFileName()) as f:
                     self.context = json.loads(f.read())
+                    if 'chdir' in self.context:
+                        os.chdir(self.context['chdir'])
 
     def StoreState(self):
         with open(self.StateFileName(), 'w') as f:
@@ -591,6 +593,7 @@ def StagingDiff(filename):
 def ChDir(whereto):
     def f(ctx):
         os.chdir(whereto)
+        ctx['chdir'] = whereto
         return True
 
     f.__doc__ = "Change directory to %s" % whereto
