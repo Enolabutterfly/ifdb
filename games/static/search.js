@@ -1,5 +1,6 @@
+/*exported SEARCH*/
+var SEARCH = (function() {
 "use strict";
-
 
 function BaseXEncoder() {
     var dict = "0123456789abcdefghijklmnopqrstuvwxyz" +
@@ -10,7 +11,7 @@ function BaseXEncoder() {
 
     function addCodePoint(x) {
         res += dict[x];
-    };
+    }
 
     this.value = function() {
         return res;
@@ -36,7 +37,7 @@ function BaseXEncoder() {
         y.sort(function(a,b) {return a - b;});
         this.addInteger(y.length);
         for (var i = 0; i < y.length; ++i) {
-          if (i == 0)
+          if (i === 0)
               this.addInteger(y[0]);
           else if (y[i] != y[i-1])
             this.addInteger(y[i] - y[i-1] - 1);
@@ -60,29 +61,10 @@ function BaseXEncoder() {
 
 function SrpFetcher() {
     var queryCache = {};
-    var xhr = null;
-
-    function createThumb(game) {
-        var el = $('<a>')
-            .addClass('gamelist-thumb')
-            .attr('href', '/game/' + game.id);
-        var img = $('<img>')
-            .addClass('poster')
-            .attr('src', game.poster || '/static/noposter.png');
-        $('<div>')
-            .addClass('poster-container')
-            .append(img)
-            .appendTo(el);
-        var label = $('<div>')
-            .addClass('title-container')
-            .text(game.title)
-            .appendTo(el);
-        return el;
-    }
 
     function renderResults(data) {
         $('.gamelist-thumb-container').html(data).animate({opacity: 1}, 50);
-    };
+    }
 
     this.loadResults = function(query){
         if (this.xhr) {
@@ -93,8 +75,6 @@ function SrpFetcher() {
             renderResults(queryCache[query]);
         } else {
             $('.gamelist-thumb-container').animate({opacity: 0.5}, 50);
-            var self = this;
-            var formData = new FormData();
             this.xhr = $.ajax({
                 url: '/json/search/',
                 type: 'GET',
@@ -112,7 +92,7 @@ function SrpFetcher() {
             });
         }
     };
-};
+}
 
 
 function DecorateSearchItems() {
@@ -155,7 +135,7 @@ function DecorateSearchItems() {
                 $(element).find('[data-item-val]').removeClass('current');
                 $(element).find('.sortbutton').empty();
                 el.addClass('current');
-                el.find('.sortbutton').text('▼')
+                el.find('.sortbutton').text('▼');
             }
             UpdateSearchList();
         });
@@ -166,7 +146,7 @@ function DecorateSearchItems() {
         if (el.find('.sortbutton').text().indexOf('▲') != -1)
             val += 1;
 
-        if (val != 0) {
+        if (val !== 0) {
             enc.addHeader(0, parent.attr('data-val'));
             enc.addInteger(val);
         }
@@ -175,7 +155,7 @@ function DecorateSearchItems() {
     // Type 1: Text.
     $('tr[data-type="text"]').each(function(index, element) {
         $(element).find('[data-item-val]').click(function() {
-            if ($(element).find('input[type="text"]')[0].value != '') {
+            if ($(element).find('input[type="text"]')[0].value !== '') {
                 UpdateSearchList();
             }
         });
@@ -198,10 +178,10 @@ function DecorateSearchItems() {
     }).on('encode-query', function(event, enc){
         var parent = $(event.target);
         var items = [];
-        var text = parent.find('.current').each(function() {
-            items.push($(this).attr('data-item-val'))
+        parent.find('.current').each(function() {
+            items.push($(this).attr('data-item-val'));
         });
-        if (items.length == 0) return;
+        if (items.length === 0) return;
         var category = parent.attr('data-val');
         enc.addHeader(2, category);
         enc.addSet(items);
@@ -209,3 +189,8 @@ function DecorateSearchItems() {
 
     UpdateSearchList();
 }
+
+var res = {};
+res.Decorate = DecorateSearchItems;
+return res;
+}());
