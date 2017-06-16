@@ -2,7 +2,7 @@
 var SEARCH = (function() {
 "use strict";
 
-function BaseXEncoder() {
+function BaseXVarintEncoder() {
     var dict = "0123456789abcdefghijklmnopqrstuvwxyz" +
                "ABCDEFGHIJKLMNOPQRSTUVWXYZ~-_.!*'(),$";
     var res = '';
@@ -104,7 +104,7 @@ function DecorateSearchItems() {
             clearTimeout(timer);
             timer = null;
         }
-        var enc = new BaseXEncoder();
+        var enc = new BaseXVarintEncoder();
         $('tr[data-val]').trigger('encode-query', [enc]);
         window.history.pushState({'dirty': 'yes!'},
                                  null, '?q=' + enc.value());
