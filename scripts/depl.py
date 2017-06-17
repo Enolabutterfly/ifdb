@@ -285,7 +285,9 @@ def stage(ctx, tag):
         RunCmdStep('%s %s/manage.py collectstatic --clear' % (python_dir,
                                                               django_dir)))
     p.AddStep(StagingDiff('static/'))
-    p.AddStep(RunCmdStep('uwsgi %s/uwsgi-staging.ini' % DST_DIR))
+    p.AddStep(
+        RunCmdStep('%s/bin/uwsgi %s/uwsgi-staging.ini' % (virtualenv_dir,
+                                                          DST_DIR)))
     p.AddStep(CheckFromTemplate('nginx.tpl', 'nginx.conf'))
     p.AddStep(
         GetFromTemplate('nginx.tpl', 'nginx.conf', {
@@ -313,7 +315,9 @@ def stage(ctx, tag):
             }]
         }))
     p.AddStep(RunCmdStep('sudo /bin/systemctl reload nginx'))
-    p.AddStep(RunCmdStep('uwsgi --stop /tmp/uwsgi-ifdb-staging.pid'))
+    p.AddStep(
+        RunCmdStep('%s/bin/uwsgi --stop /tmp/uwsgi-ifdb-staging.pid' %
+                   virtualenv_dir))
     p.Run('stage')
 
 
