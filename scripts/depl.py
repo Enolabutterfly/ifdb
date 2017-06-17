@@ -325,12 +325,12 @@ def stage(ctx, tag):
 @cli.command()
 @click.option('--hot', is_flag=True)
 @click.option(
-    '---merge-from-master/--no-merge-from-master', default=None, is_flag=True)
+    '---from-master/--no-from-master', default=None, is_flag=True)
 @click.pass_context
 def deploy(ctx, hot, from_master):
     if from_master is None:
         click.secho(
-            'Please specify --[no-]merge-from-master!', fg='red', bold=True)
+            'Please specify --[no-]from-master!', fg='red', bold=True)
         raise click.Abort
     p = ctx.obj['pipeline']
     django_dir = os.path.join(ROOT_DIR, 'django')
