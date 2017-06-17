@@ -84,7 +84,13 @@ EMAIL_HOST_USER = 'ersatzplut@gmail.com'
 DEFAULT_FROM_EMAIL = 'ersatzplut@gmail.com'
 SERVER_EMAIL = 'ersatzplut@gmail.com'
 INTERNAL_IPS = [
-    '127.0.0.1', '10.162.0.100', '2a02:168:520c:0:c0e2:2ad2:9900:9b36'
+    '127.0.0.1',
+    '10.162.0.100',
+    '2a02:168:520c:0:1d5c:bdaf:bdcc:bc8b',
+    '2a02:168:520c:0:41b9:a756:c814:893',
+    '2a02:168:520c:0:b425:4df2:99a1:26c3',
+    '2a02:168:520c:0:c0e2:2ad2:9900:9b36',
+    '2a02:168:520c:0:c832:576b:e3ea:f98a',
 ]
 
 # Application definition
