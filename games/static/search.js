@@ -187,6 +187,12 @@ function DecorateSearchItems() {
         enc.addSet(items);
     });
 
+    // Advanced search button.
+    $('.extended_search').click(function() {
+        $(this).hide();
+        $('tr[data-type]').show();
+    });
+
     UpdateSearchList();
 }
 

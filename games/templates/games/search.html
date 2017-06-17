@@ -59,6 +59,9 @@
             </tr>
             {% endcomment %}
         </table>
+        {% if unhide_button %}
+            <button class="extended_search">Расширенный поиск</button>
+        {% endif %}
         <script type="text/javascript">
             SEARCH.Decorate();
         </script>

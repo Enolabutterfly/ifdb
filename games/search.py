@@ -75,16 +75,27 @@ class SearchBit:
         return self.val * 16 + self.TYPE_ID
 
     def ProduceDict(self, typ):
-        return {'id': self.Id(),
-                'val': self.val,
-                'hidden': self.hidden,
-                'type': typ}
+        return {
+            'id': self.Id(),
+            'val': self.val,
+            'hidden': self.hidden,
+            'type': typ
+        }
 
     def ModifyQuery(self, query):
         return query
 
     def ModifyResult(self, res):
         return res
+
+    def IsActive(self):
+        return False
+
+    def Hidden(self):
+        return self.hidden
+
+    def Unhide(self):
+        self.hidden = False
 
 
 # Types of sorting:
@@ -186,8 +197,10 @@ class SB_Sorting(SearchBit):
             times = []
             nones = []
             for g in games:
-                plays = [x.play_time_mins for x in g.gamevote_set.all()
-                         if x.game_finished]
+                plays = [
+                    x.play_time_mins for x in g.gamevote_set.all()
+                    if x.game_finished
+                ]
                 if not plays:
                     nones.append(g)
                     continue
@@ -197,6 +210,9 @@ class SB_Sorting(SearchBit):
 
             times.sort(key=lambda x: x[0], reverse=self.desc)
             return list(list(zip(*times))[1]) + nones
+
+    def IsActive(self):
+        return True
 
 
 class SB_Text(SearchBit):
@@ -217,9 +233,10 @@ class SB_Text(SearchBit):
         self.titles_only = reader.ReadBool()
         self.text = reader.ReadString()
 
+    def IsActive(self):
+        return bool(self.text)
+
     def ModifyResult(self, games):
-        if not self.text:
-            return games
         # TODO(crem) Do something at query time.
         query = TokenizeText(self.text or '')
         res = []
@@ -236,7 +253,7 @@ class SB_Tag(SearchBit):
     TYPE_ID = 2
 
     def __init__(self, cat, *args, **kwargs):
-        super().__init__(cat.id, False)  # TODO (change to true!)
+        super().__init__(cat.id, True)
         self.cat = cat
         self.items = set()
 
@@ -245,9 +262,11 @@ class SB_Tag(SearchBit):
         res['cat'] = self.cat
         items = []
         for x in (GameTag.objects.filter(category=self.cat).order_by('order')):
-            items.append({'id': x.id,
-                          'name': x.name,
-                          'on': x.id in self.items})
+            items.append({
+                'id': x.id,
+                'name': x.name,
+                'on': x.id in self.items
+            })
         items.append({'id': 0, 'name': 'Не указано', 'on': 0 in self.items})
         res['items'] = items
         return res
@@ -256,14 +275,12 @@ class SB_Tag(SearchBit):
         self.items = reader.ReadSet()
 
     def ModifyQuery(self, query):
-        if self.items:
-            return query.prefetch_related('tags')
-        return query
+        return query.prefetch_related('tags')
+
+    def IsActive(self):
+        return bool(self.items)
 
     def ModifyResult(self, games):
-        if not self.items:
-            return games
-
         res = []
         for g in games:
             tags = set([x.id for x in g.tags.all() if x.category == self.cat])
@@ -283,10 +300,19 @@ class Search:
         self.id_to_bit[bit.Id()] = bit
 
     def ProduceBits(self):
+        unhide_all = False
+        for x in self.bits:
+            if x.Hidden() and x.IsActive():
+                unhide_all = True
+
+        if unhide_all:
+            for x in self.bits:
+                x.Unhide()
+
         res = []
         for x in self.bits:
             res.append(x.ProduceDict())
-        return res
+        return {'unhide_button': not unhide_all, 'search': res}
 
     def UpdateFromQuery(self, query):
         reader = BaseXReader(query)
@@ -297,12 +323,14 @@ class Search:
     def Search(self):
         q = Game.objects.all()
         for x in self.bits:
-            q = x.ModifyQuery(q)
+            if x.IsActive():
+                q = x.ModifyQuery(q)
         games = [x for x in q if self.perm(x.view_perm)]
         for g in games:
             g.ds = {}
         for x in self.bits:
-            games = x.ModifyResult(games)
+            if x.IsActive():
+                games = x.ModifyResult(games)
         return games
 
 

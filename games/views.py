@@ -161,7 +161,7 @@ def list_games(request):
         res.append({'id': x.id, 'title': x.title})
     return render(request, 'games/search.html', {'games': res,
                                                  'query': query,
-                                                 'search': s.ProduceBits()})
+                                                 **s.ProduceBits()})
 
 
 @perm_required(PERM_ADD_GAME)
@@ -186,6 +186,7 @@ def upload(request):
 
     return JsonResponse({'url': url_full})
 
+
 ########################
 # Json handlers below. #
 ########################
@@ -207,13 +208,14 @@ def tags(request):
     for x in (GameTagCategory.objects.order_by('order', 'name')):
         if not request.perm(x.show_in_edit_perm):
             continue
-        val = {'id': x.id,
-               'name': x.name,
-               'allow_new_tags': x.allow_new_tags,
-               'tags': []}
+        val = {
+            'id': x.id,
+            'name': x.name,
+            'allow_new_tags': x.allow_new_tags,
+            'tags': []
+        }
         # TODO(crem) Optimize this.
-        for y in (GameTag.objects.filter(category=x).order_by('order',
-                                                              'name')):
+        for y in (GameTag.objects.filter(category=x).order_by('order', 'name')):
             val['tags'].append({
                 'id': y.id,
                 'name': y.name,
@@ -225,9 +227,11 @@ def tags(request):
 def linktypes(request):
     res = {'categories': []}
     for x in URLCategory.objects.all():
-        res['categories'].append({'id': x.id,
-                                  'title': x.title,
-                                  'uploadable': x.allow_cloning})
+        res['categories'].append({
+            'id': x.id,
+            'title': x.title,
+            'uploadable': x.allow_cloning
+        })
     return res
 
 
@@ -259,8 +263,8 @@ def json_gameinfo(request):
 
         g['links'] = []
         for x in game.gameurl_set.select_related('url').all():
-            g['links'].append(
-                (x.category_id, x.description or '', x.url.original_url))
+            g['links'].append((x.category_id, x.description or '',
+                               x.url.original_url))
     return JsonResponse(res)
 
 
@@ -293,8 +297,7 @@ def Importer2Json(r):
         res['authors'] = []
         for x in r['authors']:
             if 'role_slug' in x:
-                role = GameAuthorRole.objects.get(
-                    symbolic_id=x['role_slug']).id
+                role = GameAuthorRole.objects.get(symbolic_id=x['role_slug']).id
             else:
                 role = r['role']
             res['authors'].append([role, x['name']])
@@ -329,6 +332,7 @@ def doImport(request):
         return JsonResponse({'error': raw_import['error']})
     return JsonResponse(Importer2Json(raw_import))
 
+
 ############################################################################
 # Aux functions below
 ############################################################################
@@ -337,8 +341,7 @@ def doImport(request):
 def GetMarkdown(content):
     return markdown.markdown(content, [
         'markdown.extensions.extra', 'markdown.extensions.meta',
-        'markdown.extensions.smarty', 'markdown.extensions.wikilinks',
-        'del_ins'
+        'markdown.extensions.smarty', 'markdown.extensions.wikilinks', 'del_ins'
     ]) if content else ''
 
 
@@ -409,18 +412,29 @@ def GetGameComments(game, user=None):
     res = []
     for v in GameComment.objects.select_related('user').filter(game=game):
         res.append({
-            'id': v.id,
-            'user_id': v.user.id if v.user else None,
-            'username': v.user.username if v.user else v.foreign_username
-            if v.foreign_username else 'Анонимоўс',
-            'parent_id': v.parent.id if v.parent else None,
-            'fusername': v.foreign_username,
-            'furl': v.foreign_username,
-            'fsite': None,  # TODO
-            'created': FormatTime(v.creation_time),
-            'edited': FormatTime(v.edit_time),
-            'subj': v.subject,
-            'text': GetMarkdown(v.text),
+            'id':
+                v.id,
+            'user_id':
+                v.user.id if v.user else None,
+            'username':
+                v.user.username if v.user else v.foreign_username
+                if v.foreign_username else 'Анонимоўс',
+            'parent_id':
+                v.parent.id if v.parent else None,
+            'fusername':
+                v.foreign_username,
+            'furl':
+                v.foreign_username,
+            'fsite':
+                None,  # TODO
+            'created':
+                FormatTime(v.creation_time),
+            'edited':
+                FormatTime(v.edit_time),
+            'subj':
+                v.subject,
+            'text':
+                GetMarkdown(v.text),
             # TODO: is_deleted
         })
 

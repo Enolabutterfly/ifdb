@@ -12,17 +12,27 @@ AUTHOR_ROLES = [
 ]
 
 TAG_CATS = [
-    ['admin', 'Админское', False, {'all': '@admin'}],
-    ['state', 'Стадия разработки', False, {'search': '@admin'}],
+    ['admin', 'Админское', False, {
+        'all': '@admin'
+    }],
+    ['state', 'Стадия разработки', False, {
+        'search': '@admin'
+    }],
     ['genre', 'Жанр', True, {}],
     ['platform', 'Платформа', True, {}],
-    ['country', 'Страна', True, {'search': '@admin'}],
+    ['country', 'Страна', True, {
+        'search': '@admin'
+    }],
     ['control', 'Управление', False, {}],
     ['os', 'Операционная система', False, {}],
     ['competition', 'Участник конкурса', True, {}],
     ['tag', 'Тэг', True, {}],
-    ['ifid', 'IFID', True, {'search': '@admin'}],
-    ['version', 'Версия', True, {'search': '@admin'}],
+    ['ifid', 'IFID', True, {
+        'search': '@admin'
+    }],
+    ['version', 'Версия', True, {
+        'search': '@admin'
+    }],
 ]
 
 TAGS = [
@@ -41,7 +51,6 @@ TAGS = [
     ['control', 'parser', 'Парсерная'],
     ['control', 'menu', 'Менюшная'],
 ]
-
 
 URL_CATS = [
     ['game_page', 'Эта игра на другом сайте', False],
@@ -110,10 +119,8 @@ class Command(BaseCommand):
             self.stdout.write('Url: %s (%s)... ' % (slug, desc), ending='')
             _, created = URLCategory.objects.update_or_create(
                 symbolic_id=slug,
-                defaults={
-                    'title': desc,
-                    'allow_cloning': cloneable
-                })
+                defaults={'title': desc,
+                          'allow_cloning': cloneable})
             if created:
                 self.stdout.write(self.style.SUCCESS('created.'))
             else:

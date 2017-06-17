@@ -56,8 +56,7 @@ def ImportFromQsp(url):
         n = QSP_IMG.search(tr)
         if n:
             res['urls'].append(
-                CategorizeUrl(
-                    n.group(1), 'Обложка', 'poster', base=url))
+                CategorizeUrl(n.group(1), 'Обложка', 'poster', base=url))
         for n in QSP_FIELD.finditer(tr):
             key = n.group(1)
             val = n.group(2)

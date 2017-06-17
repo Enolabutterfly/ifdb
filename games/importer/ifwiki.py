@@ -67,12 +67,14 @@ IFWIKI_ROLES = [
 ]
 IFWIKI_IGNORE_ROLES = ['Категория']
 
-IFWIKI_COMPETITIONS = {'Конкурс': '',
-                       'ЛОК': 'ЛОК-',
-                       'ЗОК': 'ЗОК-',
-                       'КРИЛ': 'КРИЛ-',
-                       'goldhamster': 'Золотой Хомяк ',
-                       'qspcompo': 'QSP-Compo '}
+IFWIKI_COMPETITIONS = {
+    'Конкурс': '',
+    'ЛОК': 'ЛОК-',
+    'ЗОК': 'ЗОК-',
+    'КРИЛ': 'КРИЛ-',
+    'goldhamster': 'Золотой Хомяк ',
+    'qspcompo': 'QSP-Compo '
+}
 IFWIKI_IGNORE = ['ЗаглушкаТекста', 'ЗаглушкаСсылок']
 
 GAMEINFO_IGNORE = ['ширинаобложки', 'высотаобложки']
@@ -130,9 +132,11 @@ class WikiParsingContext:
                 for t in [x.strip() for x in v.split(',')]:
                     self.tags.append({'cat_slug': 'genre', 'tag': t})
             elif k == 'обложка':
-                self.urls.append({'urlcat_slug': 'poster',
-                                  'description': 'Обложка',
-                                  'url': 'http://ifwiki.ru/files/%s' % v})
+                self.urls.append({
+                    'urlcat_slug': 'poster',
+                    'description': 'Обложка',
+                    'url': 'http://ifwiki.ru/files/%s' % v
+                })
             elif k == 'IFID':
                 self.tags.append({'cat_slug': 'ifid', 'tag': v})
             elif k == '1' and not v.strip():
@@ -149,9 +153,10 @@ class WikiParsingContext:
             self.ProcessGameinfo(params)
             return ''
         if name in IFWIKI_COMPETITIONS:
-            self.tags.append({'cat_slug': 'competition',
-                              'tag': '%s%s' %
-                              (IFWIKI_COMPETITIONS[name], params['1'])})
+            self.tags.append({
+                'cat_slug': 'competition',
+                'tag': '%s%s' % (IFWIKI_COMPETITIONS[name], params['1'])
+            })
             return ''
         if name == 'РИЛФайл':
             self.AddUrl(params['1'])
@@ -188,12 +193,12 @@ def toolset_preproc(context):
         node.value = '&%s;' % node.leaf()
 
     def substitute_numbered_entity(node):
-        logging.error('url: %s, title:%s\n%s' %
-                      (context.url, context.title, node.treeView()))
+        logging.error('url: %s, title:%s\n%s' % (context.url, context.title,
+                                                 node.treeView()))
 
     def substitute_template_parameter(node):
-        logging.error('url: %s, title:%s\n%s' %
-                      (context.url, context.title, node.treeView()))
+        logging.error('url: %s, title:%s\n%s' % (context.url, context.title,
+                                                 node.treeView()))
 
     def substitute_template(node):
         node.value = context.ParseTemplate(node)
@@ -202,14 +207,18 @@ def toolset_preproc(context):
 
 
 def toolset_wiki(context):
-    style_tags = {'bold': '**',
-                  'bold_close': '**',
-                  'italic': '_',
-                  'italic_close': '_',
-                  'strike': '~~',
-                  'strike_close': '~~'}
+    style_tags = {
+        'bold': '**',
+        'bold_close': '**',
+        'italic': '_',
+        'italic_close': '_',
+        'strike': '~~',
+        'strike_close': '~~'
+    }
 
-    autoclose_tags = {'br': '\n', }
+    autoclose_tags = {
+        'br': '\n',
+    }
 
     def collapse_list(list):
         i = 0
@@ -248,8 +257,10 @@ def toolset_wiki(context):
         return result
 
     def select_items(nodes, i, value, level):
-        list_tags = ['bullet_list_leaf', 'number_list_leaf', 'colon_list_leaf',
-                     'semi_colon_list_leaf']
+        list_tags = [
+            'bullet_list_leaf', 'number_list_leaf', 'colon_list_leaf',
+            'semi_colon_list_leaf'
+        ]
         list_tags.remove(value)
         if isinstance(nodes[i].value, Nodes):
             render_lists(nodes[i].value, level + 1)
@@ -263,20 +274,16 @@ def toolset_wiki(context):
     def render_lists(list, level):
         i = 0
         while i < len(list):
-            if list[i].tag == 'bullet_list_leaf' or list[
-                    i].tag == '@bullet_sub_list@':
+            if list[i].tag == 'bullet_list_leaf' or list[i].tag == '@bullet_sub_list@':
                 list[i].value = render_ul(
                     select_items(list, i, 'bullet_list_leaf', level), level)
-            elif list[i].tag == 'number_list_leaf' or list[
-                    i].tag == '@number_sub_list@':
+            elif list[i].tag == 'number_list_leaf' or list[i].tag == '@number_sub_list@':
                 list[i].value = render_ol(
                     select_items(list, i, 'number_list_leaf', level), level)
-            elif list[i].tag == 'colon_list_leaf' or list[
-                    i].tag == '@colon_sub_list@':
+            elif list[i].tag == 'colon_list_leaf' or list[i].tag == '@colon_sub_list@':
                 list[i].value = render_ul(
                     select_items(list, i, 'colon_list_leaf', level), level)
-            elif list[i].tag == 'semi_colon_list_leaf' or list[
-                    i].tag == '@semi_colon_sub_list@':
+            elif list[i].tag == 'semi_colon_list_leaf' or list[i].tag == '@semi_colon_sub_list@':
                 list[i].value = render_ul(
                     select_items(list, i, 'semi_colon_list_leaf', level),
                     level)
@@ -342,69 +349,69 @@ def toolset_wiki(context):
     def render_tag_autoclose(node):
         if node.value[0].value in autoclose_tags:
             node.value = autoclose_tags[node.value[0].value]
-        logging.error('url: %s, title:%s\n%s' %
-                      (context.url, context.title, node.treeView()))
+        logging.error('url: %s, title:%s\n%s' % (context.url, context.title,
+                                                 node.treeView()))
         node.value = ''
 
     def render_attribute(node):
-        logging.error('url: %s, title:%s\n%s' %
-                      (context.url, context.title, node.treeView()))
+        logging.error('url: %s, title:%s\n%s' % (context.url, context.title,
+                                                 node.treeView()))
         node.value = ''
 
     def render_table(node):
-        logging.error('url: %s, title:%s\n%s' %
-                      (context.url, context.title, node.treeView()))
+        logging.error('url: %s, title:%s\n%s' % (context.url, context.title,
+                                                 node.treeView()))
         node.value = ''
 
     def render_table_line_break(node):
-        logging.error('url: %s, title:%s\n%s' %
-                      (context.url, context.title, node.treeView()))
+        logging.error('url: %s, title:%s\n%s' % (context.url, context.title,
+                                                 node.treeView()))
         node.value = ''
 
     def render_table_header_cell(node):
-        logging.error('url: %s, title:%s\n%s' %
-                      (context.url, context.title, node.treeView()))
+        logging.error('url: %s, title:%s\n%s' % (context.url, context.title,
+                                                 node.treeView()))
         node.value = ''
 
     def render_table_normal_cell(node):
-        logging.error('url: %s, title:%s\n%s' %
-                      (context.url, context.title, node.treeView()))
+        logging.error('url: %s, title:%s\n%s' % (context.url, context.title,
+                                                 node.treeView()))
         node.value = ''
 
     def render_table_empty_cell(node):
-        logging.error('url: %s, title:%s\n%s' %
-                      (context.url, context.title, node.treeView()))
+        logging.error('url: %s, title:%s\n%s' % (context.url, context.title,
+                                                 node.treeView()))
         node.value = ''
 
     def render_table_caption(node):
-        logging.error('url: %s, title:%s\n%s' %
-                      (context.url, context.title, node.treeView()))
+        logging.error('url: %s, title:%s\n%s' % (context.url, context.title,
+                                                 node.treeView()))
         node.value = ''
 
     def render_preformatted(node):
-        logging.error('url: %s, title:%s\n%s' %
-                      (context.url, context.title, node.treeView()))
+        logging.error('url: %s, title:%s\n%s' % (context.url, context.title,
+                                                 node.treeView()))
         node.value = ''
 
     def render_source(node):
-        logging.error('url: %s, title:%s\n%s' %
-                      (context.url, context.title, node.treeView()))
+        logging.error('url: %s, title:%s\n%s' % (context.url, context.title,
+                                                 node.treeView()))
         node.value = ''
 
     def render_source_open(node):
         node.value = ''
 
     def render_source_text(node):
-        logging.error('url: %s, title:%s\n%s' %
-                      (context.url, context.title, node.treeView()))
+        logging.error('url: %s, title:%s\n%s' % (context.url, context.title,
+                                                 node.treeView()))
         node.value = ''
 
     def render_hr(node):
         node.value = '\n===\n'
 
     def render_li(node):
-        logging.error('url: %s, title:%s\n%s' %
-                      (context.url, context.title, node.treeView()))
+        logging.error('url: %s, title:%s\n%s' % (context.url, context.title,
+                                                 node.treeView()))
         node.value = ''
 
     def render_list(node):
@@ -429,8 +436,8 @@ def toolset_wiki(context):
             context.ProcessLink('|'.join([x.leaf() for x in node.value])))
 
     def render_invalid(node):
-        logging.error('url: %s, title:%s\n%s' %
-                      (context.url, context.title, node.treeView()))
+        logging.error('url: %s, title:%s\n%s' % (context.url, context.title,
+                                                 node.treeView()))
         node.value = ''
 
     return locals()
