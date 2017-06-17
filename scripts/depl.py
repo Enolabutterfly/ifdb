@@ -277,8 +277,8 @@ def stage(ctx, tag):
     p.AddStep(RunCmdStep('virtualenv -p python3 %s' % virtualenv_dir))
     p.AddStep(StagingDiff('django/requirements.txt'))
     p.AddStep(
-        RunCmdStep('%s/bin/pip install -r %s/requirements.txt' % (
-            virtualenv_dir, django_dir)))
+        RunCmdStep('%s/bin/pip install -r %s/requirements.txt --no-cache-dir' %
+                   (virtualenv_dir, django_dir)))
     p.AddStep(StagingDiff('django/games/migrations/'))
     p.AddStep(StagingDiff('django/games/management/commands/initifdb.py'))
     p.AddStep(
@@ -370,8 +370,9 @@ def deploy(ctx, hot, from_master):
 
     if not hot:
         p.AddStep(
-            RunCmdStep('%s/bin/pip install -r %s/requirements.txt' % (
-                virtualenv_dir, django_dir)))
+            RunCmdStep(
+                '%s/bin/pip install -r %s/requirements.txt --no-cache-dir' % (
+                    virtualenv_dir, django_dir)))
         p.AddStep(
             RunCmdStep('%s %s/manage.py migrate' % (python_dir, django_dir)))
 
