@@ -12,18 +12,17 @@ AUTHOR_ROLES = [
 ]
 
 TAG_CATS = [
-    ['admin', 'Админское', False, '@admin'],
-    ['state', 'Стадия разработки', False],
-    ['genre', 'Жанр', True],
-    ['platform', 'Платформа', True],
-    ['country', 'Страна', True],
-    ['control', 'Управление', False],
-    ['os', 'Операционная система', False],
-    ['source', 'Исходный код', False],
-    ['price', 'Цена', False],
-    ['competition', 'Участник конкурса', True],
-    ['ifid', 'IFID', True],
-    ['version', 'Версия', True],
+    ['admin', 'Админское', False, {'all': '@admin'}],
+    ['state', 'Стадия разработки', False, {'search': '@admin'}],
+    ['genre', 'Жанр', True, {}],
+    ['platform', 'Платформа', True, {}],
+    ['country', 'Страна', True, {'search': '@admin'}],
+    ['control', 'Управление', False, {}],
+    ['os', 'Операционная система', False, {}],
+    ['competition', 'Участник конкурса', True, {}],
+    ['tag', 'Тэг', True, {}],
+    ['ifid', 'IFID', True, {'search': '@admin'}],
+    ['version', 'Версия', True, {'search': '@admin'}],
 ]
 
 TAGS = [
@@ -39,11 +38,10 @@ TAGS = [
     ['os', 'os_android', 'Android'],
     ['os', 'os_dos', 'DOS'],
     ['os', 'os_other', 'Другая ОС'],
-    ['source', 'open_source', 'Открыт'],
-    ['source', 'closed_source', 'Закрыт'],
-    ['price', 'free_price', 'Бесплатно'],
-    ['price', 'has_price', 'Платно'],
+    ['control', 'parser', 'Парсерная'],
+    ['control', 'menu', 'Менюшная'],
 ]
+
 
 URL_CATS = [
     ['game_page', 'Эта игра на другом сайте', False],
@@ -76,13 +74,19 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.WARNING('already exists.'))
 
         for x in TAG_CATS:
-            (slug, desc, allow_new, *perm) = x
+            (slug, desc, allow_new, perm) = x
             self.stdout.write('Tag cat: %s (%s)... ' % (slug, desc), ending='')
             updates = {'name': desc, 'allow_new_tags': allow_new}
-            if perm:
-                updates['show_in_edit_perm'] = perm[0]
-                updates['show_in_search_perm'] = perm[0]
-                updates['show_in_details_perm'] = perm[0]
+            if 'all' in perm:
+                updates['show_in_edit_perm'] = perm['all']
+                updates['show_in_search_perm'] = perm['all']
+                updates['show_in_details_perm'] = perm['all']
+            if 'search' in perm:
+                updates['show_in_search_perm'] = perm['search']
+            if 'edit' in perm:
+                updates['show_in_search_perm'] = perm['edit']
+            if 'details' in perm:
+                updates['show_in_search_perm'] = perm['details']
             _, created = GameTagCategory.objects.update_or_create(
                 symbolic_id=slug, defaults=updates)
             if created:

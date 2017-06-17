@@ -327,7 +327,7 @@ a.gamelist-thumb .auxinfo {
     font-weight: bold;
 }
 
-.sort,.tag {
+.sort {
     border-radius: 4px;
     border:  1px solid #625b61;
     color: #625b61;
@@ -335,6 +335,16 @@ a.gamelist-thumb .auxinfo {
     margin: 1px;
     padding: 3px;
     white-space: nowrap;
+}
+
+.tag {
+    border-radius: 3px;
+    border: 1px solid #C7C6C1;
+    color: #31322d;
+    cursor: pointer;
+    padding: 0 3px;
+    white-space: nowrap;
+    font-size: 90%;
 }
 
 .sort.current, .tag.current {
@@ -578,6 +588,10 @@ progress::-webkit-progress-value {
     padding: 20px;
     line-height: 30px;
     text-align: center;
+}
+
+.search-box {
+    line-height: 1.7em;
 }
 
 .gamelist-message {

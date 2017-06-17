@@ -159,9 +159,9 @@ def list_games(request):
         if not request.perm(x.view_perm):
             continue
         res.append({'id': x.id, 'title': x.title})
-    return render(request, 'games/list.html', {'games': res,
-                                               'query': query,
-                                               'search': s.ProduceBits()})
+    return render(request, 'games/search.html', {'games': res,
+                                                 'query': query,
+                                                 'search': s.ProduceBits()})
 
 
 @perm_required(PERM_ADD_GAME)
