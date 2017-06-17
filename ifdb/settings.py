@@ -72,7 +72,6 @@ else:
         'debug_toolbar.panels.signals.SignalsPanel',
         'debug_toolbar.panels.logging.LoggingPanel',
         'debug_toolbar.panels.redirects.RedirectsPanel',
-        'ddt_request_history.panels.request_history.RequestHistoryPanel',
     ]
 
 ADMINS = [('Alexander Lyashuk', 'mooskagh@gmail.com')]
