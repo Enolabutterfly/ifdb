@@ -22,7 +22,7 @@ URL_CATEGORIZER_RULES = [  # hostname, path, query, slug, desc
     ('instead-games.ru', '.*/download/.*', '', 'download_direct',
      'Скачать с инстеда'),
     ('instead-games.ru', '', '', 'game_page', 'Страница на инстеде'),
-    ('instead.syscall.ru', '*/forum/.*', '', 'forum', 'Форум на инстеде'),
+    ('instead.syscall.ru', '.*/forum/.*', '', 'forum', 'Форум на инстеде'),
     ('youtube.com', '', '', 'video', 'Видео игры'),
     ('www.youtube.com', '', '', 'video', 'Видео игры'),
     ('forum.ifiction.ru', '', '', 'forum', 'Обсуждение на форуме'),

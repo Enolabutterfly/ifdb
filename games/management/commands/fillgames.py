@@ -36,6 +36,7 @@ URLS = [
     'http://qsp.su/index.php?option=com_sobi2&sobi2Task=sobi2Details&catid=0&sobi2Id=43&Itemid=55',
     'http://qsp.su/index.php?option=com_sobi2&sobi2Task=sobi2Details&catid=0&sobi2Id=101&Itemid=55',
     'http://qsp.su/index.php?option=com_sobi2&sobi2Task=sobi2Details&catid=0&sobi2Id=49&Itemid=55',
+    'http://ifwiki.ru/%D0%9F%D0%B5%D1%80%D0%B5%D1%85%D0%BE%D0%B4',
 ]
 
 
