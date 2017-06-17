@@ -127,7 +127,7 @@ enricher.AddRule(
         '.*qsp',
         'akurq.*',
         'fireurq',
-        'r?inform.*'
+        'r?inform.*',
         'r?tads.*',
         'ripurq', ),
     AddTag('os_win'))
