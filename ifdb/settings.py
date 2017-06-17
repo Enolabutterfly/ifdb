@@ -45,6 +45,7 @@ if IS_PROD:
 
     EMAIL_HOST_PASSWORD = open(
         '/home/ifdb/configs/gmail-pass.txt').read().strip()
+    URL_CACHE_DIR = None
 
 else:
     SECRET_KEY = 'l3uja(27m53i#c)#9ziwmf*3n^e59eieal=3i$z0j@&$0i$!hr'
