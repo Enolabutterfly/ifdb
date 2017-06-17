@@ -1,4 +1,4 @@
-#!/home/ifdb/virtualenv/bin/python
+#!/bin/env python3
 
 from django.conf import settings
 from django.template import Template, Context
