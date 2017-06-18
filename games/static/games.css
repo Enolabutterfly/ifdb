@@ -1,6 +1,7 @@
 /*
    https://coolors.co/ceff1a-00487c-31322d-625b61-f2f1eb
 */
+
 a {
     color: #00487c;
 }
@@ -105,7 +106,6 @@ a {
 }
 
 .comment-header {
-
     /* background-color: #EAE9E3; */
     background: linear-gradient(to right, #E8E7E1, #f2f1eb);
     border-radius: 2.5px;
@@ -120,12 +120,11 @@ a {
     font-style: italic;
 }
 
-.comment-input
-
-input[type="date"],
+.comment-input input[type="date"],
 input[type="text"],
 input[type="password"],
-input:not([type]),textarea {
+input:not([type]),
+textarea {
     border: 1px solid rgba(0, 0, 0, .2);
     background-color: #f8f8f8;
 }
@@ -316,7 +315,6 @@ a.gamelist-thumb .auxinfo {
     font-style: italic;
 }
 
-
 .prop-category {
     font-size: 90%;
     color: #625B61;
@@ -329,7 +327,7 @@ a.gamelist-thumb .auxinfo {
 
 .sort {
     border-radius: 4px;
-    border:  1px solid #625b61;
+    border: 1px solid #625b61;
     color: #625b61;
     cursor: pointer;
     margin: 1px;
@@ -347,12 +345,12 @@ a.gamelist-thumb .auxinfo {
     font-size: 90%;
 }
 
-.sort.current, .tag.current {
+.sort.current,
+.tag.current {
     background-color: #00487c;
     border: none;
     color: #f2f1eb;
 }
-
 
 .prop-comment {
     color: #625B61;
@@ -470,7 +468,8 @@ button#upload_button {
     padding: 2px 4px;
 }
 
-button#submit, .user-registration input[type="submit"] {
+button#submit,
+.user-registration input[type="submit"] {
     font-size: 16px;
     margin-top: 20px;
     border: none;
@@ -567,7 +566,8 @@ progress::-webkit-progress-value {
     color: #625B61;
 }
 
-.user-registration td,.user-registration th {
+.user-registration td,
+.user-registration th {
     padding: 10px;
 }
 
@@ -602,7 +602,7 @@ progress::-webkit-progress-value {
     margin: 40px auto;
     padding: 20px;
     text-align: center;
-    width:  300px;
+    width: 300px;
 }
 
 .search-box table {
