@@ -43,6 +43,12 @@ if IS_PROD:
     else:
         STATIC_ROOT = os.path.abspath('/home/ifdb/static')
 
+    EMAIL_USE_TLS = True
+    EMAIL_HOST = 'smtp.gmail.com'
+    EMAIL_PORT = 587
+    EMAIL_HOST_USER = 'ersatzplut@gmail.com'
+    DEFAULT_FROM_EMAIL = 'ersatzplut@gmail.com'
+    SERVER_EMAIL = 'ersatzplut@gmail.com'
     EMAIL_HOST_PASSWORD = open(
         '/home/ifdb/configs/gmail-pass.txt').read().strip()
     URL_CACHE_DIR = None
@@ -75,12 +81,6 @@ else:
     ]
 
 ADMINS = [('Alexander Lyashuk', 'mooskagh@gmail.com')]
-EMAIL_USE_TLS = True
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_HOST_USER = 'ersatzplut@gmail.com'
-DEFAULT_FROM_EMAIL = 'ersatzplut@gmail.com'
-SERVER_EMAIL = 'ersatzplut@gmail.com'
 INTERNAL_IPS = [
     '127.0.0.1',
     '10.162.0.100',
