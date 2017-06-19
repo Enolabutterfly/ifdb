@@ -50,8 +50,8 @@ if IS_PROD:
     EMAIL_HOST_USER = 'ersatzplut@gmail.com'
     DEFAULT_FROM_EMAIL = 'ersatzplut@gmail.com'
     SERVER_EMAIL = 'ersatzplut@gmail.com'
-    EMAIL_HOST_PASSWORD = open(
-        '/home/ifdb/configs/gmail-pass.txt').read().strip()
+    EMAIL_HOST_PASSWORD = open('/home/ifdb/configs/gmail-pass.txt').read(
+    ).strip()
     URL_CACHE_DIR = None
 
 else:
@@ -97,9 +97,14 @@ INTERNAL_IPS = [
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin', 'django.contrib.auth',
-    'django.contrib.contenttypes', 'django.contrib.sessions',
-    'django.contrib.messages', 'django.contrib.staticfiles', 'games'
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'games',
+    'core',
 ]
 
 MIDDLEWARE = [
@@ -146,19 +151,19 @@ WSGI_APPLICATION = 'ifdb.wsgi.application'
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME':
-            'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
     },
     {
         'NAME':
-            'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'django.contrib.auth.password_validation.MinimumLengthValidator',
     },
     {
         'NAME':
-            'django.contrib.auth.password_validation.CommonPasswordValidator',
+        'django.contrib.auth.password_validation.CommonPasswordValidator',
     },
     {
         'NAME':
-            'django.contrib.auth.password_validation.NumericPasswordValidator',
+        'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
 

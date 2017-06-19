@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import (Game, Author, GameTagCategory, GameTag, URL, URLCategory,
                      GameURL, GameAuthorRole, GameAuthor, GameVote,
-                     GameComment, TaskQueueElement)
+                     GameComment)
 
 
 class GameAuthorAdmin(admin.TabularInline):
@@ -30,5 +30,3 @@ admin.site.register(GameAuthorRole)
 admin.site.register(GameAuthor)
 admin.site.register(GameVote)
 admin.site.register(GameComment)
-
-admin.site.register(TaskQueueElement)

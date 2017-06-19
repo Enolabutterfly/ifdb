@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from games.taskqueue import Worker
+from core.taskqueue import Worker
 
 
 class Command(BaseCommand):
