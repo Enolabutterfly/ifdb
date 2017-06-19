@@ -52,7 +52,7 @@ if IS_PROD:
     SERVER_EMAIL = 'ersatzplut@gmail.com'
     EMAIL_HOST_PASSWORD = open('/home/ifdb/configs/gmail-pass.txt').read(
     ).strip()
-    URL_CACHE_DIR = None
+    CRAWLER_CACHE_DIR = None
 
 else:
     SECRET_KEY = 'l3uja(27m53i#c)#9ziwmf*3n^e59eieal=3i$z0j@&$0i$!hr'
@@ -67,7 +67,7 @@ else:
 
     URQW_PATH = os.path.join(BASE_DIR, 'urqw')
     MEDIA_ROOT = os.path.join(BASE_DIR, 'uploads')
-    URL_CACHE_DIR = os.path.join(BASE_DIR, 'urlcache')
+    CRAWLER_CACHE_DIR = os.path.join(BASE_DIR, 'urlcache')
     DEBUG_TOOLBAR_PANELS = [
         'debug_toolbar.panels.versions.VersionsPanel',
         'debug_toolbar.panels.timer.TimerPanel',

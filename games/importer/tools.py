@@ -1,11 +1,9 @@
 from urllib.parse import quote, urlunsplit, urlsplit, urlparse, urljoin
 from .enrichment import enricher
-import urllib
-import hashlib
+from core.crawler import FetchUrlToString
 import re
 import os.path
 
-URL_CACHE_DIR = None
 RE_WORD = re.compile('\w+')
 MIN_SIMILARITY = 0.67
 REGISTERED_IMPORTERS = []
@@ -71,25 +69,6 @@ def SimilarEnough(w1, w2):
 
     similarity = len(s1 & s2) / len(s1 | s2)
     return similarity > MIN_SIMILARITY
-
-
-def FetchUrl(url):
-    print('Fetching: %s' % url)
-    filename_hash = hashlib.md5(url.encode('utf-8')).hexdigest()
-    if URL_CACHE_DIR:
-        filename = os.path.join(URL_CACHE_DIR, filename_hash)
-        if os.path.isfile(filename):
-            with open(filename, 'rb') as f:
-                return f.read().decode('utf-8')
-
-    url = quote(url.encode('utf-8'), safe='/+=&?%:@;!#$*()_-')
-    with urllib.request.urlopen(url) as response:
-        contents = response.read()
-        if URL_CACHE_DIR:
-            filename = os.path.join(URL_CACHE_DIR, filename_hash)
-            with open(filename, 'wb') as f:
-                f.write(contents)
-        return contents.decode('utf-8')
 
 
 def DispatchImport(url):
@@ -188,7 +167,6 @@ def Import(seed_url):
     if 'title' in r and 'error' in r:
         del r['error']
     return r
-
 
 # Schema:
 # title: title
