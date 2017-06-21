@@ -1,33 +1,59 @@
 from django.conf import settings
 import datetime
 import hashlib
-import urllib.request
+import shutil
 import json
+import logging
 import os.path
+import urllib.request
 from urllib.parse import quote
 
-def FetchUrlToString(url):
-    print('Fetching: %s' % url)
-    filename_hash = hashlib.md5(url.encode('utf-8')).hexdigest()
-    if settings.CRAWLER_CACHE_DIR:
-        filename = os.path.join(settings.CRAWLER_CACHE_DIR, filename_hash)
-        if os.path.isfile(filename):
-            with open(filename, 'rb') as f:
-                return f.read().decode('utf-8')
 
+def FetchUrlToString(url):
+    try:
+        return FetchUrlToFileLike(url).read().decode('utf-8')
+    except Exception as e:
+        logging.exception(e)
+        raise
+
+
+def _ResponseInfoToMetadata(url, response):
+    return {
+        'url': url,
+        'time': str(datetime.datetime.now()),
+        'filename': response.get_filename(),
+        'content-type': response.get_content_type(),
+    }
+
+
+def FetchUrlToFileLike(url):
+    print('Fetching: %s' % url)
     url = quote(url.encode('utf-8'), safe='/+=&?%:@;!#$*()_-')
-    with urllib.request.urlopen(url) as response:
-        contents = response.read()
-        if settings.CRAWLER_CACHE_DIR:
-            filename = os.path.join(settings.CRAWLER_CACHE_DIR, filename_hash)
-            with open(filename, 'wb') as f:
-                f.write(contents)
-            with open(filename + '.meta', 'w') as f:
-                metadata = {
-                    'url': url,
-                    'time': str(datetime.datetime.now()),
-                    'filename': response.info().get_filename(),
-                    'content-type': response.info().get_content_type(),
-                }
-                f.write(json.dumps(metadata, indent=2, separators=(',', ': ')))
-        return contents.decode('utf-8')
+    if not settings.CRAWLER_CACHE_DIR:
+        response = urllib.request.urlopen(url)
+        response.metadata = _ResponseInfoToMetadata(url, response.info())
+        return response
+
+    urlhash = hashlib.md5(url.encode('utf-8')).hexdigest()
+    filename = os.path.join(settings.CRAWLER_CACHE_DIR, urlhash)
+    metadata_filename = os.path.join(settings.CRAWLER_CACHE_DIR,
+                                     "%s.meta" % urlhash)
+    listing_filename = os.path.join(settings.CRAWLER_CACHE_DIR, "%s.list" %
+                                    datetime.datetime.today().date())
+
+    if os.path.isfile(metadata_filename):
+        with open(metadata_filename, 'r') as f:
+            metadata = json.loads(f.read())
+    else:
+        response = urllib.request.urlopen(url)
+        metadata = _ResponseInfoToMetadata(url, response.info())
+        with open(filename, 'wb') as f:
+            shutil.copyfileobj(response, f)
+        with open(metadata_filename, 'w') as f:
+            f.write(json.dumps(metadata, indent=2, separators=(',', ': ')))
+        with open(listing_filename, 'a') as f:
+            f.write('%s %s\n' % (urlhash, url))
+
+    f = open(filename, 'rb')
+    f.metadata = metadata
+    return f
