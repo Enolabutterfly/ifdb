@@ -23,7 +23,6 @@ a {
 }
 
 .content-box {
-    /* combined outer+inner */
     border: 1px solid #31322d;
     background-color: #F2F1EB;
     padding: 20px;
@@ -106,7 +105,6 @@ a {
 }
 
 .comment-header {
-    /* background-color: #EAE9E3; */
     background: linear-gradient(to right, #E8E7E1, #f2f1eb);
     border-radius: 2.5px;
     padding: 5px;
@@ -632,4 +630,54 @@ progress::-webkit-progress-value {
     text-decoration: underline;
     text-transform: none;
     font-weight: normal;
+}
+
+.slideritem-outer {
+    height: 400px;
+    width: 500px;
+}
+
+.slideritem-inner {
+    box-shadow: -1px 1px 3px rgba(0, 0, 0, .3);
+    margin: 0 auto;
+    display: inline-block;
+}
+
+.slideritem-inner img {
+    max-width: 500px;
+}
+
+.slideritem {
+    margin: 10px;
+    box-shadow: -1px 1px 3px rgba(0, 0, 0, .3);
+    cursor: pointer;
+    display: inline-block;
+    max-height: 90px;
+}
+
+.largeslider {
+    text-align: center;
+    margin: 10px auto;
+    width: 600px;
+}
+
+.smallslider {
+    text-align: center;
+    margin: 10px auto;
+    width: 400px;
+}
+
+.videothumb {
+    position: relative;
+}
+
+.videothumb h2 {
+    bottom: 0;
+    color: #f2f1eb;
+    font-size: 50px;
+    left: 0;
+    margin: 5px auto;
+    position: absolute;
+    right: 0;
+    top: 0;
 }

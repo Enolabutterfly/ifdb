@@ -1,5 +1,54 @@
 from .models import Game
 from .tools import FormatDate, RenderMarkdown
+from urllib.parse import urlparse, parse_qs
+
+
+def PartitionLinks(links, partitions):
+    rest = []
+    cats = {x: None for y in partitions for x in y}
+    for x in links:
+        if x['category'].symbolic_id in cats:
+            cats[x['category'].symbolic_id] = x
+        else:
+            rest.append(x)
+
+    res = []
+    for x in partitions:
+        r = []
+        for y in x:
+            if cats[y]:
+                r.append(cats[y])
+        res.append(r)
+    return res + [rest]
+
+
+def AnnotateMedia(media):
+    res = []
+    for x in media:
+        for y in x['urls']:
+            val = {}
+            if x['category'].symbolic_id in ['poster', 'screenshot']:
+                val['type'] = 'img'
+                val['img'] = y.url.GetUrl()
+            elif x['category'].symbolic_id == 'video':
+                purl = urlparse(y.url.original_url)
+                if purl.hostname in ['youtube.com', 'www.youtube.com']:
+                    q = parse_qs(purl.query).get('v')
+                    if q:
+                        val['type'] = 'youtube'
+                        val['id'] = q[0]
+                elif purl.hostname == 'youtu.be':
+                    val['type'] = 'youtube'
+                    val['id'] = purl.path[1:]
+                else:
+                    logging.error('Unknown video url: %s' % y.url.original_url)
+                    val['type'] = 'unknown'
+                    val['url'] = y.url.GetUrl()
+            else:
+                logging.error('Unexpected category: %s' % x)
+                continue
+            res.append(val)
+    return res
 
 
 class GameDetailsBuilder:
@@ -14,6 +63,9 @@ class GameDetailsBuilder:
         added_date = FormatDate(self.game.creation_time)
         authors = self.GetAuthors()
         links = self.GetURLs()
+        media, links = PartitionLinks(links, [('poster', 'video',
+                                               'scrrenshot')])
+        media = AnnotateMedia(media)
         md = RenderMarkdown(self.game.description)
         tags = self.GetTagsForDetails()
         votes = self.GetGameScore()
@@ -30,6 +82,7 @@ class GameDetailsBuilder:
             'release_date': release_date,
             'tags': tags,
             'links': links,
+            'media': media,
             'votes': votes,
             'comments': comments,
         }

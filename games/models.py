@@ -38,6 +38,9 @@ class URL(models.Model):
     def __str__(self):
         return "%s" % (self.original_url)
 
+    def GetUrl(self):
+        return self.local_url or self.original_url
+
     local_url = models.CharField(null=True, blank=True, max_length=255)
     local_filename = models.CharField(null=True, blank=True, max_length=255)
     original_url = models.CharField(
