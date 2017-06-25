@@ -79,7 +79,10 @@ def EnqueueOrGet(func, *argv, name=None, priority=100, **kwarg):
 def Worker():
     do_exit = False
 
-    def handler(signal, frame):
+    def null_handler(signal, frame):
+        print('Signal recieved, continueing...')
+
+    def exit_handler(signal, frame):
         print('Exiting...')
         nonlocal do_exit
         do_exit = True
@@ -87,8 +90,10 @@ def Worker():
     if IsPosix():
         with open(PID_FILE, 'w') as f:
             f.write(str(os.getpid()))
-        signal.signal(signal.SIGTERM, handler)
-        signal.signal(signal.SIGINT, handler)
+        signal.signal(signal.SIGTERM, exit_handler)
+        signal.signal(signal.SIGINT, exit_handler)
+        signal.signal(signal.SIGUSR1, null_handler)
+        signal.signal(signal.SIGALRM, null_handler)
 
     while True:
         if do_exit:
@@ -144,7 +149,7 @@ def Worker():
                 logging.info('All tasks pending, waiting for %d seconds' %
                              delta)
                 if IsPosix():
-                    signal.alert(delta)
+                    signal.alarm(delta)
             else:
                 logging.info('Done everything!')
 

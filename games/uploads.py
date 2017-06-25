@@ -95,8 +95,8 @@ def RecodeGame(game_url_id):
                                            tmp_dir))
     try:
         subprocess.check_output(
-            '"%s" x %s "-o%s"' % (settings.PATH_TO_7Z,
-                                  fs.path(url.local_filename), tmp_dir),
+            settings.EXTRACTOR_PATH %
+                                  (fs.path(url.local_filename), tmp_dir),
             stderr=subprocess.STDOUT,
             shell=True)
     except subprocess.CalledProcessError as x:

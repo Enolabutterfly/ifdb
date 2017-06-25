@@ -54,7 +54,7 @@ if IS_PROD:
     ).strip()
     CRAWLER_CACHE_DIR = '/home/ifdb/tmp/urlcache/'
     TMP_DIR = '/home/ifdb/tmp/tmp/'
-    PATH_TO_7Z = '7z'
+    EXTRACTOR_PATH = '/bin/unar "%s" -o "%s"'
 
 else:
     SECRET_KEY = 'l3uja(27m53i#c)#9ziwmf*3n^e59eieal=3i$z0j@&$0i$!hr'
