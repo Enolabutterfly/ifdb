@@ -118,7 +118,7 @@ def list_games(request):
     query = request.GET.get('q', '')
     s.UpdateFromQuery(query)
     if settings.DEBUG and request.GET.get('forcesearch', None):
-        s.Search()
+        json_search(request)
     return render(request, 'games/search.html', {'query': query,
                                                  **s.ProduceBits()})
 
