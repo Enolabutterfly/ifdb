@@ -138,7 +138,6 @@ def play_urqw(request, gameurl_id):
     gameinfo = GameDetailsBuilder(o_u.game.id, request).GetGameDict()
 
     try:
-        # TODO() select related !important
         data = RecodedGameURL.objects.get(pk=gameurl_id)
         format = os.path.splitext(data.recoded_filename or
                                   o_u.url.local_filename)[1].lower()
