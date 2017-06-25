@@ -33,21 +33,45 @@
         </div>
         <div class="content-box-inner">
             <div class="leftpane">
-                <h1 class="game-title">{{ game.title }}</h1>
-                <div class="game-author">
-                {% if authors %}
-                    {% if authors|length == 1 %}Автор:{% else %}Авторы:{% endif %}
-                    {% for x in authors %}
-                        <span>{{ x.name }}{% if not forloop.last %}, {% endif %}</span>
-                    {% endfor %}
-                {% endif %}
+                <div class="game-header">
+                    <h1>{{ game.title }}</h1>
+                    <div class="game-info">
+                    {% if authors %}
+                        {% if authors|length == 1 %}Автор:{% else %}Авторы:{% endif %}
+                        {% for x in authors %}
+                            <span>{{ x.name }}{% if not forloop.last %}, {% endif %}</span>
+                        {% endfor %}
+                    {% endif %}
+                    </div>
+                    {% if online %}
+                    <div class="game-info">
+                        Играть:
+                        {% for x in online %}
+                            {% if x.category.symbolic_id == 'urqw' %}
+                                <a href="{% url 'play_urqw' gameurl_id=x.pk %}" class="button-like">{{x.description}}</a>
+                            {% else %}
+                                <a href="{{ x.url.GetUrl }}" class="button-like">{{x.description}}</a>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    {% if download %}
+                    <div class="game-info">
+                        Скачать:
+                        {% for x in download %}
+                            <a href="{{ x.url.GetUrl }}" class="button-like" download>{{x.description}}</a>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
                 </div>
+                {% comment %}
                 {% if urqw %}
                     Играть на этом сайте:
                     {% for x in urqw %}
                         <a href="{% url 'play_urqw' gameurl_id=x.pk %}" class="button-like">{{x.description}}</a>
                     {% endfor %}
                 {% endif %}
+                {% endcomment %}
             </div>
             {% if media %}
             <div class="leftpane slider-container">
@@ -163,11 +187,11 @@
             <div class="rightpane">
                 <table>
                     {% for role in participants %}
-                        {% for author in role.authors %}
+                        {% for author in role.items %}
                             <tr>
                                 <td class="prop-category">
                                     {% if forloop.first %}
-                                        {{ role.role.title }}:
+                                        {{ role.category.title }}:
                                     {% endif %}
                                 </td>
                                 <td class="prop-value">
@@ -184,7 +208,7 @@
             <div class="rightpane">
                 <table>
                     {% for cat in tags %}
-                        {% for tag in cat.tags %}
+                        {% for tag in cat.items %}
                             <tr>
                                 <td class="prop-category">
                                     {% if forloop.first %}
@@ -383,7 +407,7 @@
                 <hr>
                 <table>
                     {% for link in links %}
-                        {% for url in link.urls %}
+                        {% for url in link.items %}
                             <tr>
                                 <td class="prop-category">
                                     {% if forloop.first %}

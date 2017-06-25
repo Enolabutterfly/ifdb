@@ -259,16 +259,29 @@ textarea {
     margin-bottom: 1em;
 }
 
-.game-title {
+.game-header {
+    margin-top: 1em;
+    margin-bottom: 3em;
+}
+
+.game-header h1 {
     color: #31322D;
     font-weight: bold;
     font-size: 2.5em;
-    margin-bottom: 0;
-    margin-top: 1em;
+    margin: 0;
 }
 
-.game-author {
-    margin-bottom: 3em;
+.game-header .game-info {
+    margin: 2px;
+}
+
+.game-header .game-info span {
+    color: #31322D;
+    display: inline-block;
+    font-weight: bold;
+    margin-right: 0.4em;
+    text-transform: uppercase;
+    white-space: nowrap;
 }
 
 .gamelist-thumb-container {
@@ -451,7 +464,8 @@ textarea#description {
 }
 
 button,
-input[type="submit"] {
+input[type="submit"],
+.button-like {
     background-color: #00487c;
     border: none;
     color: #F2F1EB;
@@ -461,6 +475,12 @@ input[type="submit"] {
     text-decoration: none;
     cursor: pointer;
     border-radius: 2px;
+}
+
+.button-like {
+    font-family: Arial;
+    padding: 1px 6px;
+    white-space: nowrap;
 }
 
 button:disabled,
@@ -695,12 +715,4 @@ progress::-webkit-progress-value {
     position: absolute;
     right: 0;
     top: 0;
-}
-
-.game-author span {
-    color: #31322D;
-    display: inline-block;
-    font-weight: bold;
-    margin-right: 0.4em;
-    text-transform: uppercase;
 }

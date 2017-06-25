@@ -124,22 +124,31 @@ def list_games(request):
 
 
 def play_urqw(request, gameurl_id):
+    game = None
+    try:
+        o_u = GameURL.objects.get(pk=gameurl_id)
+        game = o_u.game
+    except GameURL.DoesNotExist:
+        raise Http404()
+
+    if o_u.category.symbolic_id != 'urqw':
+        raise Http404()
+
+    request.perm.Ensure(o_u.game.view_perm)
+    gameinfo = GameDetailsBuilder(o_u.game, request).GetGameDict()
+
     try:
         # TODO() select related !important
-        # TODO() Show sensible error if object is not ready yet
-        u = RecodedGameURL.objects.get(pk=gameurl_id)
-    except Game.DoesNotExist:
-        raise Http404()
-    request.perm.Ensure(u.original.game.view_perm)
-    if u.original.category.symbolic_id != 'urqw':
-        raise Http404()
-    format = os.path.splitext(u.recoded_filename or
-                              u.original.url.local_filename)[1].lower()
-
-    gameinfo = GameDetailsBuilder(u.original.game, request).GetGameDict()
+        data = RecodedGameURL.objects.get(pk=gameurl_id)
+        format = os.path.splitext(data.recoded_filename or
+                                  o_u.url.local_filename)[1].lower()
+    except RecodedGameURL.DoesNotExist:
+        format = 'error'
+        data = (
+            "Сервер ещё не подготовил эту игру к запуску. Попробуйте завтра.")
 
     return render(request, 'games/urqw.html',
-                  {'url': u,
+                  {'data': data,
                    'format': format,
                    **gameinfo})
 

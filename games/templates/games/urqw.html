@@ -99,9 +99,11 @@
 
     <script>
         {% if format == '.zip' or format == '.qsz' %}
-            URQW.loadZip('{{ url.GetUrl|escapejs }}');
+            URQW.loadZip('{{ data.GetUrl|escapejs }}');
         {% elif format == '.qst' %}
-            URQW.loadText('{{ url.GetUrl|escapejs }}');
+            URQW.loadText('{{ data.GetUrl|escapejs }}');
+        {% elif format == 'error' %}
+            URQW.showError('{{ data|escapejs }}');
         {% else %}
             URQW.showError('Неизвестный формат: {{ format|escapejs }}.');
         {% endif %}

@@ -37,6 +37,8 @@ URLS = [
     'http://qsp.su/index.php?option=com_sobi2&sobi2Task=sobi2Details&catid=0&sobi2Id=101&Itemid=55',
     'http://qsp.su/index.php?option=com_sobi2&sobi2Task=sobi2Details&catid=0&sobi2Id=49&Itemid=55',
     'http://ifwiki.ru/%D0%9F%D0%B5%D1%80%D0%B5%D1%85%D0%BE%D0%B4',
+    'http://ifwiki.ru/%D0%9F%D0%BE%D1%80%D1%83%D1%87%D0%B8%D0%BA_%D0%A0%D0%B6%D0%B5%D0%B2%D1%81%D0%BA%D0%B8%D0%B9_1:_%D0%9D%D0%B0_%D0%B1%D0%B0%D0%BB%D1%83',
+    'https://urq.plut.info/node/1988',
 ]
 
 

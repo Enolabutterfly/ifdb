@@ -3,12 +3,12 @@ from .tools import FormatDate, RenderMarkdown
 from urllib.parse import urlparse, parse_qs
 
 
-def Partition(links, catname, partitions):
+def Partition(links, partitions):
     rest = []
     cats = {x: None for y in partitions for x in y}
     for x in links:
-        if x[catname].symbolic_id in cats:
-            cats[x[catname].symbolic_id] = x
+        if x['category'].symbolic_id in cats:
+            cats[x['category'].symbolic_id] = x
         else:
             rest.append(x)
 
@@ -16,40 +16,40 @@ def Partition(links, catname, partitions):
     for x in partitions:
         r = []
         for y in x:
-            if cats[y]:
-                r.append(cats[y])
+            if cats[y] and cats[y]['items']:
+                for z in cats[y]['items']:
+                    r.append(z)
         res.append(r)
-    print(cats)
-    print(res + [rest])
     return res + [rest]
 
 
 def AnnotateMedia(media):
     res = []
-    for x in media:
-        for y in x['urls']:
-            val = {}
-            if x['category'].symbolic_id in ['poster', 'screenshot']:
-                val['type'] = 'img'
-                val['img'] = y.url.GetUrl()
-            elif x['category'].symbolic_id == 'video':
-                purl = urlparse(y.url.original_url)
-                if purl.hostname in ['youtube.com', 'www.youtube.com']:
-                    q = parse_qs(purl.query).get('v')
-                    if q:
-                        val['type'] = 'youtube'
-                        val['id'] = q[0]
-                elif purl.hostname == 'youtu.be':
+    print(media)
+    for y in media:
+        val = {}
+        if y.category.symbolic_id in ['poster', 'screenshot']:
+            val['type'] = 'img'
+            val['img'] = y.url.GetUrl()
+        elif y.category.symbolic_id == 'video':
+            purl = urlparse(y.url.original_url)
+            if purl.hostname in ['youtube.com', 'www.youtube.com']:
+                q = parse_qs(purl.query).get('v')
+                if q:
                     val['type'] = 'youtube'
-                    val['id'] = purl.path[1:]
-                else:
-                    logging.error('Unknown video url: %s' % y.url.original_url)
-                    val['type'] = 'unknown'
-                    val['url'] = y.url.GetUrl()
+                    val['id'] = q[0]
+            elif purl.hostname == 'youtu.be':
+                val['type'] = 'youtube'
+                val['id'] = purl.path[1:]
             else:
-                logging.error('Unexpected category: %s' % x)
-                continue
-            res.append(val)
+                logging.error(
+                    'Unknown video url: %s' % y.original_url)
+                val['type'] = 'unknown'
+                val['url'] = y.GetUrl()
+        else:
+            logging.error('Unexpected category: %s' % y)
+            continue
+        res.append(val)
     return res
 
 
@@ -66,13 +66,10 @@ class GameDetailsBuilder:
         release_date = FormatDate(self.game.release_date)
         last_edit_date = FormatDate(self.game.edit_time)
         added_date = FormatDate(self.game.creation_time)
-        authors, participants = Partition(self.GetAuthors(), 'role',
-                                          [('author', )])
-        if authors: authors = authors[0]['authors']
-        media, urqw, links = Partition(self.GetURLs(), 'category',
-                                       [('poster', 'video', 'screenshot'),
-                                        ('urqw', )])
-        if urqw: urqw = urqw[0]['urls']
+        authors, participants = Partition(self.GetAuthors(), [('author', )])
+        media, online, download, links = Partition(
+            self.GetURLs(), [('poster', 'video', 'screenshot'),
+                             ('urqw', 'play_online'), ('download_direct', )])
         media = AnnotateMedia(media)
         md = RenderMarkdown(self.game.description)
         tags = self.GetTagsForDetails()
@@ -92,7 +89,8 @@ class GameDetailsBuilder:
             'tags': tags,
             'links': links,
             'media': media,
-            'urqw': urqw,
+            'online': online,
+            'download': download,
             'votes': votes,
             'comments': comments,
         }
@@ -109,7 +107,7 @@ class GameDetailsBuilder:
         roles.sort(key=lambda x: x.order)
         res = []
         for r in roles:
-            res.append({'role': r, 'authors': authors[r]})
+            res.append({'category': r, 'items': authors[r]})
         return res
 
     def GetURLs(self):
@@ -125,7 +123,7 @@ class GameDetailsBuilder:
         cats.sort(key=lambda x: x.order)
         res = []
         for r in cats:
-            res.append({'category': r, 'urls': urls[r]})
+            res.append({'category': r, 'items': urls[r]})
         return res
 
     def GetTagsForDetails(self):
@@ -143,7 +141,7 @@ class GameDetailsBuilder:
         cats.sort(key=lambda x: x.order)
         res = []
         for r in cats:
-            res.append({'category': r, 'tags': tags[r]})
+            res.append({'category': r, 'items': tags[r]})
         return res
 
     ################################################

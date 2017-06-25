@@ -138,5 +138,7 @@ var URQW = (function() {
         GlobalPlayer.continue();
     }
 
-    return {'loadZip': loadZipFromUrl, 'loadText': loadTextFromUrl};
+    return {'loadZip': loadZipFromUrl,
+            'loadText': loadTextFromUrl,
+            'showError': loadFailed};
 }());
