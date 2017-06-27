@@ -88,15 +88,18 @@ else:
     EXTRACTOR_PATH = '"C:/Program Files/7-Zip/7z.exe" x "%s" "-O%s"'
 
 ADMINS = [('Alexander Lyashuk', 'mooskagh@gmail.com')]
-INTERNAL_IPS = [
-    '127.0.0.1',
-    '10.162.0.100',
-    '2a02:168:520c:0:1d5c:bdaf:bdcc:bc8b',
-    '2a02:168:520c:0:41b9:a756:c814:893',
-    '2a02:168:520c:0:b425:4df2:99a1:26c3',
-    '2a02:168:520c:0:c0e2:2ad2:9900:9b36',
-    '2a02:168:520c:0:c832:576b:e3ea:f98a',
-]
+
+
+class PrefixList(list):
+    def __contains__(self, key):
+        print(key)
+        for x in self:
+            if key.startswith(x):
+                return True
+        return False
+
+
+INTERNAL_IPS = PrefixList(['127.', '10.162.', '2a02:168:520c:'])
 
 # Application definition
 
