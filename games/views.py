@@ -4,7 +4,6 @@ from .models import (GameAuthorRole, Author, Game, GameTagCategory, GameTag,
 from .importer import Import
 from .search import MakeSearch
 from .tools import FormatDate, FormatTime, StarsFromRating
-from datetime import datetime
 from dateutil.parser import parse as parse_date
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -13,6 +12,7 @@ from django.http import Http404
 from django.http.response import JsonResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
+from django.utils import timezone
 from django.views.decorators.csrf import ensure_csrf_cookie
 from ifdb.permissioner import perm_required
 from statistics import mean, median
@@ -68,15 +68,15 @@ def vote_game(request):
 
     try:
         obj = GameVote.objects.get(game=game, user=request.user)
-        obj.edit_time = datetime.now()
+        obj.edit_time = timezone.now()
     except GameVote.DoesNotExist:
         obj = GameVote()
         obj.game = game
         obj.user = request.user
-        obj.creation_time = datetime.now()
+        obj.creation_time = timezone.now()
 
     obj.game_finished = bool(request.POST.get('finished', None))
-    obj.edit_time = datetime.now()
+    obj.edit_time = timezone.now()
     obj.play_time_mins = (
         int(request.POST.get('hours')) * 60 + int(request.POST.get('minutes')))
     obj.star_rating = int(request.POST.get('score'))
@@ -96,7 +96,7 @@ def comment_game(request):
     comment.game = game
     comment.user = request.user
     comment.parent_id = request.POST.get('parent', None)
-    comment.creation_time = datetime.now()
+    comment.creation_time = timezone.now()
     comment.subject = request.POST.get('subject', None) or None
     comment.text = request.POST.get('text', None)
     comment.save()
@@ -168,7 +168,7 @@ def upload(request):
     url.content_type = file.content_type
     url.ok_to_clone = False
     url.is_uploaded = True
-    url.creation_date = datetime.now()
+    url.creation_date = timezone.now()
     url.file_size = fs.size(filename)
     url.creator = request.user
     url.save()
@@ -446,7 +446,7 @@ def UpdateGameUrls(request, game, data, update):
             if u not in url_to_id:
                 url = URL()
                 url.original_url = u
-                url.creation_date = datetime.now()
+                url.creation_date = timezone.now()
                 url.creator = request.user
                 url.ok_to_clone = cat_to_cloneable[c]
                 url.save()
@@ -484,11 +484,11 @@ def UpdateGame(request, j):
     if ('game_id' in j):
         g = Game.objects.get(id=j['game_id'])
         request.perm.Ensure(g.edit_perm)
-        g.edit_time = datetime.now()
+        g.edit_time = timezone.now()
     else:
         request.perm.Ensure(PERM_ADD_GAME)
         g = Game()
-        g.creation_time = datetime.now()
+        g.creation_time = timezone.now()
         g.added_by = request.user
 
     g.title = j['title']

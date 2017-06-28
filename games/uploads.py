@@ -3,7 +3,7 @@ from core.crawler import FetchUrlToFileLike
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 from urllib.parse import unquote
-import datetime
+from django.utils import timezone
 import logging
 import os.path
 import re
@@ -67,7 +67,7 @@ def RecodeGame(game_url_id):
         # Already in supported format.
         recoded_url = RecodedGameURL()
         recoded_url.original = game_url
-        recoded_url.recoding_date = datetime.datetime.now()
+        recoded_url.recoding_date = timezone.now()
         recoded_url.save()
         return
 
@@ -83,7 +83,7 @@ def RecodeGame(game_url_id):
         recoded_url.original = game_url
         recoded_url.recoded_filename = new_filename
         recoded_url.recoded_url = fs.url(new_filename)
-        recoded_url.recoding_date = datetime.datetime.now()
+        recoded_url.recoding_date = timezone.now()
         recoded_url.save()
         return
 
@@ -125,5 +125,5 @@ def RecodeGame(game_url_id):
     recoded_url.original = game_url
     recoded_url.recoded_filename = new_filename
     recoded_url.recoded_url = fs.url(new_filename)
-    recoded_url.recoding_date = datetime.datetime.now()
+    recoded_url.recoding_date = timezone.now()
     recoded_url.save()
