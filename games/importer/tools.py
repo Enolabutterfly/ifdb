@@ -12,9 +12,12 @@ URL_CATEGORIZER_RULES = [  # hostname, path, query, slug, desc
     ('', r'.*screenshot.*\.(png|jpg|gif|bmp|jpeg)', '', 'screenshot',
      'Скриншот'),
     ('', r'.*\.(png|jpg|gif|bmp|jpeg)', '', 'poster', 'Обложка'),
+    ('ifwiki.ru', '/files/.*', '', 'download_direct', 'Скачать с IfWiki'),
     ('ifwiki.ru', '', '', 'game_page', 'Страница на IfWiki'),
+    ('ludumdare.com', '', '', 'game_page', 'Страница на Ludum Dare'),
     ('urq.plut.info', '.*/files/.*', '', 'download_direct', 'Скачать с плута'),
     ('urq.plut.info', '', '', 'game_page', 'Страница на плуте'),
+    ('store.steampowered.com', '', '', 'game_page', 'Страница на стиме'),
     ('yadi.sk', '', '', 'download_landing', 'Скачать с Яндекс.диска'),
     ('rilarhiv.ru', '', '', 'download_direct', 'Скачать с РилАрхива'),
     ('instead-games.ru', '.*/download/.*', '', 'download_direct',
@@ -30,6 +33,8 @@ URL_CATEGORIZER_RULES = [  # hostname, path, query, slug, desc
     ('qsp.su', '', '', 'game_page', 'Игра на qsp.ru'),
     (r'@.*\.github\.io', '', '', 'play_online', 'Играть онлайн'),
     ('iplayif.com', '', '', 'play_online', 'Играть онлайн'),
+    ('apero.ru', '', '', 'play_online', 'Играть онлайн'),
+    ('storymaze.ru', '', '', 'play_online', 'Играть онлайн'),
     ('', r'.*\.(zip|rar|z5)', '', 'download_direct', 'Ссылка для скачивания'),
 ]
 
@@ -43,7 +48,7 @@ def CategorizeUrl(url, desc='', category=None, base=None):
     for (host, path, query, slug, ddesc) in URL_CATEGORIZER_RULES:
         if host:
             if host.startswith('@'):
-                if not re.match(host[1:], purl.hostname):
+                if purl.hostname and not re.match(host[1:], purl.hostname):
                     continue
             elif host != purl.hostname:
                 continue
@@ -55,6 +60,12 @@ def CategorizeUrl(url, desc='', category=None, base=None):
         if not desc:
             desc = ddesc
         break
+
+    if cat_slug == 'unknown':
+        if desc.lower() == 'играть онлайн':
+            cat_slug = 'play_online'
+        elif 'скачать' in desc.lower():
+            cat_slug = 'download_landing'
 
     if category:
         cat_slug = category
@@ -138,7 +149,6 @@ def Import(seed_url):
         urls_checked.add(url_hash)
 
         r = DispatchImport(url)
-        enricher.Enrich(r)
 
         if 'priority' not in r:
             r['priority'] = -1000
@@ -168,6 +178,8 @@ def Import(seed_url):
         MergeImport(r, x)
     if 'title' in r and 'error' in r:
         del r['error']
+
+    enricher.Enrich(r)
     return r
 
 

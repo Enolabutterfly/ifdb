@@ -5,6 +5,10 @@ from games.importer import Import
 from games.views import UpdateGame, Importer2Json
 from ifdb.permissioner import Permissioner
 import games.importer.tools
+from django.conf import settings
+import os.path
+from urllib.parse import unquote
+
 
 USER = 'бездушный робот'
 URLS = [
@@ -45,6 +49,9 @@ URLS = [
     'http://ifwiki.ru/%D0%9F%D0%BE%D0%B4%D0%B7%D0%B5%D0%BC%D0%B5%D0%BB%D1%8C%D0%B5_%D1%81%D0%BE%D0%BA%D1%80%D0%BE%D0%B2%D0%B8%D1%89',
 ]
 
+URLS = open(os.path.join(settings.BASE_DIR,
+                         'scripts/ifwikiurllist.txt')).read().split()
+
 
 class FakeRequest:
     def __init__(self, username):
@@ -59,5 +66,7 @@ class Command(BaseCommand):
         fake_request = FakeRequest(USER)
 
         for url in URLS:
+            print(unquote(url))
             game = Importer2Json(Import(url))
             UpdateGame(fake_request, game)
+            # input("Continue?")

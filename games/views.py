@@ -497,8 +497,8 @@ def UpdateGame(request, j):
                       if j.get('release_date', None) else None)
 
     g.save()
-    UpdateGameUrls(request, g, j['links'], 'game_id' in j)
-    UpdateGameTags(request, g, j['tags'], 'game_id' in j)
-    UpdateGameAuthors(request, g, j['authors'], 'game_id' in j)
+    UpdateGameUrls(request, g, j.get('links', []), 'game_id' in j)
+    UpdateGameTags(request, g, j.get('tags', []), 'game_id' in j)
+    UpdateGameAuthors(request, g, j.get('authors', []), 'game_id' in j)
 
     return g.id

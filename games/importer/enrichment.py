@@ -102,6 +102,18 @@ class AddTag(ActionBase):
             game['tags'].append({'tag_slug': x})
 
 
+class AddRawTag(ActionBase):
+    def __init__(self, category, tag):
+        self.category = category
+        self.tag = tag
+
+    def Apply(self, game):
+        game.setdefault('tags', []).append({
+            'cat_slug': self.category,
+            'tag': self.tag
+        })
+
+
 class CloneUrl(ActionBase):
     def __init__(self, fr, to):
         self.fr = fr
@@ -200,3 +212,5 @@ enricher.AddRule(
             IsFromSite('game_page', 'urq.plut.info')),
         Not(HasTag('platform', 'fireurq'))),
     CloneUrl('download_direct', 'play_in_interpreter'))
+enricher.AddRule(
+    Not(HasTag('language', '.*')), AddRawTag('language', 'русский'))

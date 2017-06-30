@@ -102,10 +102,8 @@ def ImportFromPlut(url):
         elif cat == 'Авторы':
             authors.append({'role_slug': 'author', 'name': tag})
 
-    if tags:
-        res['tags'] = tags
-    if authors:
-        res['authors'] = authors
+    res['tags'] = tags
+    res['authors'] = authors
 
     # if 'desc' in res. Parse the rest of links
     if 'desc' in res:

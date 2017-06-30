@@ -8,7 +8,10 @@ AUTHOR_ROLES = [
     ['translator', 'Переводчик'],
     ['porter', 'Перенёс на другую платформу'],
     ['character', 'Персонаж'],
+    ['programmer', 'Программист'],
     ['member', 'Участник (прочие)'],
+    ['composer', 'Композитор'],
+
 ]
 
 TAG_CATS = [
@@ -27,6 +30,9 @@ TAG_CATS = [
     ['os', 'Операционная система', False, {}],
     ['competition', 'Участник конкурса', True, {}],
     ['tag', 'Тэг', True, {
+        'search': '@admin'
+    }],
+    ['language', 'Язык', True, {
         'search': '@admin'
     }],
     ['ifid', 'IFID', True, {
@@ -52,6 +58,7 @@ TAGS = [
     ['os', 'os_other', 'Другая ОС'],
     ['control', 'parser', 'Парсерная'],
     ['control', 'menu', 'Менюшная'],
+    ['tag', 'ifwiki_featured', 'Избранная на ifwiki'],
 ]
 
 URL_CATS = [

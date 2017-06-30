@@ -2,7 +2,21 @@ pause
 pause
 pause
 
-del db.sqlite3
+goto skip
+DO $$ DECLARE
+    tabname RECORD;
+BEGIN
+    FOR tabname IN (SELECT tablename 
+                    FROM pg_tables 
+                    WHERE schemaname = current_schema()) 
+LOOP
+    EXECUTE 'DROP TABLE IF EXISTS ' || quote_ident(tabname.tablename) || ' CASCADE';
+END LOOP;
+END $$;
+:skip
+
+# del db.sqlite3
+call m flush
 del games\migrations\0*.py
 del core\migrations\0*.py
 call m makemigrations games
