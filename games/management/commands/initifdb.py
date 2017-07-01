@@ -11,7 +11,6 @@ AUTHOR_ROLES = [
     ['programmer', 'Программист'],
     ['member', 'Участник (прочие)'],
     ['composer', 'Композитор'],
-
 ]
 
 TAG_CATS = [
@@ -29,9 +28,7 @@ TAG_CATS = [
     ['control', 'Управление', False, {}],
     ['os', 'Операционная система', False, {}],
     ['competition', 'Участник конкурса', True, {}],
-    ['tag', 'Тэг', True, {
-        'search': '@admin'
-    }],
+    ['tag', 'Тэг', True, {}],
     ['language', 'Язык', True, {
         'search': '@admin'
     }],
