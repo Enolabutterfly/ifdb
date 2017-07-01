@@ -2,7 +2,7 @@ import re
 from .models import Game, GameTag, GameTagCategory
 import statistics
 from .tools import FormatDate, FormatTime, StarsFromRating
-from django.db.models import Q
+from django.db.models import Q, Count
 
 RE_WORD = re.compile(r"\w(?:[-\w']+\w)?")
 
@@ -306,7 +306,39 @@ class SB_Tag(SearchBit):
 class SB_Flags(SearchBit):
     TYPE_ID = 3
 
+    def __init__(self):
+        super().__init__(self.VAL_ID, True)
+        self.items = [False] * len(self.FIELDS)
+
+    def ProduceDict(self):
+        res = super().ProduceDict('flags')
+        res['header'] = self.HEADER
+        items = []
+        for i, x in enumerate(self.FIELDS):
+            items.append({'id': i, 'name': x, 'on': self.items[i]})
+        res['items'] = items
+        return res
+
+    def LoadFromQuery(self, reader):
+        self.items = reader.ReadFlags(len(self.FIELDS))
+
+    def ModifyQuery(self, query):
+        q = None
+        for i, v in enumerate(self.items):
+            if not v:
+                continue
+            if i in self.ANNOTATIONS:
+                query = query.annotate(self.ANNOTATIONS[i])
+            q = q | self.QUERIES[i] if q else self.QUERIES[i]
+        return query.filter(q)
+
+    def IsActive(self):
+        return True in self.items
+
+
+class SB_UserFlags(SB_Flags):
     HEADER = 'Наличие ресурсов'
+    VAL_ID = 0
 
     FIELDS = [
         'С видео',
@@ -317,7 +349,7 @@ class SB_Flags(SearchBit):
         'Можно поиграть онлайн',
     ]
 
-    CATS_ID_CACHE = {}
+    ANNOTATIONS = {}
 
     QUERIES = {
         0:
@@ -338,39 +370,38 @@ class SB_Flags(SearchBit):
             ]),
     }
 
-    # Flags:
-    # 0 -- has video
-    # 1 -- has review
-    # 2 -- has forums
-    # 3 -- has comments
-    # 4 -- downloadable
-    # 5 -- playable online
-    def __init__(self):
-        super().__init__(0, True)
-        self.items = [False] * len(self.FIELDS)
 
-    def ProduceDict(self):
-        res = super().ProduceDict('flags')
-        res['header'] = self.HEADER
-        items = []
-        for i, x in enumerate(self.FIELDS):
-            items.append({'id': i, 'name': x, 'on': self.items[i]})
-        res['items'] = items
-        return res
+class SB_AuxFlags(SB_Flags):
+    HEADER = 'Служебные'
+    VAL_ID = 1
 
-    def LoadFromQuery(self, reader):
-        self.items = reader.ReadFlags(len(self.FIELDS))
+    FIELDS = [
+        'С файлами без категорий',
+        'Без авторов',
+        'Без даты выпуска',
+        'UrqW -- проверенные',
+        'UrqW -- непроверенные',
+        'UrqW -- неработающие',
+    ]
 
-    def ModifyQuery(self, query):
-        q = None
-        for i, v in enumerate(self.items):
-            if not v:
-                continue
-            q = q | self.QUERIES[i] if q else self.QUERIES[i]
-        return query.filter(q)
+    ANNOTATIONS = {
+        1: (Count('gameauthor')),
+    }
 
-    def IsActive(self):
-        return True in self.items
+    QUERIES = {
+        0:
+            Q(gameurl__category__symbolic_id='unknown'),
+        1:
+            Q(gameauthor__count=0),
+        2:
+            Q(release_date__isnull=False),
+        3:
+            Q(gameurl__interpretedgameurl__is_playable=True),
+        4: (Q(gameurl__interpretedgameurl__isnull=False) & Q(
+            gameurl__interpretedgameurl__is_playable__isnull=True)),
+        5:
+            Q(gameurl__interpretedgameurl__is_playable=False),
+    }
 
 
 # [int:0] - Sorting. + [int: sort type, lowest bit for direction]
@@ -441,5 +472,6 @@ def MakeSearch(perm):
         if not perm(x.show_in_search_perm):
             continue
         s.Add(SB_Tag(x))
-    s.Add(SB_Flags())
+    s.Add(SB_UserFlags())
+    s.Add(SB_AuxFlags())
     return s
