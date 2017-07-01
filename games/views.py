@@ -20,7 +20,7 @@ import os.path
 import json
 import logging
 from core.taskqueue import Enqueue
-from .uploads import CloneFile, RecodeGame, MarkBroken
+from .tasks.uploads import CloneFile, RecodeGame, MarkBroken
 from .game_details import GameDetailsBuilder
 
 PERM_ADD_GAME = '@auth'  # Also for file upload, game import, vote
