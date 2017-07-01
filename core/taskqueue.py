@@ -122,8 +122,8 @@ def Worker():
                 t.save()
             except Exception as e:
                 logging.exception(e)
-                while settings.DEBUG:
-                    r = input("Continue? [yes/no]> ")
+                while False and settings.DEBUG:
+                    r = input("Continue? [yes/no/all]> ")
                     if r.lower() in ['yes', 'y']:
                         break
                     if r.lower() in ['no', 'n']:

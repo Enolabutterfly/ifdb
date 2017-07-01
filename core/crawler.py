@@ -15,12 +15,15 @@ def FetchUrlToString(url, use_cache=True):
 
 
 def _ResponseInfoToMetadata(url, response):
-    return {
+    res = {
         'url': url,
         'time': str(timezone.now()),
         'filename': response.get_filename(),
         'content-type': response.get_content_type(),
     }
+    if res['filename']:
+        res['filename'] = res['filename'].lstrip('"')
+    return res
 
 
 def FetchUrlToFileLike(url, use_cache=True):
