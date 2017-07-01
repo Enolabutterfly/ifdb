@@ -364,10 +364,8 @@ class SB_UserFlags(SB_Flags):
             Q(gameurl__category__symbolic_id__in=[
                 'download_direct', 'download_landing'
             ]),
-        5:
-            Q(gameurl__category__symbolic_id__in=[
-                'play_online', 'play_in_interpreter'
-            ]),
+        5: (Q(gameurl__category__symbolic_id='play_online') |
+            Q(gameurl__interpretedgameurl__is_playable=True)),
     }
 
 

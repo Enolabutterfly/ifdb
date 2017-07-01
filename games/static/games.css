@@ -431,6 +431,29 @@ textarea#description {
     cursor: pointer;
 }
 
+.interpreter-details {
+    float: right;
+    text-align: center;
+}
+
+.interpreter-details td {
+    font-size: 90%;
+    text-align: left;
+}
+
+.interpreter-details th {
+    font-size: 90%;
+    text-align: right;
+    padding-right: 0.5em;
+}
+
+.interpreter-details input[type="submit"] {
+    padding: 0 0.5em;
+    margin: 0.1em;
+    display: inline-block;
+    font-size: 95%;
+}
+
 #messagebox {
     background-color: #F2F1EB;
     border: 1px solid #625B61;

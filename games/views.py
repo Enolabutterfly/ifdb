@@ -9,6 +9,7 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.files.storage import FileSystemStorage
 from django.http import Http404
+from django.core.exceptions import SuspiciousOperation
 from django.http.response import JsonResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
@@ -16,6 +17,7 @@ from django.utils import timezone
 from django.views.decorators.csrf import ensure_csrf_cookie
 from ifdb.permissioner import perm_required
 from statistics import mean, median
+from django import forms
 import os.path
 import json
 import logging
@@ -123,6 +125,40 @@ def list_games(request):
                                                  **s.ProduceBits()})
 
 
+class UrqwInterpreterForm(forms.Form):
+    does_work = forms.NullBooleanField(label="Работоспособность игры")
+    variant = forms.ChoiceField(
+        label="Вариант URQ",
+        required=False,
+        choices=[
+            (None, "Без специальных правил"),
+            ('ripurq', "Rip URQ 1.4"),
+            ('dosurq', "Dos URQ 1.35"),
+        ])
+
+
+def store_interpreter_params(request, gameurl_id):
+    game = None
+    try:
+        u = InterpretedGameUrl.objects.get(pk=gameurl_id)
+    except GameURL.DoesNotExist:
+        raise Http404()
+
+    request.perm.Ensure(u.original.game.edit_perm)
+    form = UrqwInterpreterForm(request.POST)
+
+    if form.is_valid():
+        u.is_playable = form.cleaned_data['does_work']
+        j = json.loads(u.configuration_json)
+        j['variant'] = form.cleaned_data['variant']
+        u.configuration_json = json.dumps(j)
+        u.save()
+
+        return redirect(
+            reverse('play_in_interpreter', kwargs={'gameurl_id': gameurl_id}))
+    raise SuspiciousOperation
+
+
 def play_in_interpreter(request, gameurl_id):
     game = None
     try:
@@ -144,6 +180,19 @@ def play_in_interpreter(request, gameurl_id):
         res['format'] = os.path.splitext(data.recoded_filename or
                                          o_u.url.local_filename)[1].lower()
         res['conf'] = json.loads(data.configuration_json)
+
+        form = UrqwInterpreterForm({
+            'does_work': data.is_playable,
+            'variant': res['conf']['variant']
+        })
+
+        res['can_edit'] = request.perm(game.edit_perm)
+        if not res['can_edit']:
+            for x in form.fields:
+                form.fields[x].disabled = True
+
+        res['form'] = form.as_table()
+
     except InterpretedGameUrl.DoesNotExist:
         res['format'] = 'error'
         res['data'] = (

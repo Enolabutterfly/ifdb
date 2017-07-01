@@ -20,6 +20,23 @@
 {% endblock %}
 {% block content %}
     <div class="content-box">
+        {% if conf.interpreter == 'urqw' %}
+        <form class="interpreter-details" method="post"
+              action="{% url 'store_interpreter_params' gameurl_id=data.pk %}">
+            {% csrf_token %}
+            <table>
+                {{ form }}
+            </table>
+            {% if can_edit %}
+                <input type="submit" value="Сохранить" />
+                <div class="game-auxinfo">
+                    Сохранение изменит настройки для всех пользователей
+                    <br>и перезагрузит эту страницу.
+                </div>
+            {% endif %}
+        </form>
+        {% endif %}
+
         <h1 class="game-title">{{ game.title }}</h1>
         <div class="game-author">
         {% if authors %}
