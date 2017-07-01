@@ -493,9 +493,9 @@ def UpdateGame(request, j, update_edit_time=True):
         g.added_by = request.user
 
     g.title = j['title']
-    g.description = j['desc'] or None
+    g.description = j.get('desc')
     g.release_date = (parse_date(j['release_date'])
-                      if j.get('release_date', None) else None)
+                      if 'release_date' in j else None)
 
     g.save()
     UpdateGameUrls(request, g, j.get('links', []), 'game_id' in j)

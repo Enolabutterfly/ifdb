@@ -148,9 +148,9 @@ class GameSet:
                     similar_games.add(x)
 
         if len(similar_games) > 1:
-            logging.error(
-                "Found %d similar games while importing [%s]:\n%s" % game,
-                '\n'.join([str(x) for x in similar_games]))
+            logging.error("Found %d similar games while importing [%s]:\n%s" %
+                          (len(similar_games), game,
+                           '\n'.join([str(x) for x in similar_games])))
 
         best_game = None
         best_similariry = 0.0

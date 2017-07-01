@@ -179,7 +179,7 @@ def Import(*seed_url):
 
         append = False
         if 'title' in r:
-            if title:
+            if title and url not in seed_url:
                 if SimilarEnough(title, r['title']):
                     append = True
             else:
