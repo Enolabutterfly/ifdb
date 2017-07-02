@@ -2,7 +2,7 @@ import re
 from .models import Game, GameTag, GameTagCategory
 import statistics
 from .tools import FormatDate, FormatTime, StarsFromRating
-from django.db.models import Q, Count
+from django.db.models import Q, Count, prefetch_related_objects
 
 RE_WORD = re.compile(r"\w(?:[-\w']+\w)?")
 
@@ -84,6 +84,9 @@ class SearchBit:
     def Id(self):
         return self.val * 16 + self.TYPE_ID
 
+    def NeedsFullSet(self):
+        return True
+
     def ProduceDict(self, typ):
         return {
             'id': self.Id(),
@@ -163,6 +166,9 @@ class SB_Sorting(SearchBit):
         if self.method in [self.RATING, self.DURATION]:
             return query.prefetch_related('gamevote_set')
         return query
+
+    def NeedsFullSet(self):
+        return self.method not in [self.CREATION_DATE]
 
     def ModifyResult(self, games):
         r = self.desc
@@ -248,6 +254,9 @@ class SB_Text(SearchBit):
     def IsActive(self):
         return bool(self.text)
 
+    def NeedsFullSet(self):
+        return True
+
     def ModifyResult(self, games):
         # TODO(crem) Do something at query time.
         query = TokenizeText(self.text or '')
@@ -289,10 +298,14 @@ class SB_Tag(SearchBit):
     def ModifyQuery(self, query):
         return query.prefetch_related('tags')
 
+    def NeedsFullSet(self):
+        return True
+
     def IsActive(self):
         return bool(self.items)
 
     def ModifyResult(self, games):
+        # TODO This should absolutely be in ModifyQuery!
         res = []
         for g in games:
             tags = set(
@@ -331,6 +344,9 @@ class SB_Flags(SearchBit):
                 query = query.annotate(self.ANNOTATIONS[i])
             q = q | self.QUERIES[i] if q else self.QUERIES[i]
         return query.filter(q)
+
+    def NeedsFullSet(self):
+        return False
 
     def IsActive(self):
         return True in self.items
@@ -415,6 +431,19 @@ class SB_AuxFlags(SB_Flags):
 #     Possibly merge int:4 and int:5 into range input.
 
 
+def LimitListlike(q, start, limit):
+    if start is None:
+        if limit is None:
+            return q
+        else:
+            return q[:limit]
+    else:
+        if limit is None:
+            return q[start:]
+        else:
+            return q[start:start + limit]
+
+
 class Search:
     def __init__(self, perm):
         self.perm = perm
@@ -446,19 +475,36 @@ class Search:
             key = reader.ReadInt()
             self.id_to_bit[key].LoadFromQuery(reader)
 
-    def Search(self, *, prefetch_related=None):
+    def Search(self, *, prefetch_related=None, start=None, limit=None):
+        need_full_query = False
+        partial_query = start is not None or limit is not None
+
         q = Game.objects.all()
-        if prefetch_related:
-            q = q.prefetch_related(*prefetch_related)
         for x in self.bits:
             if x.IsActive():
                 q = x.ModifyQuery(q)
-        games = [x for x in q.distinct() if self.perm(x.view_perm)]
+                if x.NeedsFullSet(): need_full_query = True
+
+        two_stage_fetch = need_full_query and partial_query
+        if prefetch_related and not two_stage_fetch:
+            q = q.prefetch_related(*prefetch_related)
+        q = q.distinct()
+
+        if not two_stage_fetch:
+            q = LimitListlike(q, start, limit)
+
+        games = [x for x in q if self.perm(x.view_perm)]
         for g in games:
             g.ds = {}
         for x in self.bits:
             if x.IsActive():
                 games = x.ModifyResult(games)
+
+        if two_stage_fetch:
+            games = LimitListlike(games, start, limit)
+            if prefetch_related:
+                prefetch_related_objects(games, *prefetch_related)
+
         return games
 
 

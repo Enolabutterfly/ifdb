@@ -1,15 +1,21 @@
-from .models import (GameAuthorRole, Author, Game, GameTagCategory, GameTag,
-                     URLCategory, URL, GameURL, GameVote, GameComment,
-                     GameAuthor, InterpretedGameUrl)
+import json
+import logging
+import os.path
+import timeit
+from .game_details import GameDetailsBuilder
 from .importer import Import
+from .models import *
 from .search import MakeSearch
+from .tasks.uploads import CloneFile, RecodeGame, MarkBroken
 from .tools import FormatDate, FormatTime, StarsFromRating
+from core.taskqueue import Enqueue
 from dateutil.parser import parse as parse_date
+from django import forms
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import SuspiciousOperation
 from django.core.files.storage import FileSystemStorage
 from django.http import Http404
-from django.core.exceptions import SuspiciousOperation
 from django.http.response import JsonResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
@@ -17,13 +23,6 @@ from django.utils import timezone
 from django.views.decorators.csrf import ensure_csrf_cookie
 from ifdb.permissioner import perm_required
 from statistics import mean, median
-from django import forms
-import os.path
-import json
-import logging
-from core.taskqueue import Enqueue
-from .tasks.uploads import CloneFile, RecodeGame, MarkBroken
-from .game_details import GameDetailsBuilder
 
 PERM_ADD_GAME = '@auth'  # Also for file upload, game import, vote
 
@@ -309,10 +308,16 @@ def json_gameinfo(request):
 
 def json_search(request):
     query = request.GET.get('q', '')
+    start = int(request.GET.get('start', '0'))
+    limit = int(request.GET.get('limit', '80'))
+
+    start_time = timeit.default_timer()
     s = MakeSearch(request.perm)
     s.UpdateFromQuery(query)
     games = s.Search(
-        prefetch_related=['gameauthor_set__author', 'gameauthor_set__role'])
+        prefetch_related=['gameauthor_set__author', 'gameauthor_set__role'],
+        start=start,
+        limit=limit)
 
     posters = (GameURL.objects.filter(category__symbolic_id='poster').filter(
         game__in=games).select_related('url'))
@@ -326,8 +331,20 @@ def json_search(request):
         x.authors = [
             x for x in x.gameauthor_set.all() if x.role.symbolic_id == 'author'
         ]
+    res = render(request, 'games/search_snippet.html', {
+        'games': games,
+        'start': start,
+        'limit': limit,
+        'next': start+limit,
+        'has_more': len(games) == limit,
+    })
 
-    return render(request, 'games/search_snippet.html', {'games': games})
+    elapsed_time = timeit.default_timer() - start_time
+
+    if elapsed_time > 1.0:
+        logging.error("Time for search query [%s] was %f" % (query,
+                                                             elapsed_time))
+    return res
 
 
 def Importer2Json(r):
