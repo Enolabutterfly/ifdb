@@ -37,7 +37,11 @@
         </form>
         {% endif %}
 
-        <h1 class="game-title">{{ game.title }}</h1>
+        <h1 class="game-title">
+            <a href="{% url 'show_game' game_id=game.id %}">
+                {{ game.title }}
+            </a>
+        </h1>
         <div class="game-author">
         {% if authors %}
             {% if authors|length == 1 %}Автор:{% else %}Авторы:{% endif %}

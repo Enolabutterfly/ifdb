@@ -22,7 +22,6 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.csrf import ensure_csrf_cookie
 from ifdb.permissioner import perm_required
-from statistics import mean, median
 
 PERM_ADD_GAME = '@auth'  # Also for file upload, game import, vote
 

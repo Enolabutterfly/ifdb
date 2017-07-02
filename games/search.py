@@ -386,7 +386,7 @@ class SB_UserFlags(SB_Flags):
 
 
 class SB_AuxFlags(SB_Flags):
-    HEADER = 'Служебные'
+    HEADER = 'Для садовников'
     VAL_ID = 1
 
     FIELDS = [
@@ -408,7 +408,7 @@ class SB_AuxFlags(SB_Flags):
         1:
             Q(gameauthor__count=0),
         2:
-            Q(release_date__isnull=False),
+            Q(release_date__isnull=True),
         3:
             Q(gameurl__interpretedgameurl__is_playable=True),
         4: (Q(gameurl__interpretedgameurl__isnull=False) & Q(
