@@ -178,7 +178,6 @@ class GameTag(models.Model):
         max_length=32, null=True, blank=True, db_index=True, unique=True)
     category = models.ForeignKey(GameTagCategory)
     name = models.CharField(max_length=255, db_index=True)
-    order = models.SmallIntegerField(default=0)
 
 
 class GameVote(models.Model):

@@ -134,6 +134,7 @@ var SEARCH = (function() {
         }
 
         this.loadResults = function(query) {
+            $(window).off('scroll');
             if (self.xhr) {
                 self.xhr.abort();
                 self.xhr = null;

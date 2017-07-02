@@ -121,7 +121,7 @@ IFWIKI_ROLES = [
 IFWIKI_IGNORE_ROLES = ['Категория']
 
 IFWIKI_COMPETITIONS = {
-    'Конкурс': '',
+    'Конкурс': '{_1}',
     'ЛОК': 'ЛОК-{_1}',
     'ЗОК': 'ЗОК-{_1}',
     'КРИЛ': 'КРИЛ-{_1}',
@@ -224,6 +224,7 @@ class WikiParsingContext:
             self.ProcessGameinfo(params)
             return ''
         if name in IFWIKI_COMPETITIONS:
+            print(name)
             p = {**params}
             for k, v in params.items():
                 if k[0] in '0123456789':

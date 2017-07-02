@@ -282,7 +282,8 @@ class SB_Tag(SearchBit):
         res = super().ProduceDict('tags')
         res['cat'] = self.cat
         items = []
-        for x in (GameTag.objects.filter(category=self.cat).order_by('order')):
+        for x in (GameTag.objects.filter(category=self.cat).annotate(
+                Count('game')).order_by('-game__count')):
             items.append({
                 'id': x.id,
                 'name': x.name,

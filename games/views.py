@@ -251,8 +251,7 @@ def tags(request):
             'tags': []
         }
         # TODO(crem) Optimize this.
-        for y in (GameTag.objects.filter(category=x).order_by('order',
-                                                              'name')):
+        for y in (GameTag.objects.filter(category=x).order_by('name')):
             val['tags'].append({
                 'id': y.id,
                 'name': y.name,
