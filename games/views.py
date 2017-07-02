@@ -333,7 +333,7 @@ def json_search(request):
         'games': games,
         'start': start,
         'limit': limit,
-        'next': start+limit,
+        'next': start + limit,
         'has_more': len(games) == limit,
     })
 
@@ -559,7 +559,7 @@ def UpdateGame(request, j, update_edit_time=True):
     g.title = j['title']
     g.description = j.get('desc')
     g.release_date = (parse_date(j['release_date'])
-                      if 'release_date' in j else None)
+                      if j.get('release_date') else None)
 
     g.save()
     UpdateGameUrls(request, g, j.get('links', []), 'game_id' in j)

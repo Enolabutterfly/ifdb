@@ -327,14 +327,15 @@ a.gamelist-thumb .title-container {
 }
 
 a.gamelist-thumb .search-author {
+    display: block;
     font-size: 90%;
     font-weight: bold;
+    height: 16px;
+    overflow: hidden;
     padding: 2px 5px;
     text-align: right;
     text-overflow: ellipsis;
     white-space: nowrap;
-    display: block;
-    overflow: hidden;
 }
 
 a.gamelist-thumb img.poster {
@@ -546,8 +547,8 @@ button#submit,
 }
 
 .invalidinput {
-    border: 1px solid red;
-    background-color: #fdd;
+    border: 1px solid red !important;
+    background-color: #fdd !important;
 }
 
 .urlinput {
