@@ -27,7 +27,53 @@ PERM_ADD_GAME = '@auth'  # Also for file upload, game import, vote
 
 
 def index(request):
-    return render(request, 'games/index.html', {})
+    res = {}
+
+    s = MakeSearch(request.perm)
+    s.UpdateFromQuery('00')
+    games = s.Search(
+        prefetch_related=['gameauthor_set__author', 'gameauthor_set__role'],
+        start=0,
+        limit=20)[:5]
+
+    posters = (GameURL.objects.filter(category__symbolic_id='poster').filter(
+        game__in=games).select_related('url'))
+
+    g2p = {}
+    for x in posters:
+        g2p[x.game_id] = x.url.GetUrl()
+
+    for x in games:
+        x.poster = g2p.get(x.id)
+        x.authors = [
+            x for x in x.gameauthor_set.all() if x.role.symbolic_id == 'author'
+        ]
+
+    res['top'] = games
+
+    s = MakeSearch(request.perm)
+    s.UpdateFromQuery('04')
+    games = s.Search(
+        prefetch_related=['gameauthor_set__author', 'gameauthor_set__role'],
+        start=0,
+        limit=20)[:5]
+
+    posters = (GameURL.objects.filter(category__symbolic_id='poster').filter(
+        game__in=games).select_related('url'))
+
+    g2p = {}
+    for x in posters:
+        g2p[x.game_id] = x.url.GetUrl()
+
+    for x in games:
+        x.poster = g2p.get(x.id)
+        x.authors = [
+            x for x in x.gameauthor_set.all() if x.role.symbolic_id == 'author'
+        ]
+
+    res['best'] = games
+
+    return render(request, 'games/index.html', res)
 
 
 @ensure_csrf_cookie
