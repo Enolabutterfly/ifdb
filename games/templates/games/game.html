@@ -50,7 +50,7 @@
                             {% if x.category.symbolic_id == 'play_in_interpreter' %}
                                 <a href="{% url 'play_in_interpreter' gameurl_id=x.pk %}" class="button-like">{{x.description}}</a>
                             {% else %}
-                                <a href="{{ x.url.GetUrl }}" class="button-like">{{x.description}}</a>
+                                <a href="{{ x.GetLocalUrl }}" class="button-like">{{x.description}}</a>
                             {% endif %}
                         {% endfor %}
                     </div>
@@ -59,7 +59,7 @@
                     <div class="game-info">
                         Скачать:
                         {% for x in download %}
-                            <a href="{{ x.url.GetUrl }}" class="button-like" download>{{x.description}}</a>
+                            <a href="{{ x.GetLocalUrl }}" class="button-like" download>{{x.description}}</a>
                         {% endfor %}
                     </div>
                     {% endif %}
@@ -406,7 +406,7 @@
                                     {% endif %}
                                 </td>
                                 <td class="prop-value">
-                                    <a href="{{ url.url.original_url }}">
+                                    <a href="{{ url.GetLocalUrl }}">
                                         {{ url.description }}
                                     </a>
                                 </td>

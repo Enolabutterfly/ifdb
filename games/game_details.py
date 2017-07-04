@@ -6,6 +6,7 @@ from urllib.parse import urlparse, parse_qs
 
 logger = getLogger('web')
 
+
 def Partition(links, partitions):
     rest = []
     cats = {x: None for y in partitions for x in y}
@@ -70,8 +71,8 @@ class GameDetailsBuilder:
         authors, participants = Partition(self.GetAuthors(), [('author', )])
         media, online, download, links = Partition(
             self.GetURLs(), [('poster', 'video', 'screenshot'),
-                             ('play_in_interpreter',
-                              'play_online'), ('download_direct', )])
+                             ('play_in_interpreter', 'play_online'),
+                             ('download_direct', 'download_landing')])
         media = AnnotateMedia(media)
         md = RenderMarkdown(self.game.description)
         tags = self.GetTagsForDetails()

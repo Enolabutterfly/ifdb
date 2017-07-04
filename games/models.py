@@ -88,6 +88,12 @@ class GameURL(models.Model):
     def __str__(self):
         return "%s (%s): %s" % (self.game, self.category, self.url)
 
+    def GetLocalUrl(self):
+        if self.category.allow_cloning:
+            return self.url.GetUrl()
+        else:
+            return self.url.original_url
+
     game = models.ForeignKey(Game)
     url = models.ForeignKey(URL)
     category = models.ForeignKey(URLCategory)
