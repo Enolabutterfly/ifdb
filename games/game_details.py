@@ -1,8 +1,10 @@
 from .models import Game
 from .tools import FormatDate, FormatTime, StarsFromRating, RenderMarkdown
-from urllib.parse import urlparse, parse_qs
+from logging import getLogger
 from statistics import mean, median
+from urllib.parse import urlparse, parse_qs
 
+logger = getLogger('web')
 
 def Partition(links, partitions):
     rest = []
@@ -42,11 +44,11 @@ def AnnotateMedia(media):
                 val['type'] = 'youtube'
                 val['id'] = purl.path[1:]
             else:
-                logging.error('Unknown video url: %s' % y.original_url)
+                logger.error('Unknown video url: %s' % y.original_url)
                 val['type'] = 'unknown'
                 val['url'] = y.GetUrl()
         else:
-            logging.error('Unexpected category: %s' % y)
+            logger.error('Unexpected category: %s' % y)
             continue
         res.append(val)
     return res

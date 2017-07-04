@@ -1,15 +1,17 @@
 from .models import TaskQueueElement
+from django.conf import settings
 from django.db.models import Q
 from django.utils import timezone
-from django.conf import settings
+from logging import getLogger
 import datetime
 import importlib
 import json
-import logging
 import os
 import signal
 import sys
 import time
+
+logger = getLogger('worker')
 
 # TODO Build more robust filename
 PID_FILE = '/tmp/ifdbworker.pid'
@@ -106,7 +108,7 @@ def Worker():
                  Q(scheduled_time=None) | Q(
                      scheduled_time__lte=timezone.now())).order_by(
                          'priority', 'enqueue_time'))
-        logging.info('%d tasks waiting' % t.count())
+        logger.info('%d tasks waiting' % t.count())
         if t:
             t = t[0]
             t.pending = False
@@ -121,7 +123,7 @@ def Worker():
                 t.finish_time = timezone.now()
                 t.save()
             except Exception as e:
-                logging.exception(e)
+                logger.exception(e)
                 while False and settings.DEBUG:
                     r = input("Continue? [yes/no/all]> ")
                     if r.lower() in ['yes', 'y']:
@@ -144,7 +146,7 @@ def Worker():
                         try:
                             func(t, call)
                         except Exception as e:
-                            logging.exception(e)
+                            logger.exception(e)
             continue
         else:
             t = (TaskQueueElement.objects.filter(
@@ -155,12 +157,12 @@ def Worker():
                 t = t[0]
                 delta = int(
                     (t.scheduled_time - timezone.now()).total_seconds()) + 1
-                logging.info(
+                logger.info(
                     'All tasks pending, waiting for %d seconds' % delta)
                 if IsPosix():
                     signal.alarm(delta)
             else:
-                logging.info('Done everything!')
+                logger.info('Done everything!')
 
         if IsPosix():
             signal.pause()

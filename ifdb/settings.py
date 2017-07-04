@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 import os
 import socket
 import os.path
+import logging.config
 
 IS_PROD = socket.gethostname() == 'ribby.mooskagh.com'
 
@@ -53,6 +54,7 @@ if IS_PROD:
         '/home/ifdb/configs/gmail-pass.txt').read().strip()
     CRAWLER_CACHE_DIR = '/home/ifdb/tmp/urlcache/'
     TMP_DIR = '/home/ifdb/tmp/tmp/'
+    LOG_DIR = '/home/ifdb/tmp/logs/'
     EXTRACTOR_PATH = '/bin/unar "%s" -o "%s"'
 
 else:
@@ -94,6 +96,101 @@ else:
         'debug_toolbar.panels.redirects.RedirectsPanel',
     ]
     EXTRACTOR_PATH = '"C:/Program Files/7-Zip/7z.exe" x "%s" "-O%s"'
+    LOG_DIR = os.path.join(BASE_DIR, 'tmp/logs')
+
+LOGGING_CONFIG = None
+
+logging.config.dictConfig({
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'google': {
+            'format': ('%(levelname).1s%(asctime)s.%(msecs)03d %(name)s '
+                       '%(filename)s:%(lineno)d] %(message)s'),
+            'datefmt':
+                '%m%d %H:%M:%S',
+        }
+    },
+    'filters': {
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse',
+        },
+    },
+    'handlers': {
+        'debug': {
+            'level': 0,
+            'class': 'logging.handlers.RotatingFileHandler',
+            'maxBytes': 50000000,
+            'backupCount': 5,
+            'filename': os.path.join(LOG_DIR, 'all.DEBUG'),
+            'formatter': 'google',
+        },
+        'warnings': {
+            'level': 'WARN',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(LOG_DIR, 'all.WARN'),
+            'formatter': 'google',
+        },
+        'mail_admins': {
+            'level': 'ERROR',
+            'class': 'django.utils.log.AdminEmailHandler',
+            'filters': ['require_debug_false'],
+        },
+        'crawler': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(LOG_DIR, 'crawler.INFO'),
+            'formatter': 'google',
+        },
+        'web': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(LOG_DIR, 'web.INFO'),
+            'formatter': 'google',
+        },
+        'worker': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(LOG_DIR, 'worker.INFO'),
+            'formatter': 'google',
+        },
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'google',
+        }
+    },
+    'loggers': {
+        '': {
+            'level': 0,
+            'handlers': ['debug', 'warnings', 'mail_admins', 'console'],
+        },
+        'django': {
+            'level': 0,
+            'handlers': ['web'],
+            'propagate': True,
+        },
+        'web': {
+            'level': 0,
+            'handlers': ['web'],
+            'propagate': True,
+        },
+        'crawler': {
+            'level': 0,
+            'handlers': ['crawler'],
+            'propagate': True,
+        },
+        'MARKDOWN': {
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'worker': {
+            'level': 0,
+            'handlers': ['worker'],
+            'propagate': True,
+        },
+    },
+})
 
 ADMINS = [('Alexander Lyashuk', 'mooskagh@gmail.com')]
 

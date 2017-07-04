@@ -1,5 +1,5 @@
 import json
-import logging
+from logging import getLogger
 import os.path
 import timeit
 from .game_details import GameDetailsBuilder
@@ -24,7 +24,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from ifdb.permissioner import perm_required
 
 PERM_ADD_GAME = '@auth'  # Also for file upload, game import, vote
-
+logger = getLogger('web')
 
 def index(request):
     res = {}
@@ -386,7 +386,7 @@ def json_search(request):
     elapsed_time = timeit.default_timer() - start_time
 
     if elapsed_time > 1.0:
-        logging.error("Time for search query [%s] was %f" % (query,
+        logger.error("Time for search query [%s] was %f" % (query,
                                                              elapsed_time))
     return res
 
@@ -414,7 +414,7 @@ def Importer2Json(r):
                 try:
                     tag = GameTag.objects.get(symbolic_id=x['tag_slug'])
                 except:
-                    logging.error('Cannot fetch tag %s' % x['tag_slug'])
+                    logger.error('Cannot fetch tag %s' % x['tag_slug'])
                     raise
                 cat = tag.category.id
                 tag = tag.id
