@@ -1,8 +1,8 @@
 from .models import Game
-from .tools import FormatDate, FormatTime, StarsFromRating, RenderMarkdown
+from .tools import (FormatDate, FormatTime, StarsFromRating, RenderMarkdown,
+                    ExtractYoutubeId)
 from logging import getLogger
 from statistics import mean, median
-from urllib.parse import urlparse, parse_qs
 
 logger = getLogger('web')
 
@@ -35,19 +35,14 @@ def AnnotateMedia(media):
             val['type'] = 'img'
             val['img'] = y.url.GetUrl()
         elif y.category.symbolic_id == 'video':
-            purl = urlparse(y.url.original_url)
-            if purl.hostname in ['youtube.com', 'www.youtube.com']:
-                q = parse_qs(purl.query).get('v')
-                if q:
-                    val['type'] = 'youtube'
-                    val['id'] = q[0]
-            elif purl.hostname == 'youtu.be':
+            idd = ExtractYoutubeId(y.url.original_url)
+            if idd:
                 val['type'] = 'youtube'
-                val['id'] = purl.path[1:]
+                val['id'] = idd
             else:
-                logger.error('Unknown video url: %s' % y.original_url)
+                logger.error('Unknown video url: %s' % y.url.original_url)
                 val['type'] = 'unknown'
-                val['url'] = y.GetUrl()
+                val['url'] = y.GetLocalUrl()
         else:
             logger.error('Unexpected category: %s' % y)
             continue

@@ -1,4 +1,5 @@
 import markdown
+from urllib.parse import urlparse, parse_qs
 
 
 def FormatDate(x):
@@ -58,6 +59,16 @@ def FormatLag(x):
         return ConcoreNumeral(x, 'год,года,лет')
 
     return fmtstr % GetDurationStr(x)
+
+
+def ExtractYoutubeId(url):
+    purl = urlparse(url)
+    if purl.hostname in ['youtube.com', 'www.youtube.com']:
+        q = parse_qs(purl.query).get('v')
+        if q:
+            return q[0]
+    elif purl.hostname == 'youtu.be':
+        return purl.path[1:]
 
 
 def StarsFromRating(rating):

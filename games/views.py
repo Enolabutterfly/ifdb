@@ -7,7 +7,8 @@ from .importer import Import
 from .models import *
 from .search import MakeSearch
 from .tasks.uploads import CloneFile, RecodeGame, MarkBroken
-from .tools import FormatDate, FormatTime, StarsFromRating, FormatLag
+from .tools import (FormatDate, FormatTime, StarsFromRating, FormatLag,
+                    ExtractYoutubeId)
 from core.taskqueue import Enqueue
 from dateutil.parser import parse as parse_date
 from django import forms
@@ -75,11 +76,43 @@ def LastComments(request):
     return res
 
 
+def LastUrlCat(request, cat, limit):
+    games = set()
+    urls = GameURL.objects.select_related().filter(
+        category__symbolic_id=cat).order_by('-url__creation_date')[:30]
+
+    res = []
+    for x in urls:
+        if x.game.id in games: continue
+        games.add(x.game.id)
+        res.append({
+            'lag':
+                FormatLag(
+                    (x.url.creation_date - timezone.now()).total_seconds()),
+            'url':
+                x.url.original_url,
+            'game':
+                x.game.title,
+            'id':
+                x.game.id,
+            'desc':
+                x.description,
+        })
+        if len(res) == limit: break
+    return res
+
+
 def index(request):
     res = {}
     res['top'] = SnippetFromSearchForIndex(request, '00')
     res['best'] = SnippetFromSearchForIndex(request, '04')
     res['comments'] = LastComments(request)
+    res['videos'] = LastUrlCat(request, 'video', 5)
+    for x in res['videos']:
+        idd = ExtractYoutubeId(x['url'])
+        if idd:
+            x['thumb'] = 'https://img.youtube.com/vi/%s/default.jpg' % idd
+    res['reviews'] = LastUrlCat(request, 'review', 4)
 
     return render(request, 'games/index.html', res)
 

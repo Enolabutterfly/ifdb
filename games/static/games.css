@@ -297,7 +297,6 @@ textarea {
 
 a.gamelist-thumb {
     border-radius: 2px;
-    box-shadow: -3px 4px 2px rgba(0, 0, 0, 0.2);
     box-shadow: 0 1px 3px rgba(0, 0, 0, .3);
     display: inline-block;
     font-weight: bold;
@@ -389,6 +388,8 @@ a.gamelist-thumb .auxinfo {
     margin: 7px;
     width: 200px;
     text-decoration: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .3);
+
 }
 
 .index-comment-date {
@@ -401,6 +402,19 @@ a.gamelist-thumb .auxinfo {
     text-overflow: ellipsis;
     white-space: nowrap;
     color: #ceff1a;
+}
+
+.title-container-date {
+    color: #ceff1a;
+    display: block;
+    font-size: 80%;
+    font-weight: normal;
+    height: 16px;
+    overflow: hidden;
+    padding: 2px 5px;
+    text-align: right;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .index-comment-username {
