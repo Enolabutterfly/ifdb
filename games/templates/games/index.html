@@ -43,8 +43,19 @@
             {% endfor %}
         </div>
         <h2>Последние комментарии</h2>
-        Попозже будет.
+        <div class="gamelist-thumb-container">
+            {% for x in comments %}
+            <a class="index-comment" href="{% url 'show_game' game_id=x.id %}">
+                <div class="index-comment-date">{{ x.lag }}</div>
+                <div class="index-comment-username">{{ x.username }}</div>
+                <div class="index-comment-game">{{ x.game }}</div>
+                <div class="index-comment-subj">{{ x.subject }}</div>
+            </a>
+            {% endfor %}
+        </div>
         <h2>Последние добавленные видео</h2>
+        И это.
+        <h2>Последние добавленные обзоры</h2>
         И это. Возможно.
     </div>
 {% endblock %}

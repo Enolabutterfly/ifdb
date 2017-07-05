@@ -380,6 +380,51 @@ a.gamelist-thumb .auxinfo {
     font-style: italic;
 }
 
+.index-comment {
+    display: inline-block;
+    background-color: #625b61;
+    border: 1px solid #7E787D;
+    color: #f2f1eb;
+    height: 55px;
+    margin: 7px;
+    width: 200px;
+    text-decoration: none;
+}
+
+.index-comment-date {
+    float: left;
+    font-size: 80%;
+    padding-left: 5px;
+    text-align: left;
+    max-width: 95px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #ceff1a;
+}
+
+.index-comment-username {
+    float: right;
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.index-comment-game {
+    clear: both;
+    font-weight: bold;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.index-comment-subj {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .prop-category {
     font-size: 90%;
     color: #625B61;

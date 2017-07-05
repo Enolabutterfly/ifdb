@@ -7,7 +7,7 @@ from .importer import Import
 from .models import *
 from .search import MakeSearch
 from .tasks.uploads import CloneFile, RecodeGame, MarkBroken
-from .tools import FormatDate, FormatTime, StarsFromRating
+from .tools import FormatDate, FormatTime, StarsFromRating, FormatLag
 from core.taskqueue import Enqueue
 from dateutil.parser import parse as parse_date
 from django import forms
@@ -26,52 +26,60 @@ from ifdb.permissioner import perm_required
 PERM_ADD_GAME = '@auth'  # Also for file upload, game import, vote
 logger = getLogger('web')
 
+
+def SnippetFromSearchForIndex(request, query):
+    s = MakeSearch(request.perm)
+    s.UpdateFromQuery(query)
+    games = s.Search(
+        prefetch_related=['gameauthor_set__author', 'gameauthor_set__role'],
+        start=0,
+        limit=20)[:5]
+
+    posters = (GameURL.objects.filter(category__symbolic_id='poster').filter(
+        game__in=games).select_related('url'))
+
+    g2p = {}
+    for x in posters:
+        g2p[x.game_id] = x.url.GetUrl()
+
+    for x in games:
+        x.poster = g2p.get(x.id)
+        x.authors = [
+            x for x in x.gameauthor_set.all() if x.role.symbolic_id == 'author'
+        ]
+    return games
+
+
+def LastComments(request):
+    games = set()
+    # TODO Game permissions!
+    comments = GameComment.objects.select_related().order_by(
+        '-creation_time')[:100]
+    res = []
+    for x in comments:
+        if x.game.id in games: continue
+        games.add(x.game.id)
+        res.append({
+            'lag':
+                FormatLag((x.creation_time - timezone.now()).total_seconds()),
+            'username':
+                x.user,
+            'game':
+                x.game.title,
+            'id':
+                x.game.id,
+            'subject':
+                x.subject or '...',
+        })
+        if len(res) == 4: break
+    return res
+
+
 def index(request):
     res = {}
-
-    s = MakeSearch(request.perm)
-    s.UpdateFromQuery('00')
-    games = s.Search(
-        prefetch_related=['gameauthor_set__author', 'gameauthor_set__role'],
-        start=0,
-        limit=20)[:5]
-
-    posters = (GameURL.objects.filter(category__symbolic_id='poster').filter(
-        game__in=games).select_related('url'))
-
-    g2p = {}
-    for x in posters:
-        g2p[x.game_id] = x.url.GetUrl()
-
-    for x in games:
-        x.poster = g2p.get(x.id)
-        x.authors = [
-            x for x in x.gameauthor_set.all() if x.role.symbolic_id == 'author'
-        ]
-
-    res['top'] = games
-
-    s = MakeSearch(request.perm)
-    s.UpdateFromQuery('04')
-    games = s.Search(
-        prefetch_related=['gameauthor_set__author', 'gameauthor_set__role'],
-        start=0,
-        limit=20)[:5]
-
-    posters = (GameURL.objects.filter(category__symbolic_id='poster').filter(
-        game__in=games).select_related('url'))
-
-    g2p = {}
-    for x in posters:
-        g2p[x.game_id] = x.url.GetUrl()
-
-    for x in games:
-        x.poster = g2p.get(x.id)
-        x.authors = [
-            x for x in x.gameauthor_set.all() if x.role.symbolic_id == 'author'
-        ]
-
-    res['best'] = games
+    res['top'] = SnippetFromSearchForIndex(request, '00')
+    res['best'] = SnippetFromSearchForIndex(request, '04')
+    res['comments'] = LastComments(request)
 
     return render(request, 'games/index.html', res)
 
@@ -387,7 +395,7 @@ def json_search(request):
 
     if elapsed_time > 1.0:
         logger.error("Time for search query [%s] was %f" % (query,
-                                                             elapsed_time))
+                                                            elapsed_time))
     return res
 
 

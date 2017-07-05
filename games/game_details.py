@@ -236,15 +236,15 @@ class GameDetailsBuilder:
                 'subj':
                     v.subject,
                 'text':
-                    GetMarkdown(v.text),
+                    RenderMarkdown(v.text),
                 # TODO: is_deleted
             })
 
-        swap = []
         parent_to_cluster = {}
         clusters = []
 
         while res:
+            swap = []
             for v in res:
                 if not v['parent_id']:
                     parent_to_cluster[v['id']] = len(clusters)
