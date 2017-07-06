@@ -94,6 +94,9 @@ class GameURL(models.Model):
         else:
             return self.url.original_url
 
+    def GetRemoteUrl(self):
+        return self.url.original_url
+
     game = models.ForeignKey(Game)
     url = models.ForeignKey(URL)
     category = models.ForeignKey(URLCategory)
