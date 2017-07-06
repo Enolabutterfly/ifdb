@@ -269,6 +269,7 @@ tag_to_genre = {
     'ужас': ('g_horror', True),
     'ужасы': ('g_horror', True),
     'фантастика': ('g_scifi', True),
+    'фанфик': ('g_fanfic', True),
     'фентези': ('g_fantasy', True),
     'фэнтези': ('g_fantasy', True),
     'хоррор': ('g_horror', False),
