@@ -212,3 +212,18 @@ def ImportGames():
             new_urls = '\n'.join(x.NewUrls())
             logger.error('New URLs for existing non-updateable game:'
                          '\n%s\nNew urls are:\n%s' % (x, new_urls))
+
+
+def ForceReimport():
+    gameset = GameSet()
+    for x in Game.objects.prefetch_related('gameurl_set__category',
+                                           'gameurl_set__url').all():
+        gameset.AddGame(ImportedGame(x))
+
+    fake_request = FakeRequest(USER)
+
+    for x in gameset.Games():
+        if x.IsUpdateable():
+            x.Store(fake_request)
+        else:
+            logger.warn("Unable to reimport non-updateable game %s" % x)
