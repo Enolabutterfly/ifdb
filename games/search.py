@@ -409,6 +409,7 @@ class SB_AuxFlags(SB_Flags):
         'С участниками без роли',
         'Редактированные людьми',
         'Со ссылками, общими с другими играми',
+        'С битыми ссылками',
     ]
 
     ANNOTATIONS = {
@@ -435,7 +436,9 @@ class SB_AuxFlags(SB_Flags):
         8:
             Q(gameurl__url__in=URL.objects.annotate(
                 Count('gameurl__game', distinct=True)).filter(
-                    gameurl__game__count__gt=1))
+                    gameurl__game__count__gt=1)),
+        9:
+            Q(gameurl__url__is_broken=True),
     }
 
 
