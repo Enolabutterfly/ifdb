@@ -210,9 +210,19 @@ def list_games(request):
                                                  **s.ProduceBits()})
 
 
+class ChoiceField(forms.ChoiceField):
+    def bound_data(self, data, initial):
+        return data
+
+
+class NullBooleanField(forms.NullBooleanField):
+    def bound_data(self, data, initial):
+        return data
+
+
 class UrqwInterpreterForm(forms.Form):
-    does_work = forms.NullBooleanField(label="Работоспособность игры")
-    variant = forms.ChoiceField(
+    does_work = NullBooleanField(label="Работоспособность игры")
+    variant = ChoiceField(
         label="Вариант URQ",
         required=False,
         choices=[

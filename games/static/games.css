@@ -616,6 +616,7 @@ input[type="submit"],
 
 .button-like {
     font-family: Arial;
+    line-height: 20px;
     padding: 1px 6px;
     white-space: nowrap;
 }
