@@ -1,6 +1,6 @@
 import re
 from django.core.management.base import BaseCommand
-from games.models import *
+from games.models import InterpretedGameUrl, URL
 
 
 def IfwikiCapitalizeFile():
@@ -42,4 +42,5 @@ class Command(BaseCommand):
     help = 'Does some batch processing.'
 
     def handle(self, *args, **options):
-        RenameRecodes()
+        pass
+        # RenameRecodes()
