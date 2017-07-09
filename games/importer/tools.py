@@ -1,12 +1,11 @@
 from urllib.parse import quote, urlunsplit, urlsplit, urlparse, urljoin
 from .enrichment import enricher
-from core.crawler import FetchUrlToString
 import re
-import os.path
 
 RE_WORD = re.compile('\w+')
 MIN_SIMILARITY = 0.67
 REGISTERED_IMPORTERS = []
+
 
 URL_CATEGORIZER_RULES = [  # hostname, path, query, slug, desc
     ('qsp.su', '^$', '^$', None, None),
@@ -45,8 +44,10 @@ URL_CATEGORIZER_RULES = [  # hostname, path, query, slug, desc
     ('iplayif.com', '', '', 'play_online', 'Играть онлайн'),
     ('apero.ru', '', '', 'play_online', 'Играть онлайн'),
     ('storymaze.ru', '', '', 'play_online', 'Играть онлайн'),
+    ('hyperbook.ru', '/download.php', '', 'download_direct',
+     'Скачать с hyperbook.ru'),
     ('', r'.*\.(zip|rar|z5)', '', 'download_direct', 'Ссылка для скачивания'),
-]
+    ]
 
 
 def GetBagOfWords(x):
