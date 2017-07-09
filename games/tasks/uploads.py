@@ -133,7 +133,8 @@ def RecodeGame(game_url_id):
             stderr=subprocess.STDOUT,
             shell=True)
     except subprocess.CalledProcessError as x:
-        logger.error(x.output)
+        logger.warn(x.output, exc_info=True)
+        shutil.rmtree(tmp_dir)
         raise
     new_filename = fs.generate_filename("recode/%s.zip" % url.local_filename)
     with zipfile.ZipFile(
