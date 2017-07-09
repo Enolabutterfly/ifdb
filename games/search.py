@@ -499,7 +499,12 @@ class Search:
             key = reader.ReadInt()
             self.id_to_bit[key].LoadFromQuery(reader)
 
-    def Search(self, *, prefetch_related=None, start=None, limit=None):
+    def Search(self,
+               *,
+               prefetch_related=None,
+               start=None,
+               limit=None,
+               annotate=None):
         need_full_query = False
         partial_query = start is not None or limit is not None
 
@@ -512,6 +517,10 @@ class Search:
         two_stage_fetch = need_full_query and partial_query
         if prefetch_related and not two_stage_fetch:
             q = q.prefetch_related(*prefetch_related)
+        if isinstance(annotate, dict):
+            q = q.annotate(**annotate)
+        elif isinstance(annotate, list):
+            q = q.annotate(*annotate)
         q = q.distinct()
 
         if not two_stage_fetch:

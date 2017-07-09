@@ -19,6 +19,7 @@ from django.core.files.storage import FileSystemStorage
 from django.http import Http404
 from django.http.response import JsonResponse
 from django.shortcuts import render, redirect
+from django.db.models import Count, Exists, OuterRef, Q
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -28,11 +29,13 @@ PERM_ADD_GAME = '@auth'  # Also for file upload, game import, vote
 logger = getLogger('web')
 
 
-def SnippetFromSearchForIndex(request, query):
+def SnippetFromSearchForIndex(request, query, prefetch=[]):
     s = MakeSearch(request.perm)
     s.UpdateFromQuery(query)
     games = s.Search(
-        prefetch_related=['gameauthor_set__author', 'gameauthor_set__role'],
+        prefetch_related=[
+            'gameauthor_set__author', 'gameauthor_set__role', *prefetch
+        ],
         start=0,
         limit=20)[:5]
 
@@ -204,8 +207,6 @@ def list_games(request):
     s = MakeSearch(request.perm)
     query = request.GET.get('q', '')
     s.UpdateFromQuery(query)
-    if settings.DEBUG and request.GET.get('forcesearch', None):
-        json_search(request)
     return render(request, 'games/search.html', {'query': query,
                                                  **s.ProduceBits()})
 
@@ -402,7 +403,31 @@ def json_search(request):
     games = s.Search(
         prefetch_related=['gameauthor_set__author', 'gameauthor_set__role'],
         start=start,
-        limit=limit)
+        limit=limit,
+        annotate={
+            'gamecomment__count':
+                Count('gamecomment'),
+            'hasvideo':
+                Exists(
+                    GameURL.objects.filter(
+                        category__symbolic_id='video', game=OuterRef('pk'))),
+            'isparser':
+                Exists(
+                    GameTag.objects.filter(
+                        symbolic_id='parser', game=OuterRef('pk'))),
+            'playonline':
+                Exists(
+                    GameURL.objects.filter(game=OuterRef('pk')).filter(
+                        Q(category__symbolic_id='play_online') | Q(
+                            interpretedgameurl__is_playable=True))),
+            'downloadable':
+                Exists(
+                    GameURL.objects.filter(
+                        category__symbolic_id__in=[
+                            'download_direct', 'download_landing'
+                        ],
+                        game=OuterRef('pk'))),
+        })
 
     posters = (GameURL.objects.filter(category__symbolic_id='poster').filter(
         game__in=games).select_related('url'))
@@ -416,6 +441,13 @@ def json_search(request):
         x.authors = [
             x for x in x.gameauthor_set.all() if x.role.symbolic_id == 'author'
         ]
+        x.icons = {}
+        x.icons['hascomments'] = x.gamecomment__count > 0
+        x.icons['hasvideo'] = x.hasvideo
+        x.icons['isparser'] = x.isparser
+        x.icons['playonline'] = x.playonline
+        x.icons['downloadable'] = x.downloadable
+
     res = render(request, 'games/search_snippet.html', {
         'games': games,
         'start': start,

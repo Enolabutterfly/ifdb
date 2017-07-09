@@ -30,6 +30,15 @@
             {{ g.ds.duration.mins|rupl:"минута,минуты,минут" }}.
         {% endif %}
         </div>
+        <div class="icon-overlay">
+        {% with x=g.icons %}
+            {% if x.hascomments %}<img src="{% static 'hascomments.svg'%}" / >{% endif %}
+            {% if x.hasvideo %}<img src="{% static 'hasvideo.svg'%}" / >{% endif %}
+            {% if x.isparser %}<img src="{% static 'isparser.svg'%}" / >{% endif %}
+            {% if x.playonline %}<img src="{% static 'playonline.svg'%}" / >{% endif %}
+            {% if x.downloadable %}<img src="{% static 'downloadable.svg'%}" / >{% endif %}
+        {% endwith %}
+        </div>
     </a>
 {% endfor %}
 {% elif start == 0 %}

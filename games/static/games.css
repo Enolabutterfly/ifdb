@@ -303,8 +303,9 @@ a.gamelist-thumb {
     margin: 7px;
     overflow: hidden;
     padding: 0;
-    text-decoration: none;
+    position: relative;
     text-align: left;
+    text-decoration: none;
 }
 
 a.gamelist-thumb-search {
@@ -321,7 +322,12 @@ a.gamelist-thumb-index {
     color: #f2f1eb;
     height: 150px;
     width: 150px;
-    position: relative;
+}
+
+a.gamelist-thumb-search .icon-overlay {
+    position: absolute;
+    top: 5px;
+    left: 5px;
 }
 
 a.gamelist-thumb-index .thumb-index-rating {
