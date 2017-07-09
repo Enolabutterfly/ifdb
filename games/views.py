@@ -15,7 +15,6 @@ from django import forms
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import SuspiciousOperation
-from django.core.files.storage import FileSystemStorage
 from django.http import Http404
 from django.http.response import JsonResponse
 from django.shortcuts import render, redirect
@@ -290,7 +289,7 @@ def play_in_interpreter(request, gameurl_id):
 @perm_required(PERM_ADD_GAME)
 def upload(request):
     file = request.FILES['file']
-    fs = FileSystemStorage()
+    fs = settings.UPLOADS_FS
     filename = fs.save(file.name, file, max_length=64)
     file_url = fs.url(filename)
     url_full = request.build_absolute_uri(file_url)

@@ -44,6 +44,9 @@ class URL(models.Model):
     def HasLocalUrl(self):
         return self.local_url is not None
 
+    def GetFs(self):
+        return settings.UPLOADS_FS if self.is_uploaded else settings.BACKUPS_FS
+
     local_url = models.CharField(null=True, blank=True, max_length=255)
     local_filename = models.CharField(null=True, blank=True, max_length=255)
     original_url = models.CharField(

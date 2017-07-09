@@ -1,6 +1,5 @@
 from core.crawler import FetchUrlToFileLike
 from django.conf import settings
-from django.core.files.storage import FileSystemStorage
 from django.utils import timezone
 from games.models import URL, InterpretedGameUrl, GameURL, GameTagCategory
 from logging import getLogger
@@ -40,7 +39,7 @@ def ComeUpWithFilename(metadata):
 def CloneFile(id):
     url = URL.objects.get(id=id)
     f = FetchUrlToFileLike(url.original_url)
-    fs = FileSystemStorage()
+    fs = settings.BACKUPS_FS
     filename = fs.save(ComeUpWithFilename(f.metadata), f, max_length=64)
     logger.info('Stored as %s' % filename)
 
@@ -105,10 +104,9 @@ def RecodeGame(game_url_id):
 
     if ext in ['.qst']:
         url = game_url.url
-        fs = FileSystemStorage()
-        with fs.open(url.local_filename, 'rb') as fi:
-            new_filename = fs.generate_filename(
-                "recode/%s" % url.local_filename)
+        with url.GetFs().open(url.local_filename, 'rb') as fi:
+            fs = settings.RECODES_FS
+            new_filename = fs.generate_filename(url.local_filename)
             with fs.open(new_filename, 'wb') as fo:
                 fo.write(fi.read().decode('cp1251').encode('utf-8'))
 
@@ -124,19 +122,19 @@ def RecodeGame(game_url_id):
     # Trying to treat the archive as an non-zip archive
     url = game_url.url
     tmp_dir = tempfile.mkdtemp(dir=settings.TMP_DIR)
-    fs = FileSystemStorage()
-    logger.info("Unpacking %s into %s" % (fs.path(url.local_filename),
-                                          tmp_dir))
+    logger.info("Unpacking %s into %s" % (url.local_filename, tmp_dir))
     try:
         subprocess.check_output(
-            settings.EXTRACTOR_PATH % (fs.path(url.local_filename), tmp_dir),
+            settings.EXTRACTOR_PATH % (url.GetFs().path(url.local_filename),
+                                       tmp_dir),
             stderr=subprocess.STDOUT,
             shell=True)
     except subprocess.CalledProcessError as x:
         logger.warn(x.output, exc_info=True)
         shutil.rmtree(tmp_dir)
         raise
-    new_filename = fs.generate_filename("recode/%s.zip" % url.local_filename)
+    fs = settings.RECODES_FS
+    new_filename = fs.generate_filename("%s.zip" % url.local_filename)
     with zipfile.ZipFile(
             fs.open(new_filename, 'wb'),
             'w',

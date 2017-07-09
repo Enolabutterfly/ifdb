@@ -14,14 +14,12 @@ import os
 import socket
 import os.path
 import logging.config
+from django.core.files.storage import FileSystemStorage
 
 IS_PROD = socket.gethostname() == 'ribby.mooskagh.com'
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 if IS_PROD:
@@ -38,7 +36,8 @@ if IS_PROD:
             'PORT': '',
         }
     }
-    MEDIA_ROOT = os.path.abspath('/home/ifdb/uploads')
+    MEDIA_ROOT = os.path.abspath('/home/ifdb/files')
+
     if 'staging' in BASE_DIR:
         STATIC_ROOT = os.path.abspath('/home/ifdb/staging/static')
     else:
@@ -78,7 +77,8 @@ else:
         }
     }
 
-    MEDIA_ROOT = os.path.join(BASE_DIR, 'uploads')
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'files')
+
     CRAWLER_CACHE_DIR = os.path.join(BASE_DIR, 'urlcache')
     TMP_DIR = os.path.join(BASE_DIR, 'tmp')
     DEBUG_TOOLBAR_PANELS = [
@@ -285,21 +285,23 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/1.10/topics/i18n/
 
 LANGUAGE_CODE = 'ru-ru'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_L10N = True
-
 USE_TZ = False
 
 AUTH_USER_MODEL = 'core.User'
-
 FILE_UPLOAD_PERMISSIONS = 0o640
 FILE_UPLOAD_DIRECTORY_PERMISSIONS = 0o2750
 STATIC_URL = '/static/'
-MEDIA_URL = '/uploads/'
+MEDIA_URL = '/f/'
+
+UPLOADS_FS = FileSystemStorage(
+    os.path.join(MEDIA_ROOT, 'uploads'), os.path.join(MEDIA_URL, 'uploads'))
+BACKUPS_FS = FileSystemStorage(
+    os.path.join(MEDIA_ROOT, 'backups'), os.path.join(MEDIA_URL, 'backups'))
+RECODES_FS = FileSystemStorage(
+    os.path.join(MEDIA_ROOT, 'recodes'), os.path.join(MEDIA_URL, 'recodes'))
 
 REQUIRE_ACCOUNT_ACTIVATION = True
 ACCOUNT_ACTIVATION_DAYS = 7
