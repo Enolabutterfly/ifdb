@@ -32,8 +32,8 @@ server {
     client_max_body_size 512M;
 
 {% if c.conf == 'prod' %}
-    location /f  {
-        alias /home/ifdb/files;
+    location /uploads  {
+        alias /home/ifdb/uploads;
     }
 
     location /static {

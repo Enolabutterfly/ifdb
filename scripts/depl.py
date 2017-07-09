@@ -297,6 +297,7 @@ def stage(ctx, tag):
     p.AddStep(StagingDiff('django/games/migrations/'))
     p.AddStep(StagingDiff('django/core/migrations/'))
     p.AddStep(StagingDiff('django/games/management/commands/initifdb.py'))
+    p.AddStep(StagingDiff('django/scripts/nginx.tpl'))
     p.AddStep(
         RunCmdStep('%s %s/manage.py collectstatic --clear' % (python_dir,
                                                               django_dir)))
