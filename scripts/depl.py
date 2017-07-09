@@ -386,10 +386,13 @@ def deploy(ctx, hot, from_master):
         p.AddStep(StartTimer)
         p.AddStep(RunCmdStep('sudo /bin/systemctl reload nginx'))
         p.AddStep(RunCmdStep('sudo /bin/systemctl stop ifdb-uwsgi'))
+
+    p.AddStep(RunCmdStep('sudo /bin/systemctl stop ifdb-worker'))
+
+    if not hot:
         p.AddStep(
             Message(
                 'uWSGI is stopped now. You can break now to do manual steps.'))
-    p.AddStep(RunCmdStep('sudo /bin/systemctl stop ifdb-worker'))
 
     p.AddStep(RunCmdStep('git checkout release'))
     p.AddStep(RunCmdStep('git pull'))
