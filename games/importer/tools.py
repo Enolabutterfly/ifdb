@@ -50,7 +50,7 @@ URL_CATEGORIZER_RULES = [  # hostname, path, query, slug, desc
 
 
 def GetBagOfWords(x):
-    return set(RE_WORD.findall(x.lower()))
+    return set(RE_WORD.findall(x.lower().replace('ё', 'е')))
 
 
 def ComputeSimilarity(s1, s2):
