@@ -3,6 +3,7 @@ from django.conf import settings
 from django.db.models import Q
 from django.utils import timezone
 from logging import getLogger
+from croniter import croniter
 import datetime
 import importlib
 import json
@@ -111,6 +112,7 @@ def Worker():
         logger.info('%d tasks waiting' % t.count())
         if t:
             t = t[0]
+            logger.info('Running %s' % t)
             t.pending = False
             t.start_time = timezone.now()
             t.save()
@@ -119,17 +121,18 @@ def Worker():
             func = getattr(i, call['name'])
             try:
                 func(*call['argv'], **call['kwarg'])
-                t.success = True
+                if t.cron:
+                    iter = croniter(t.cron, timezone.now())
+                    t.scheduled_time = iter.get_next(datetime.datetime)
+                    logger.info("Next run at %s" % t.scheduled_time)
+                    t.pending = True
+                else:
+                    t.success = True
                 t.finish_time = timezone.now()
                 t.save()
             except Exception as e:
-                logger.exception(e)
-                while False and settings.DEBUG:
-                    r = input("Continue? [yes/no/all]> ")
-                    if r.lower() in ['yes', 'y']:
-                        break
-                    if r.lower() in ['no', 'n']:
-                        sys.exit(1)
+                logger.warning(
+                    "Failure when running task %s:" % t, exc_info=True)
                 if t.retries_left > 0:
                     t.pending = True
                     t.retries_left -= 1
@@ -137,6 +140,9 @@ def Worker():
                         minutes=t.retry_minutes)
                     t.save()
                 else:
+                    logger.error(
+                        "Failure when running CRON task %s:" % t,
+                        exc_info=True)
                     t.fail = True
                     t.save()
                     if t.onfail_json:
