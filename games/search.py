@@ -222,7 +222,7 @@ class SB_Sorting(SearchBit):
                 if not plays:
                     nones.append(g)
                     continue
-                avg = statistics.median(plays)
+                avg = int(statistics.median(plays) + 0.5)
                 g.ds['duration'] = {'hours': avg // 60, 'mins': avg % 60}
                 times.append((avg, g))
 
