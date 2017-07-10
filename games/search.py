@@ -1,7 +1,8 @@
 import re
-from .models import Game, GameTag, GameTagCategory, URL
+from .models import (Game, GameTag, GameTagCategory, URL, Author,
+                     GameAuthorRole)
 import statistics
-from .tools import FormatDate, FormatTime, StarsFromRating
+from .tools import FormatDate, StarsFromRating
 from django.db.models import Q, Count, prefetch_related_objects
 
 RE_WORD = re.compile(r"\w(?:[-\w']+\w)?")
@@ -325,6 +326,63 @@ class SB_Tag(SearchBit):
         return res
 
 
+class SB_Authors(SearchBit):
+    TYPE_ID = 4
+
+    def __init__(self, role, *args, **kwargs):
+        super().__init__(role.id, True)
+        self.role = role or None
+        self.items = set()
+
+    def ProduceDict(self):
+        res = super().ProduceDict('authors')
+        res['role'] = self.role
+        items = []
+        for x in (Author.objects.filter(gameauthor__role=self.role).annotate(
+                Count('gameauthor__game')).order_by('-gameauthor__game__count')
+                  ):
+            items.append({
+                'id': x.id,
+                'name': x.name,
+                'on': x.id in self.items,
+                'author': x,
+            })
+
+        if len(items) > 10:
+            for x in items[6:]:
+                x['hidden'] = True
+            items.append({'show_all': True})
+
+        items.append({'id': 0, 'name': 'Не указано', 'on': 0 in self.items})
+        res['items'] = items
+        return res
+
+    def LoadFromQuery(self, reader):
+        self.items = reader.ReadSet()
+
+    def ModifyQuery(self, query):
+        return query.prefetch_related('gameauthor_set__author',
+                                      'gameauthor_set__role')
+
+    def NeedsFullSet(self):
+        return True
+
+    def IsActive(self):
+        return bool(self.items)
+
+    def ModifyResult(self, games):
+        # TODO This should absolutely be in ModifyQuery!
+        res = []
+        for g in games:
+            authors = set([
+                x.author.id for x in g.gameauthor_set.all()
+                if x.role_id == self.role.id
+            ])
+            if authors & self.items:
+                res.append(g)
+        return res
+
+
 # !!!!NOTE!!!! If adding new flag sets, reflect that in google analytics!
 class SB_Flags(SearchBit):
     TYPE_ID = 3
@@ -512,7 +570,8 @@ class Search:
         for x in self.bits:
             if x.IsActive():
                 q = x.ModifyQuery(q)
-                if x.NeedsFullSet(): need_full_query = True
+                if x.NeedsFullSet():
+                    need_full_query = True
 
         two_stage_fetch = need_full_query and partial_query
         if prefetch_related and not two_stage_fetch:
@@ -549,6 +608,8 @@ def MakeSearch(perm):
         if not perm(x.show_in_search_perm):
             continue
         s.Add(SB_Tag(x))
+    for x in GameAuthorRole.objects.all():
+        s.Add(SB_Authors(x))
     s.Add(SB_UserFlags())
     s.Add(SB_AuxFlags())
     return s
