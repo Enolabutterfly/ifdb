@@ -201,7 +201,7 @@ def ImportGames():
             logger.debug('Url %s already existed.' % u)
             continue
         if HashizeUrl(u) in existing_urls:
-            logger.warn('Url %s is known, yet no games had it. Deleted?')
+            logger.warn('Url [%s] is known, yet no games had it. Deleted?' % u)
             continue
 
         g = ImportedGame()
