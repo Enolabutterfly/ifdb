@@ -299,6 +299,32 @@ var SEARCH = (function() {
             enc.addFlags(items);
         });
 
+        // Type 4: Authors.
+        $('tr[data-type="authors"]').each(function(index, element) {
+            $(element).find('[data-item-val]').click(function() {
+                $(this).toggleClass('current');
+                gan('send', 'event', 'search', 'author',
+                    $(this).hasClass('current') ? 'on' : 'off',
+                    parseInt($(this).attr('data-item-val')));
+                UpdateSearchList();
+            });
+            $(element).find('.show-all').click(function(){
+                $(this).hide();
+                $(element).find('[data-item-val]').show();
+                return false;
+            });
+        }).on('encode-query', function(event, enc) {
+            var parent = $(event.target);
+            var items = [];
+            parent.find('.current').each(function() {
+                items.push($(this).attr('data-item-val'));
+            });
+            if (items.length === 0) return;
+            var category = parent.attr('data-val');
+            enc.addHeader(4, category);
+            enc.addSet(items);
+        });
+
         // Advanced search button.
         $('.extended_search').click(function() {
             $(this).hide();
