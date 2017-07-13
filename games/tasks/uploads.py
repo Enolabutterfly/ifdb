@@ -1,7 +1,7 @@
 from core.crawler import FetchUrlToFileLike
 from django.conf import settings
 from django.utils import timezone
-from games.models import URL, InterpretedGameUrl, GameURL, GameTagCategory
+from games.models import URL, InterpretedGameUrl, GameURL
 from logging import getLogger
 from urllib.parse import unquote
 import json
