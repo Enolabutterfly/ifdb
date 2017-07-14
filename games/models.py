@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
+from core.models import Package
 
 # Create your models here.
 
@@ -25,6 +26,7 @@ class Game(models.Model):
         _('Comment permission'), max_length=255, default='@auth')
     tags = models.ManyToManyField('GameTag', blank=True)
     added_by = models.ForeignKey(settings.AUTH_USER_MODEL)
+    package = models.ForeignKey(Package, null=True, blank=True)
 
     # -(GameContestEntry)
     # (LoadLog) // For computing popularity

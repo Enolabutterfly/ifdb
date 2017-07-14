@@ -121,3 +121,13 @@ class TaskQueueElement(models.Model):
     pending = models.BooleanField(default=True)
     success = models.BooleanField(default=False)
     fail = models.BooleanField(default=False)
+
+
+class Package(models.Model):
+    name = models.CharField(db_index=True, max_length=128)
+    version = models.CharField(max_length=32, null=True, blank=True)
+    md5hash = models.CharField(max_length=32, null=True, blank=True)
+    metadata_ini = models.TextField(null=True, blank=True)
+    creation_date = models.DateTimeField()
+    download_perm = models.CharField(max_length=256, default="@all")
+    edit_perm = models.CharField(max_length=256, default="@pkgmgr")
