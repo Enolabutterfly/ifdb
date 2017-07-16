@@ -5,6 +5,7 @@ from django.core.validators import RegexValidator
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import ugettext as _
+from django.conf import settings
 from games.models import Game
 
 
@@ -140,3 +141,12 @@ class PackageVersion(models.Model):
     md5hash = models.CharField(max_length=32)
     metadata_json = models.TextField()
     creation_date = models.DateTimeField()
+
+
+class PackageSession(models.Model):
+    package = models.ForeignKey(Package, db_index=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True)
+    client = models.CharField(max_length=64)
+    duration_mins = models.IntegerField(null=True, blank=True)
+    start_time = models.DateTimeField()
+    last_update = models.DateTimeField()
