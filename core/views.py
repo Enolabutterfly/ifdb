@@ -31,6 +31,10 @@ def fetchpackage(request):
             x = signing.loads(j['user'], salt='core.packages.user')
             user = get_user_model().objects.get(pk=x)
 
+        if not package:
+            raise SuspiciousOperation
+
+        response = BuildPackageResponse(user, package)
     except BadSignature:
         response = {
             'error': "Не удалось удостовериться в подлинности запроса."
@@ -41,14 +45,98 @@ def fetchpackage(request):
     return HttpResponse(json.dumps(response))
 
 
-def BuildGameUserFingerprint(request, game):
-    x = [game]
-    if request.user.is_authenticated:
-        x.append(request.user.id)
+def ExpandSelf(s, repl):
+    return s.replace(r'{{self}}', "{{%s}}" % repl)
+
+
+def BuildPackageResponse(user, package):
+    res = {
+        'session': {},
+        'shortcut': {
+            'invocation': BuildPackageUserFingerprint(user, package.id),
+            'package': package.name,
+        },
+        'runtime': {},
+        'packages': [],
+        'variables': {
+            'this': '{{%s}}' % package.name,
+        },
+    }
+
+    if user:
+        res['session']['user'] = signing.dumps(
+            user.id, salt='core.packages.user')
+
+    if package.game:
+        res['shortcut']['name'] = package.game.title
+
+    todo = set([package])
+    done = set()
+
+    while todo:
+        x = todo.pop()
+        done.add(x.name)
+        version = x.packageversion_set.order_by('-version')[0]
+        j = json.loads(version.metadata_json)
+        res['packages'].append({
+            'package': x.name,
+            'version': version.version,
+            'md5': version.md5hash,
+        })
+        runtime = j.get('runtime', {})
+        for z in ['chdir', 'execute']:
+            if z in runtime and runtime[z] and z not in res['runtime']:
+                res['runtime'][z] = ExpandSelf(runtime[z], x.name)
+        for k, v in j.get('variables', {}).items():
+            if k not in res['variables']:
+                res['variables'][k] = ExpandSelf(v, x.name)
+        for y in j.get('dependencies', []):
+            if y['package'] in done:
+                continue
+            todo.add(Package.objects.get(name=y['package']))
+    return res
+
+
+def BuildPackageUserFingerprint(user, package):
+    x = [package]
+    if user:
+        x.append(user.id)
     return signing.dumps(x, salt='core.packages.token')
 
 
 """
+    res = {
+        'session': {
+            'user': None,
+            'session': None,
+        },
+        'runtime': {
+            'chdir': None,
+            'execute': None,
+        },
+        'shortcut': {
+            'invocation': BuildPackageUserFingerprint(user, package),
+            'name': None,
+            'icon': None,
+        },
+        'packages': [],  # {'package', 'version', 'md5'}
+    }
+
+    metadata = {
+        'dependencies': [
+            {'package': 'fireurq', 'min-vers...'}
+        ],
+        'runtime': {
+            'chdir': 'self',
+            'execute': '{{fireurq} -o sdfsdf'
+        },
+        'variables': {
+            'game': 'sdfsdfsd',
+        }
+    }
+
+
+
 
     Token   string `json:"token,omitempty"`
     Package string `json:"package,omitempty"`  -- name
