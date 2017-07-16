@@ -33,7 +33,7 @@ type packageResponse struct {
 
 var wg sync.WaitGroup
 
-func fetchPackage(request *packageRequest) (*packageResponse, error) {
+func fetchPackageMetadata(request *packageRequest) (*packageResponse, error) {
 	b := new(bytes.Buffer)
 	err := json.NewEncoder(b).Encode(request)
 	if err != nil {
@@ -63,7 +63,7 @@ func runGameForSure(mw *walk.MainWindow, lv *LogView, token string) error {
 		Token: token,
 	}
 
-	rgresp, err := fetchPackage(&rgreq)
+	rgresp, err := fetchPackageMetadata(&rgreq)
 	if err != nil {
 		return err
 	}
@@ -87,6 +87,10 @@ func runGameForSure(mw *walk.MainWindow, lv *LogView, token string) error {
 			lv.AppendText("Пакет " + v.Package + " v" + v.Version + " уже распоследний.")
 		} else {
 			lv.AppendText("Тянем пакет " + v.Package + " v" + v.Version + "...")
+			err = pkgmgr.FetchPackage(lv, v.Package, v.Version, v.Md5)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
