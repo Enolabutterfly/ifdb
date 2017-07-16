@@ -5,7 +5,7 @@ import statistics
 from .tools import FormatDate, StarsFromRating
 from django.db.models import Q, Count, prefetch_related_objects
 
-RE_WORD = re.compile(r"\w(?:[-\w']+\w)?")
+RE_WORD = re.compile(r"\w(?:[\w']+\w)?")
 
 
 def TokenizeText(text):
