@@ -205,11 +205,15 @@ func (m *PackageOverlord) FetchPackage(lv *LogView, name, version, md5hash strin
 		return err
 	}
 
-	err = os.Rename(dir, filepath.Join(m.Rootpath, name+"~"+version))
+	err = os.Rename(dir, m.GetPackagePath(name, version))
 	if err != nil {
 		return err
 	}
 
 	lv.AppendText("Нормально!")
 	return nil
+}
+
+func (m *PackageOverlord) GetPackagePath(name string, version string) string {
+	return filepath.Join(m.Rootpath, name+"~"+version)
 }

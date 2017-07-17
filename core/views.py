@@ -46,7 +46,18 @@ def fetchpackage(request):
 
 
 def ExpandSelf(s, repl):
-    return s.replace(r'{{self}}', "{{%s}}" % repl)
+    if isinstance(s, str):
+        return s.replace(r'{{self}}', "{{%s}}" % repl)
+    if isinstance(s, list):
+        res = []
+        for x in s:
+            res.append(ExpandSelf(x, repl))
+        return res
+    if isinstance(s, dict):
+        res = {}
+        for k, v in s.items():
+            res[k] = ExpandSelf(v, repl)
+        return res
 
 
 def BuildPackageResponse(user, package):

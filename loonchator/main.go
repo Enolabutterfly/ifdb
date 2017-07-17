@@ -4,10 +4,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"regexp"
 	"sync"
 
 	"github.com/lxn/walk"
@@ -26,9 +29,41 @@ type packageInfo struct {
 	Md5     string `json:"md5"`
 }
 
+type packageExecute struct {
+	Executable string   `json:"executable"`
+	Parameters []string `json:"arguments"`
+}
+
+type packageRuntime struct {
+	Chdir   string         `json:"chdir"`
+	Execute packageExecute `json:"execute"`
+}
+
 type packageResponse struct {
-	Error   string        `json:"error"`
-	Pakages []packageInfo `json:"packages"`
+	Error     string            `json:"error"`
+	Pakages   []packageInfo     `json:"packages"`
+	Variables map[string]string `json:"variables"`
+	Runtime   packageRuntime    `json:"runtime"`
+}
+
+func (m *packageRuntime) SubstituteVars(vars *map[string]string) error {
+	var err error
+	m.Chdir, err = substitueVars(m.Chdir, vars)
+	if err != nil {
+		return err
+	}
+	m.Execute.Executable, err = substitueVars(m.Execute.Executable, vars)
+	if err != nil {
+		return err
+	}
+	for i, _ := range m.Execute.Parameters {
+		m.Execute.Parameters[i], err = substitueVars(m.Execute.Parameters[i], vars)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+
 }
 
 var wg sync.WaitGroup
@@ -56,6 +91,22 @@ func fetchPackageMetadata(request *packageRequest) (*packageResponse, error) {
 	return response, nil
 }
 
+func substitueVars(s string, vars *map[string]string) (string, error) {
+	re := regexp.MustCompile(`{{([^}]+)}}`)
+	for {
+		indices := re.FindStringSubmatchIndex(s)
+		if indices == nil {
+			return s, nil
+		}
+		v := s[indices[2]:indices[3]]
+		sub, ok := (*vars)[v]
+		if !ok {
+			return "", errors.New("Непонятная какая-то переменная " + v)
+		}
+		s = s[:indices[0]] + sub + s[indices[1]:]
+	}
+}
+
 func runGameForSure(mw *walk.MainWindow, lv *LogView, token string) error {
 	lv.AppendText("Проверка на наличие обновлений игры...")
 
@@ -78,6 +129,8 @@ func runGameForSure(mw *walk.MainWindow, lv *LogView, token string) error {
 		return err
 	}
 
+	variables := rgresp.Variables
+
 	for _, v := range rgresp.Pakages {
 		ok, err := pkgmgr.HasPackage(v.Package, v.Version)
 		if err != nil {
@@ -92,9 +145,36 @@ func runGameForSure(mw *walk.MainWindow, lv *LogView, token string) error {
 				return err
 			}
 		}
+		variables[v.Package] = pkgmgr.GetPackagePath(v.Package, v.Version)
 	}
 
-	// mw.Close()
+	rgresp.Runtime.SubstituteVars(&variables)
+
+	if rgresp.Runtime.Execute.Executable == "" {
+		return errors.New("Непонятно что запускать. :-\\. Сервер не сказал.")
+	}
+
+	chdir := rgresp.Runtime.Chdir
+	if chdir != "" {
+		lv.AppendText("Идём в " + chdir)
+		err = os.Chdir(chdir)
+		if err != nil {
+			return err
+		}
+	}
+
+	lv.AppendText(fmt.Sprintf("Запускаем %v", rgresp.Runtime.Execute))
+
+	cmd := exec.Command(rgresp.Runtime.Execute.Executable,
+		rgresp.Runtime.Execute.Parameters...)
+
+	err = cmd.Start()
+	if err != nil {
+		return err
+	}
+
+	mw.Close()
+	cmd.Wait()
 	return nil
 }
 
