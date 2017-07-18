@@ -390,6 +390,10 @@ a.gamelist-thumb-index .title-container {
     padding: 3px;
 }
 
+a.gamelist-thumb-index .title-container.title-container-low {
+    height: 33px;
+}
+
 a.gamelist-thumb-search .title-container {
     padding: 5px;
 }

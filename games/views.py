@@ -110,7 +110,9 @@ def LastUrlCat(request, cat, limit):
 
 def index(request):
     res = {}
-    res['top'] = SnippetFromSearchForIndex(request, '00')
+    res['lastx'] = SnippetFromSearchForIndex(request, '00')
+    for x in res['lastx']:
+        x.lag = FormatLag((x.creation_time - timezone.now()).total_seconds())
     res['best'] = SnippetFromSearchForIndex(request, '04')
     res['comments'] = LastComments(request)
     res['videos'] = LastUrlCat(request, 'video', 5)
