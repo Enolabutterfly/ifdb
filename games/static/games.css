@@ -127,6 +127,38 @@ textarea {
     background-color: #f8f8f8;
 }
 
+.doc-outer {
+    border: 1px solid #31322d;
+    box-shadow: -3px 4px 2px rgba(0, 0, 0, 0.2);
+    border-radius: 2.5px;
+    display: flex;
+    flex-direction: row;
+}
+
+.doc-list {
+    background-color: #31322d;
+    color: #f2f1eb;
+    float: left;
+    padding: 10px;
+    width: 20%;
+}
+
+.doc-list a {
+    color: #f2f1eb;
+    text-decoration: none;
+}
+
+.doc-list-current {
+    font-weight: bold;
+}
+
+.doc-content {
+    background-color: #F2F1EB;
+    float: left;
+    padding: 10px;
+    flex: 1;
+}
+
 .root {
     background-image: url("/static/f5ce5546.png");
     background-color: #625b61;

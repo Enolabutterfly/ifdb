@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import (TaskQueueElement, User, Package, PackageVersion,
-                     PackageSession)
+                     PackageSession, Document)
 from django.contrib.sessions.models import Session
 
 
@@ -54,3 +54,9 @@ class PackageSessionAdmin(admin.ModelAdmin):
         'package_gam', 'user', 'start_time', 'duration_secs', 'last_update',
         'is_finished'
     ]
+
+@admin.register(Document)
+class DocumentAdmin(admin.ModelAdmin):
+    list_display = ['title', 'last_update', 'view_perm', 'list_perm', 'order']
+    list_filter = ['last_update', 'view_perm', 'list_perm']
+    search_fields = ['title', 'text']

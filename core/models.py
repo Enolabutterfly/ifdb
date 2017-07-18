@@ -151,3 +151,14 @@ class PackageSession(models.Model):
     start_time = models.DateTimeField()
     last_update = models.DateTimeField()
     is_finished = models.BooleanField(default=False)
+
+
+class Document(models.Model):
+    slug = models.SlugField(db_index=True)
+    parent = models.ForeignKey('Document', null=True, blank=True)
+    title = models.CharField(max_length=256)
+    text = models.TextField()
+    last_update = models.DateTimeField()
+    view_perm = models.CharField(max_length=256, default="@admin")
+    list_perm = models.CharField(max_length=256, default="@admin")
+    order = models.IntegerField(default=0)

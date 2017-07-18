@@ -1,13 +1,16 @@
 import json
-from django.views.decorators.csrf import csrf_exempt
-from django.core import signing
-from django.core.signing import BadSignature
-from django.utils import timezone
-from django.http import HttpResponse
-from logging import getLogger
-from django.core.exceptions import SuspiciousOperation
-from .models import Package, PackageSession
+from .models import Package, PackageSession, Document
 from django.contrib.auth import get_user_model
+from django.core import signing
+from django.core.exceptions import SuspiciousOperation
+from django.core.signing import BadSignature
+from django.http import Http404
+from django.http import HttpResponse
+from django.shortcuts import render
+from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
+from logging import getLogger
+from games.tools import RenderMarkdown
 
 logger = getLogger('web')
 
@@ -162,6 +165,23 @@ def BuildPackageUserFingerprint(user, package):
     if user:
         x.append(user.id)
     return signing.dumps(x, salt='core.packages.token')
+
+
+def showdoc(request, slug):
+    try:
+        doc = Document.objects.get(slug=slug)
+    except Document.DoesNotExist:
+        raise Http404()
+    if not request.perm(doc.view_perm):
+        raise Http404()
+
+    d = {'slug': slug, 'text': RenderMarkdown(doc.text), 'links': []}
+    for x in Document.objects.order_by('order', 'title'):
+        if not request.perm(x.list_perm):
+            continue
+        d['links'].append({'slug': x.slug, 'title': x.title})
+
+    return render(request, 'games/doc.html', d)
 
 
 """
