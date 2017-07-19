@@ -431,6 +431,7 @@ class SB_UserFlags(SB_Flags):
         'С обсуждениями на форуме',
         'Можно скачать',
         'Можно поиграть онлайн',
+        'Можно запустить лунчатором',
     ]
 
     ANNOTATIONS = {}
@@ -450,6 +451,8 @@ class SB_UserFlags(SB_Flags):
             ]),
         5: (Q(gameurl__category__symbolic_id='play_online') |
             Q(gameurl__interpretedgameurl__is_playable=True)),
+        6:
+            Q(package__isnull=False),
     }
 
 

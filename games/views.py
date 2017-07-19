@@ -445,6 +445,8 @@ def json_search(request):
                             'download_direct', 'download_landing'
                         ],
                         game=OuterRef('pk'))),
+            'loonchator_count':
+                Count('package'),
         })
 
     posters = (GameURL.objects.filter(category__symbolic_id='poster').filter(
@@ -465,6 +467,7 @@ def json_search(request):
         x.icons['isparser'] = x.isparser
         x.icons['playonline'] = x.playonline
         x.icons['downloadable'] = x.downloadable
+        x.icons['loonchator'] = x.loonchator_count > 0
 
     res = render(request, 'games/search_snippet.html', {
         'games': games,
