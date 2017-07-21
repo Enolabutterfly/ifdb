@@ -57,6 +57,7 @@ def GetDirtyUrls(age_minutes):
                 r'inprop=url&pageids=' + pageidlist,
                 use_cache=False))
         for _, v in r['query']['pages'].items():
+          if 'fullurl' in v:
             res.append(v['fullurl'])
     return res
 
