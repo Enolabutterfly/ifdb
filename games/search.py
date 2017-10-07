@@ -1,5 +1,5 @@
 import re
-from .models import (Game, GameTag, GameTagCategory, URL, AuthorAlias,
+from .models import (Game, GameTag, GameTagCategory, URL, PersonalityAlias,
                      GameAuthorRole)
 import statistics
 from .tools import FormatDate, StarsFromRating
@@ -338,7 +338,7 @@ class SB_Authors(SearchBit):
         res = super().ProduceDict('authors')
         res['role'] = self.role
         items = []
-        for x in (AuthorAlias.objects.filter(
+        for x in (PersonalityAlias.objects.filter(
                 gameauthor__role=self.role).annotate(
                     Count('gameauthor__game')).order_by(
                         '-gameauthor__game__count')):

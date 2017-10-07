@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import (Game, AuthorAlias, GameTagCategory, GameTag, URL,
+from .models import (Game, PersonalityAlias, GameTagCategory, GameTag, URL,
                      URLCategory, GameURL, GameAuthorRole, GameAuthor,
                      GameVote, GameComment, InterpretedGameUrl)
 
@@ -18,8 +18,8 @@ class GameAdmin(admin.ModelAdmin):
     inlines = [GameAuthorAdmin]
 
 
-@admin.register(AuthorAlias)
-class AuthorAliasAdmin(admin.ModelAdmin):
+@admin.register(PersonalityAlias)
+class PersonalityAliasAdmin(admin.ModelAdmin):
     list_display = ['name', 'pk']
     search_fields = ['pk', 'name']
 

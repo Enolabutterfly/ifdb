@@ -338,7 +338,7 @@ def authors(request):
     for x in GameAuthorRole.objects.order_by('order', 'title').all():
         res['roles'].append({'title': x.title, 'id': x.id})
 
-    for x in AuthorAlias.objects.order_by('name').all():
+    for x in PersonalityAlias.objects.order_by('name').all():
         res['authors'].append({'name': x.name, 'id': x.id})
 
     return res
