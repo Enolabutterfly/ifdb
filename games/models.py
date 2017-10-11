@@ -140,6 +140,16 @@ class PersonalityURLCategory(models.Model):
     def __str__(self):
         return self.title
 
+    OTHER_SITE_CAT = None
+
+    @staticmethod
+    def OtherSiteCatId():
+        if PersonalityURLCategory.OTHER_SITE_CAT is None:
+            PersonalityURLCategory.OTHER_SITE_CAT = (
+                PersonalityURLCategory.objects.get(
+                    symbolic_id='other_site').id)
+        return PersonalityURLCategory.OTHER_SITE_CAT
+
     symbolic_id = models.SlugField(
         max_length=32, null=True, blank=True, db_index=True, unique=True)
     title = models.CharField(max_length=255, db_index=True)
@@ -178,9 +188,11 @@ class PersonalityAlias(models.Model):
     def __str__(self):
         return self.name
 
-    personality = models.ForeignKey(Personality, null=True, blank=True)
+    personality = models.ForeignKey(
+        Personality, null=True, blank=True, on_delete=models.SET_NULL)
     name = models.CharField(max_length=255)
     hidden_for = models.ForeignKey('PersonalityAlias', null=True, blank=True)
+    is_blacklisted = models.BooleanField(default=False)
 
 
 class GameAuthorRole(models.Model):

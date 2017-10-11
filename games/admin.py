@@ -1,11 +1,17 @@
 from django.contrib import admin
 from .models import (Game, PersonalityAlias, GameTagCategory, GameTag, URL,
                      GameURLCategory, GameURL, GameAuthorRole, GameAuthor,
-                     GameVote, GameComment, InterpretedGameUrl)
+                     GameVote, GameComment, InterpretedGameUrl, Personality,
+                     PersonalityUrl)
 
 
 class GameAuthorAdmin(admin.TabularInline):
     model = GameAuthor
+    extra = 1
+
+
+class InlinePersonalityUrlAdmin(admin.TabularInline):
+    model = PersonalityUrl
     extra = 1
 
 
@@ -20,8 +26,28 @@ class GameAdmin(admin.ModelAdmin):
 
 @admin.register(PersonalityAlias)
 class PersonalityAliasAdmin(admin.ModelAdmin):
-    list_display = ['name', 'pk']
+    def _game_count(self, obj):
+        return len(obj.gameauthor_set.all())
+
+    list_display = [
+        'name', 'pk', 'is_blacklisted', 'hidden_for', '_game_count'
+    ]
     search_fields = ['pk', 'name']
+    inlines = [GameAuthorAdmin]
+
+
+@admin.register(Personality)
+class PersonalityAdmin(admin.ModelAdmin):
+    def _alias_count(self, obj):
+        return len(obj.personalityalias_set.all())
+
+    def _aliases(self, obj):
+        aliases = ["%s" % x for x in obj.personalityalias_set.all()]
+        return '; '.join(aliases)
+
+    list_display = ['pk', 'name', '_alias_count', '_aliases']
+    search_fields = ['name', 'personalityalias__name']
+    inlines = [InlinePersonalityUrlAdmin]
 
 
 @admin.register(GameTagCategory)

@@ -1,4 +1,4 @@
-from .tools import CategorizeUrl
+from .tools import CategorizeUrl, CategorizeAuthorUrl
 from core.crawler import FetchUrlToString
 from logging import getLogger
 from mediawiki_parser import wikitextParser, preprocessorParser, apostrophes
@@ -19,8 +19,11 @@ class IfwikiImporter:
     def Import(self, url):
         return ImportFromIfwiki(url)
 
+    def ImportAuthor(self, url):
+        return ImportAuthorFromIfwiki(url)
+
     def GetUrlCandidates(self):
-        return GetUrlList()
+        return FetchCategoryUrls('Игры')
 
     def GetDirtyUrls(self, age_minutes=60 * 14):
         return GetDirtyUrls(age_minutes)
@@ -61,7 +64,7 @@ def GetDirtyUrls(age_minutes):
     return res
 
 
-def GetUrlList():
+def FetchCategoryUrls(category):
     keystart = ''
     ids = set()
 
@@ -70,7 +73,7 @@ def GetUrlList():
             FetchUrlToString(
                 r'http://ifwiki.ru/api.php?action=query&list=categorymembers&'
                 r'cmtitle=%D0%9A%D0%B0%D1%82%D0%B5%D0%B3%D0%BE%D1%80%D0'
-                r'%B8%D1%8F:%D0%98%D0%B3%D1%80%D1%8B&rawcontinue=1&'
+                r'%B8%D1%8F:' + quote(category) + r'&rawcontinue=1&'
                 r'cmlimit=2000&format=json&cmsort=sortkey&'
                 r'cmprop=ids|title|sortkey&cmstarthexsortkey=' + keystart,
                 use_cache=False))
@@ -104,6 +107,46 @@ def CapitalizeFirstLetter(x):
 
 def WikiQuote(name):
     return quote(CapitalizeFirstLetter(name.replace(' ', '_')))
+
+
+REDIRECT_RE = re.compile('#REDIRECT \[\[(.*)\]\]')
+
+
+def ImportAuthorFromIfwiki(url, res={}):
+    m = IFWIKI_URL.match(url)
+
+    try:
+        fetch_url = '%s/index.php?title=%s&action=raw' % (m.group(1),
+                                                          m.group(2))
+        name = unquote(m.group(2)).replace('_', ' ')
+        cont = FetchUrlToString(fetch_url) + '\n'
+    except Exception as e:
+        logger.info(
+            "Error while importing [%s] from Ifwiki" % url, exc_info=True)
+        return {}
+
+    m = REDIRECT_RE.match(cont)
+    if m:
+        res['canonical'] = m.group(1)
+        url_to_fetch = ('http://ifwiki.ru/%s' % WikiQuote(res['canonical']))
+        return ImportAuthorFromIfwiki(url_to_fetch, res)
+
+    context = WikiAuthorParsingContext(name, url)
+    preproc = preprocessorParser.make_parser(toolset_preproc(context))
+    parser = wikitextParser.make_parser(toolset_wiki(context))
+
+    try:
+        pre_text = preproc.parse(cont)
+        output = parser.parse(pre_text.leaves())
+    except Exception as e:
+        logger.exception('Error while parsing %s' % url)
+        return {'error': 'Какая-то ошибка при парсинге. Надо сказать админам.'}
+
+    res['name'] = name
+    res['bio'] = output.leaves() + '\n\n_(описание взято с сайта ifwiki.ru)_'
+    res.setdefault('urls', []).extend(context.urls)
+
+    return res
 
 
 def ImportFromIfwiki(url):
@@ -177,6 +220,40 @@ IFWIKI_IGNORE = ['ЗаглушкаТекста', 'ЗаглушкаСсылок']
 GAMEINFO_IGNORE = ['ширинаобложки', 'высотаобложки']
 
 
+class WikiAuthorParsingContext:
+    def __init__(self, name, url):
+        self.name = name
+        self.url = url
+        self.urls = [CategorizeAuthorUrl(url)]
+
+    def AddUrl(self, url, desc='', category=None, base=None):
+        self.urls.append(CategorizeAuthorUrl(url, desc, category, base))
+
+    def ProcessLink(self, text, default_role='member'):
+        m = IFWIKI_LINK_INTERNALS_PARSE.match(text)
+        if not m:
+            return text  # Internal link without a category.
+        role = m.group(1)
+        name = m.group(2)
+        typ = m.group(3)
+        display_name = m.group(4)
+
+        if role in ['Медиа', 'Media', 'Изображение']:
+            self.AddUrl('/files/' + WikiQuote(name), display_name, 'avatar'
+                        if typ == 'thumb' else 'download_direct', self.url)
+        elif role:
+            logger.warning('Unknown role %s' % role)
+
+        if display_name:
+            return display_name
+        if role:
+            return "%s:%s" % (role, name)
+        return name
+
+    def ParseTemplate(self, node):
+        return ''
+
+
 class WikiParsingContext:
     def __init__(self, game_name, url):
         self.title = game_name
@@ -203,7 +280,11 @@ class WikiParsingContext:
 
         for r, t in IFWIKI_ROLES:
             if r == role:
-                self.authors.append({'role_slug': t, 'name': name})
+                self.authors.append({
+                    'role_slug': (t),
+                    'name': (display_name or name),
+                    'url': ("http://ifwiki.ru/%s" % WikiQuote(name)),
+                })
                 break
         else:
             if role in ['Медиа', 'Media']:

@@ -1,6 +1,6 @@
 import re
 from django.core.management.base import BaseCommand
-from games.models import InterpretedGameUrl, URL, Game
+from games.models import InterpretedGameUrl, URL, Game, GameAuthor
 from core.models import TaskQueueElement
 import subprocess
 import os.path
@@ -161,8 +161,12 @@ def BuildLoonchatableLinks():
         count += 1
 
 
+def RemoveAuthors():
+    GameAuthor.objects.filter(game__edit_time__isnull=True).delete()
+
+
 class Command(BaseCommand):
     help = 'Does some batch processing.'
 
     def handle(self, *args, **options):
-        BuildLoonchatableLinks()
+        RemoveAuthors()

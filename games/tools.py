@@ -1,5 +1,6 @@
 import markdown
 from urllib.parse import urlparse, parse_qs
+from django import template
 
 
 def FormatDate(x):
@@ -33,7 +34,7 @@ def ConcoreNumeral(value, arg):
             res = bits[2]
         return "%s %s" % (value, res)
     except:
-        raise TemplateSyntaxError
+        raise template.TemplateSyntaxError
     return ''
 
 

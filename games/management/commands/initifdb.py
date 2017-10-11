@@ -98,9 +98,12 @@ GAME_URL_CATS = [
 ]
 
 PERSONALITY_URL_CATS = [
-    ['personal_page', 'Страница автора на другом сайте', False],
+    ['personal_page', 'Личный сайт автора', False],
+    ['other_site', 'Страница автора на другом сайте', False],
     ['avatar', 'Фото/аватар', True],
     ['social', 'Ссылка в соцсети', False],
+    ['interview', 'Интервью', False],
+    ['other', 'Прочее', False],
 ]
 
 
