@@ -11,6 +11,9 @@ class PlutImporter:
     def Match(self, url):
         return PLUT_URL.match(url)
 
+    def MatchAuthor(self, url):
+        return False
+
     def Import(self, url):
         return ImportFromPlut(url)
 
@@ -141,6 +144,7 @@ def ImportFromPlut(url):
                 'role_slug': 'author',
                 'name': tag,
                 'url': urljoin(url, tagurl),
+                'urldesc': 'Страница автора на urq.plut.info',
             })
 
     res['tags'] = tags

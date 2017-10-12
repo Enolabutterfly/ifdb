@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from games.importer.tools import (Import, GetUrlCandidates, HashizeUrl,
                                   GetBagOfWords, ComputeSimilarity,
                                   GetDirtyUrls)
-from games.models import Game, URL, Game
+from games.models import Game, URL
 from games.views import UpdateGame, Importer2Json
 from ifdb.permissioner import Permissioner
 from logging import getLogger

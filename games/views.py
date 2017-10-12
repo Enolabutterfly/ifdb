@@ -498,7 +498,12 @@ def Importer2Json(r):
                     symbolic_id=x['role_slug']).id
             else:
                 role = r['role']
-            res['authors'].append([role, x['name']])
+            ls = [role, x['name']]
+            if 'url' in x:
+                ls.append(x['url'])
+                ls.append(x['urldesc'])
+
+            res['authors'].append(ls)
 
     if 'tags' in r:
         res['tags'] = []
@@ -555,10 +560,8 @@ def UpdateGameAuthors(request, game, authors, update):
             author = PersonalityAlias.objects.get_or_create(name=author)[0].id
         alias_to_urls.setdefault(author, [])
         if rest:
-            for u in rest[0]:
-                alias_to_urls[author].append(
-                    (PersonalityURLCategory.OtherSiteCatId(),
-                     'Страница автора', u))
+            alias_to_urls[author].append(
+                (PersonalityURLCategory.OtherSiteCatId(), rest[1], rest[0]))
         t = (role, author)
         if t in existing_authors:
             del existing_authors[t]
@@ -720,10 +723,10 @@ def UpdatePersonalityUrls(request, alias_id, data, update):
                     personality.bio = bio
                     personality.save()
 
-        GameURL.objects.bulk_create(objs)
+        PersonalityUrl.objects.bulk_create(objs)
 
     if existing_urls:
-        GameURL.objects.filter(
+        PersonalityUrl.objects.filter(
             id__in=[x[0].id for x in existing_urls.values()]).delete()
 
 

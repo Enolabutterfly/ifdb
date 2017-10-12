@@ -16,6 +16,9 @@ class IfwikiImporter:
     def Match(self, url):
         return IFWIKI_URL.match(url)
 
+    def MatchAuthor(self, url):
+        return self.Match(url)
+
     def Import(self, url):
         return ImportFromIfwiki(url)
 
@@ -284,6 +287,8 @@ class WikiParsingContext:
                     'role_slug': (t),
                     'name': (display_name or name),
                     'url': ("http://ifwiki.ru/%s" % WikiQuote(name)),
+                    'urldesc':
+                    "Страница автора на ifwiki",
                 })
                 break
         else:

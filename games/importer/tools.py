@@ -190,7 +190,7 @@ def HashizeUrl(url):
 
 
 def ImportAuthor(url):
-    return DispatchImport(url)
+    return DispatchImportAuthor(url)
 
 
 def Import(*seed_url):
