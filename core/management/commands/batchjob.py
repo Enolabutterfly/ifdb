@@ -1,6 +1,7 @@
 import re
 from django.core.management.base import BaseCommand
-from games.models import InterpretedGameUrl, URL, Game, GameAuthor, Personality
+from games.models import (InterpretedGameUrl, URL, Game, GameAuthor,
+                          Personality, PersonalityAlias)
 from core.models import TaskQueueElement
 import subprocess
 import os.path
@@ -164,6 +165,7 @@ def BuildLoonchatableLinks():
 def RemoveAuthors():
     Personality.objects.all().delete()
     GameAuthor.objects.filter(game__edit_time__isnull=True).delete()
+    PersonalityAlias.objects.filter(gameauthor__isnull=True).delete()
 
 
 class Command(BaseCommand):
