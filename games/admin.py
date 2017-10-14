@@ -7,6 +7,7 @@ from .models import (Game, PersonalityAlias, GameTagCategory, GameTag, URL,
 
 class GameAuthorAdmin(admin.TabularInline):
     model = GameAuthor
+    raw_id_fields = ['game']
     extra = 1
 
 
@@ -40,6 +41,7 @@ class PersonalityAliasAdmin(admin.ModelAdmin):
     ]
     search_fields = ['pk', 'name']
     inlines = [GameAuthorAdmin]
+    raw_id_fields = ['personality', 'hidden_for']
 
 
 @admin.register(Personality)

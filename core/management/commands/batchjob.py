@@ -169,8 +169,33 @@ def RemoveAuthors():
     PersonalityAlias.objects.filter(gameauthor__isnull=True).delete()
 
 
+def FixGameAuthors():
+    for x in PersonalityAlias.objects.filter(is_blacklisted=True):
+        if x.personality:
+            x.personality = None
+            x.save()
+        if x.hidden_for:
+            x.hidden_for = None
+            x.save()
+
+    for x in PersonalityAlias.objects.filter(
+            hidden_for__isnull=False).select_related():
+        if x.personality != x.hidden_for.personality:
+            x.personality = x.hidden_for.personality
+            x.save()
+
+    for x in GameAuthor.objects.filter(
+            game__edit_time__isnull=True).select_related():
+        if x.author.is_blacklisted:
+            x.delete()
+            continue
+        if x.author.hidden_for:
+            x.author = x.author.hidden_for
+            x.save()
+
+
 class Command(BaseCommand):
     help = 'Does some batch processing.'
 
     def handle(self, *args, **options):
-        RemoveAuthors()
+        FixGameAuthors()
