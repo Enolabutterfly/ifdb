@@ -58,15 +58,15 @@ def GetDirtyUrls(age_minutes):
     for batch in _batch(list(ids)):
         pageidlist = '|'.join(["%d" % x for x in batch if x != 0])
         if not pageidlist:
-          continue
+            continue
         r = json.loads(
             FetchUrlToString(
                 r'http://ifwiki.ru/api.php?action=query&prop=info&format=json&'
                 r'inprop=url&pageids=' + pageidlist,
                 use_cache=False))
         for _, v in r['query']['pages'].items():
-          if 'fullurl' in v:
-            res.append(v['fullurl'])
+            if 'fullurl' in v:
+                res.append(v['fullurl'])
     return res
 
 
@@ -199,7 +199,6 @@ IFWIKI_LINK_INTERNALS_PARSE = re.compile(
 IFWIKI_ROLES = [
     ('автор', 'author'),
     ('Автор', 'author'),
-    ('ifwiki-en', 'author'),
     ('Переводчик', 'translator'),
     ('Персонаж', 'character'),
     ('Тестировщик', 'tester'),
@@ -235,7 +234,7 @@ class WikiAuthorParsingContext:
     def AddUrl(self, url, desc='', category=None, base=None):
         self.urls.append(CategorizeAuthorUrl(url, desc, category, base))
 
-    def ProcessLink(self, text, default_role='member'):
+    def ProcessLink(self, text):
         m = IFWIKI_LINK_INTERNALS_PARSE.match(text)
         if not m:
             return text  # Internal link without a category.
@@ -272,7 +271,7 @@ class WikiParsingContext:
     def AddUrl(self, url, desc='', category=None, base=None):
         self.urls.append(CategorizeUrl(url, desc, category, base))
 
-    def ProcessLink(self, text, default_role='member'):
+    def ProcessLink(self, text, default_role=None):
         m = IFWIKI_LINK_INTERNALS_PARSE.match(text)
         if not m:
             return text  # Internal link without a category.
@@ -303,11 +302,17 @@ class WikiParsingContext:
                             'screenshot', self.url)
             elif role == 'Тема':
                 self.tags.append({'cat_slug': 'tag', 'tag': name})
-            elif not role:
-                self.authors.append({'role_slug': default_role, 'name': name})
-            else:
+            elif role == 'ifwiki-en':
+                self.AddUrl('http://ifwiki.org/index.php/' + WikiQuote(name),
+                            display_name, 'game_page')
+            elif role:
                 logger.warning('Unknown role %s' % role)
-                self.authors.append({'role_slug': 'member', 'name': name})
+                # self.authors.append({'role_slug': 'member', 'name': name})
+            elif default_role:
+                self.authors.append({
+                    'role_slug': default_role,
+                    'name': name,
+                })
         if display_name:
             return display_name
         if role:
@@ -318,7 +323,7 @@ class WikiParsingContext:
         for k, v in params.items():
             if k == 'автор':
                 for m in IFWIKI_LINK_PARSE.finditer(v):
-                    self.ProcessLink(m.group(1), 'author')
+                    self.ProcessLink(m.group(1))
             elif k == 'название':
                 self.title = v
             elif k == 'вышла':

@@ -24,6 +24,8 @@ FIRST_LAST_RE = re.compile(r'^(\w+) (\w+)$')
 
 
 def GetOrCreateAlias(alias, is_automated):
+    if not alias.strip():
+        return None
     if is_automated:
         try:
             x = PersonalityAlias.objects.get(name=alias)

@@ -22,6 +22,7 @@ URL_CATEGORIZER_RULES = [  # hostname, path, query, slug, desc
     ('', r'.*\.(png|jpg|gif|bmp|jpeg)', '', 'poster', 'Обложка'),
     ('ifwiki.ru', '/files/.*', '', 'download_direct', 'Скачать с IfWiki'),
     ('ifwiki.ru', '', '', 'game_page', 'Страница на IfWiki'),
+    ('ifwiki.org', '', '', 'game_page', 'Страница на ifwiki.org'),
     ('ludumdare.com', '', '', 'game_page', 'Страница на Ludum Dare'),
     ('urq.plut.info', '.*/files/.*', '', 'download_direct', 'Скачать с плута'),
     ('urq.plut.info', '', '', 'game_page', 'Страница на плуте'),
