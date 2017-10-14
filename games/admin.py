@@ -31,6 +31,12 @@ class GameAdmin(admin.ModelAdmin):
     inlines = [GameAuthorAdmin]
 
 
+class InlinePersonalityAliasAdmin(admin.TabularInline):
+    model = PersonalityAlias
+    raw_id_fields = ['hidden_for']
+    extra = 1
+
+
 @admin.register(PersonalityAlias)
 class PersonalityAliasAdmin(admin.ModelAdmin):
     def _game_count(self, obj):
@@ -55,7 +61,7 @@ class PersonalityAdmin(admin.ModelAdmin):
 
     list_display = ['pk', 'name', '_alias_count', '_aliases']
     search_fields = ['name', 'personalityalias__name']
-    inlines = [InlinePersonalityUrlAdmin]
+    inlines = [InlinePersonalityUrlAdmin, InlinePersonalityAliasAdmin]
 
 
 @admin.register(GameTagCategory)

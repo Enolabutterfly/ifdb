@@ -233,6 +233,7 @@ class WikiAuthorParsingContext:
         self.name = name
         self.url = url
         self.urls = [CategorizeAuthorUrl(url)]
+        self.title = '(no title)'
 
     def AddUrl(self, url, desc='', category=None, base=None):
         self.urls.append(CategorizeAuthorUrl(url, desc, category, base))
