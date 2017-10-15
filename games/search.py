@@ -1,9 +1,9 @@
 import re
 from .models import (Game, GameTag, GameTagCategory, URL, PersonalityAlias,
-                     GameAuthorRole)
+                     GameAuthorRole, Personality, GameAuthor, GameVote)
 import statistics
 from .tools import FormatDate, StarsFromRating
-from django.db.models import Q, Count, prefetch_related_objects
+from django.db.models import Q, Count, prefetch_related_objects, F
 
 RE_WORD = re.compile(r"\w(?:[\w']+\w)?")
 
@@ -292,6 +292,8 @@ class SB_Tag(SearchBit):
                 'name': x.name,
                 'on': x.id in self.items,
                 'tag': x,
+                'show_all': False,
+                'hidden': False,
             })
 
         if len(items) > 10 and items[0]['tag'].category.allow_new_tags:
@@ -347,6 +349,8 @@ class SB_Authors(SearchBit):
                 'name': x.name,
                 'on': x.id in self.items,
                 'author': x,
+                'show_all': False,
+                'hidden': False,
             })
 
         if len(items) > 10:
@@ -531,7 +535,8 @@ def LimitListlike(q, start, limit):
 
 
 class Search:
-    def __init__(self, perm):
+    def __init__(self, cls, perm):
+        self.cls = cls
         self.perm = perm
         self.bits = []
         self.id_to_bit = {}
@@ -570,7 +575,7 @@ class Search:
         need_full_query = False
         partial_query = start is not None or limit is not None
 
-        q = Game.objects.all()
+        q = self.cls.objects.all()
         for x in self.bits:
             if x.IsActive():
                 q = x.ModifyQuery(q)
@@ -589,31 +594,182 @@ class Search:
         if not two_stage_fetch:
             q = LimitListlike(q, start, limit)
 
-        games = [x for x in q if self.perm(x.view_perm)]
-        for g in games:
+        items = [x for x in q if self.perm(x.view_perm)]
+        for g in items:
             g.ds = {}
         for x in self.bits:
             if x.IsActive():
-                games = x.ModifyResult(games)
+                items = x.ModifyResult(items)
 
         if two_stage_fetch:
-            games = LimitListlike(games, start, limit)
+            items = LimitListlike(items, start, limit)
             if prefetch_related:
-                prefetch_related_objects(games, *prefetch_related)
+                prefetch_related_objects(items, *prefetch_related)
 
-        return games
+        return items
 
 
 def MakeSearch(perm):
-    s = Search(perm)
+    s = Search(Game, perm)
     s.Add(SB_Sorting())
     s.Add(SB_Text())
     for x in GameTagCategory.objects.order_by('order').all():
         if not perm(x.show_in_search_perm):
             continue
         s.Add(SB_Tag(x))
-    for x in GameAuthorRole.objects.all():
-        s.Add(SB_Authors(x))
+    # for x in GameAuthorRole.objects.all():
+    #     s.Add(SB_Authors(x))
     s.Add(SB_UserFlags())
     s.Add(SB_AuxFlags())
+    return s
+
+
+# Types of sorting:
+# 0,1 - Creation date
+# 2,3 - Release date
+# 4,5 - Rating
+# 5,6 - Duration
+class SB_AuthorSorting(SearchBit):
+    TYPE_ID = 0
+
+    GAME_COUNT = 0
+    NAME = 1
+    HONOUR = 2
+
+    STRINGS = {
+        GAME_COUNT: 'количеству игр',
+        NAME: 'имени',
+        HONOUR: 'почётности',
+    }
+
+    ALLOWED_SORTINGS = [GAME_COUNT, NAME, HONOUR]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.method = self.ALLOWED_SORTINGS[0]
+        self.desc = True
+        self.honors = None
+
+    def ProduceDict(self):
+        res = super().ProduceDict('sorting')
+        res['items'] = []
+        for x in self.ALLOWED_SORTINGS:
+            current = x == self.method
+            res['items'].append({
+                'val': x,
+                'name': self.STRINGS[x],
+                'current': current,
+                'desc': current and self.desc,
+                'asc': current and not self.desc,
+            })
+        return res
+
+    def LoadFromQuery(self, reader):
+        v = reader.ReadInt()
+        self.desc = (v % 2 == 0)
+        self.method = v // 2
+        if self.method not in self.ALLOWED_SORTINGS:
+            self.method = self.ALLOWED_SORTINGS[0]
+
+    def ModifyQuery(self, query):
+        if self.method == self.NAME:
+            return query.order_by(('-' if not self.desc else '') + 'name')
+
+        if self.method == self.GAME_COUNT:
+            return query.order_by(('-' if self.desc else '') + 'game_count')
+
+        return query
+        if self.method in [self.RATING, self.DURATION]:
+            return query.prefetch_related('gamevote_set')
+        return query
+
+    def NeedsFullSet(self):
+        return self.method in [self.HONOUR]
+
+    def ComputeHonors(self):
+        xs = dict()
+
+        for x in GameVote.objects.filter(
+                game__gameauthor__role__symbolic_id='author').annotate(
+                    gameid=F('game__id'),
+                    author=F('game__gameauthor__author__personality__id')):
+            xs.setdefault(x.author, {}).setdefault(x.gameid,
+                                                   []).append(x.star_rating)
+
+        def DiscountRating(x, count, P1=2.7, P2=0.5):
+            return (x - P1) * (P2 + count) / (P2 + count + 1) + P1
+
+        res = dict()
+        for a, games in xs.items():
+            sms = 0.0
+            for votes in games.values():
+                sms += DiscountRating(sum(votes) / len(votes), len(votes))
+            res[a] = DiscountRating(sms / len(games), len(games), P1=2.3)
+        return res
+
+    def ModifyResult(self, authors):
+        honors = self.ComputeHonors()
+        for x in authors:
+            x.honor = honors.get(x.id, 0.0)
+        if self.method == self.HONOUR:
+            authors.sort(key=lambda x: x.honor, reverse=self.desc)
+
+        return authors
+
+    def IsActive(self):
+        return True
+
+
+class SB_AuthorName(SearchBit):
+    TYPE_ID = 1
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.text = ''
+
+    def ProduceDict(self):
+        res = super().ProduceDict('text')
+        res['text'] = self.text
+        return res
+
+    def LoadFromQuery(self, reader):
+        reader.ReadBool()  # Ignore, it's "titles only"
+        self.text = reader.ReadString()
+
+    def IsActive(self):
+        return bool(self.text)
+
+    def NeedsFullSet(self):
+        return True
+
+    def ModifyResult(self, authors):
+        def MatchesPrefix(query, text):
+            for x in query:
+                for y in text:
+                    if y.startswith(x):
+                        break
+                else:
+                    return False
+            return True
+
+        query = TokenizeText(self.text or '')
+        res = []
+        for p in authors:
+            tokens = TokenizeText(p.name or '')
+            if MatchesPrefix(query, tokens):
+                res.append(p)
+                continue
+            for a in p.personalityalias_set.filter(gameauthor__isnull=False):
+                tokens = TokenizeText(a.name)
+                if MatchesPrefix(query, tokens):
+                    res.append(p)
+                    break
+
+        return res
+
+
+def MakeAuthorSearch(perm):
+    s = Search(Personality, perm)
+    s.Add(SB_AuthorName())
+    s.Add(SB_AuthorSorting())
     return s

@@ -2,23 +2,25 @@ import json
 from logging import getLogger
 import os.path
 import timeit
-from .game_details import GameDetailsBuilder
+from .game_details import GameDetailsBuilder, StarsFromRating
 from .importer import Import
 from .models import (GameURL, GameComment, Game, GameVote, InterpretedGameUrl,
                      URL, GameTag, GameAuthorRole, PersonalityAlias,
                      GameTagCategory, GameURLCategory, GameAuthor, Personality,
                      PersonalityURLCategory, PersonalityUrl)
-from .search import MakeSearch
+from .search import MakeSearch, MakeAuthorSearch
 from .tools import (FormatLag, ExtractYoutubeId)
 from .updater import UpdateGame, Importer2Json
 from django import forms
+from django.db import models
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import SuspiciousOperation
 from django.http import Http404
 from django.http.response import JsonResponse
 from django.shortcuts import render, redirect
-from django.db.models import Count, Exists, OuterRef, Q
+from django.db.models import Count, Exists, OuterRef, Q, Subquery
+from django.db.models.functions import Coalesce
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -210,11 +212,15 @@ def list_games(request):
     s = MakeSearch(request.perm)
     query = request.GET.get('q', '')
     s.UpdateFromQuery(query)
-    if settings.DEBUG and request.GET.get('q', None):
-        json_search(request)
 
-    return render(request, 'games/search.html', {'query': query,
-                                                 **s.ProduceBits()})
+    return render(request, 'games/search.html', s.ProduceBits())
+
+
+def list_authors(request):
+    s = MakeAuthorSearch(request.perm)
+    query = request.GET.get('q', '')
+    s.UpdateFromQuery(query)
+    return render(request, 'games/authors.html', s.ProduceBits())
 
 
 class ChoiceField(forms.ChoiceField):
@@ -405,6 +411,55 @@ def json_gameinfo(request):
             g['links'].append((x.category_id, x.description or '',
                                x.url.original_url))
     return JsonResponse(res)
+
+
+def json_author_search(request):
+    query = request.GET.get('q', '')
+    start = int(request.GET.get('start', '0'))
+    limit = int(request.GET.get('limit', '30'))
+    start_time = timeit.default_timer()
+
+    s = MakeAuthorSearch(request.perm)
+    s.UpdateFromQuery(query)
+    authors = s.Search(
+        prefetch_related=['personalityalias_set__gameauthor_set__role'],
+        start=start,
+        limit=limit,
+        annotate={
+            'game_count':
+            Coalesce(
+                Subquery(
+                    GameAuthor.objects.filter(
+                        role__symbolic_id='author',
+                        author__personality=OuterRef(
+                            'pk')).values('author__personality').annotate(
+                                cnt=Count('pk')).values('cnt'),
+                    output_field=models.IntegerField()), 0),
+        })
+
+    for x in authors:
+        x.aliases = []
+        for a in x.personalityalias_set.filter(
+                gameauthor__isnull=False).distinct():
+            if a.name != x.name:
+                x.aliases.append(a.name)
+        x.honor_str = "%.1f" % x.honor
+        x.stars = StarsFromRating(x.honor)
+
+    res = render(request, 'games/authors_snippet.html', {
+        'authors': authors,
+        'start': start,
+        'limit': limit,
+        'next': start + limit,
+        'has_more': len(authors) == limit,
+    })
+
+    elapsed_time = timeit.default_timer() - start_time
+
+    if elapsed_time > 1.0:
+        logger.error("Time for author search query [%s] was %f" %
+                     (query, elapsed_time))
+    return res
 
 
 def json_search(request):

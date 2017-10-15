@@ -6,6 +6,41 @@ a {
     color: #00487c;
 }
 
+.aliases {
+    font-size: 70%;
+    line-height: 80%;
+}
+
+.aliases .alias {
+    color: #31322D;
+    display: inline-block;
+    margin-right: 0.4em;
+    white-space: nowrap;
+}
+
+.avatar-small {
+    max-width: 70px;
+    max-height: 70px;
+    border-radius: 50%;
+    border: 2px solid #00487c;
+    box-shadow: -1px 1px 3px rgba(0, 0, 0, .3);
+}
+
+.clean-table {
+    width: 100%;
+    table-layout: fixed;
+    font-size: 130%;
+}
+
+.clean-table td {
+    text-align: center;
+    vertical-align: middle;
+}
+
+.clean-table td.textual {
+    text-align: left;
+}
+
 .content {
     margin: 50px auto 5px;
     width: 1024px;
@@ -824,17 +859,13 @@ progress::-webkit-progress-value {
     font-style: italic;
 }
 
-.search-box {
+.search-box-container {
     background-color: #F2F1EB;
     border-radius: 2.5px;
     border: 1px solid #31322d;
     box-shadow: -3px 4px 2px rgba(0, 0, 0, 0.2);
     padding: 20px;
-    line-height: 30px;
     text-align: center;
-}
-
-.search-box {
     line-height: 1.7em;
 }
 
@@ -849,25 +880,25 @@ progress::-webkit-progress-value {
     width: 300px;
 }
 
-.search-box table {
+table.search-box {
     margin: auto;
 }
 
-.search-box table th {
+table.search-box th {
     text-align: right;
     vertical-align: top;
     min-width: 180px;
 }
 
-.search-box table td {
+table.search-box td {
     text-align: left;
 }
 
-.search-box .search-text {
+table.search-box .search-text {
     width: 400px;
 }
 
-.search-box a {
+table.search-box a {
     font-weight: bold;
     font-size: 90%;
 }
