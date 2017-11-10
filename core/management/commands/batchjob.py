@@ -198,8 +198,30 @@ def FixGameAuthors():
         gameauthor__isnull=True).delete()
 
 
+def FixDuplicateGameAuthors():
+    for g in Game.objects.all():
+        clusters = dict()
+        for x in GameAuthor.objects.filter(game=g).select_related():
+            clusters.setdefault((x.role.id, x.author.personality),
+                                []).append(x)
+        for k, v in clusters.items():
+            if len(v) == 1:
+                continue
+            best = None
+            record = None
+            for i, y in enumerate(v):
+                count = y.author.gameauthor_set.count()
+                if best is None or count < best:
+                    best = count
+                    record = i
+
+            for i, y in enumerate(v):
+                if i != record:
+                    y.delete()
+
+
 class Command(BaseCommand):
     help = 'Does some batch processing.'
 
     def handle(self, *args, **options):
-        FixGameAuthors()
+        FixDuplicateGameAuthors()
