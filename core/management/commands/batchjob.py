@@ -223,5 +223,17 @@ def FixDuplicateGameAuthors():
 class Command(BaseCommand):
     help = 'Does some batch processing.'
 
-    def handle(self, *args, **options):
-        FixDuplicateGameAuthors()
+    def add_arguments(self, parser):
+        parser.add_argument('cmd')
+
+    def handle(self, cmd, *args, **options):
+        options = {
+            'removeauthors': RemoveAuthors,
+            'fixgameauthors': FixGameAuthors,
+            'fixdupgameauthors': FixDuplicateGameAuthors,
+        }
+        if cmd in options:
+            options[cmd]()
+        else:
+            print('Unknown command, valid ones are:\n%s' %
+                  ', '.join(options.keys()))
