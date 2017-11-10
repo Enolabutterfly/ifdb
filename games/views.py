@@ -10,7 +10,7 @@ from .models import (GameURL, GameComment, Game, GameVote, InterpretedGameUrl,
                      PersonalityURLCategory, PersonalityUrl)
 from .search import MakeSearch, MakeAuthorSearch
 from .tools import (FormatLag, ExtractYoutubeId, RenderMarkdown,
-                    ComputeGameRating)
+                    ComputeGameRating, ComputeHonors)
 from .updater import UpdateGame, Importer2Json
 from django import forms
 from django.db import models
@@ -226,6 +226,10 @@ def show_author(request, author_id):
         if a.bio:
             res['bio'] = RenderMarkdown(a.bio)
 
+        res['honor'] = ComputeHonors(int(author_id))
+        res['honor_stars'] = StarsFromRating(res['honor'])
+        res['honor_str'] = "%.1f" % res['honor']
+
         urls = {}
         cats = []
         for x in a.personalityurl_set.all():
@@ -238,18 +242,39 @@ def show_author(request, author_id):
         for r in cats:
             res['links'].append({'category': r, 'items': urls[r]})
 
+        act_start = None
+        act_end = None
         games = dict()
-
+        existing = set()
         for g in GameAuthor.objects.filter(author__personality=author_id
                                            ).select_related().prefetch_related(
                                                'game__gameauthor_set__role',
                                                'game__gameauthor_set__author',
                                                'game__gamevote_set'):
+            if g.game.id in existing:
+                continue
+            existing.add(g.game.id)
             gs = games.setdefault(g.role, [])
             rating = ComputeGameRating(
                 [x.star_rating for x in g.game.gamevote_set.all()])
             g.game.ds = rating
             gs.append(g.game)
+
+            if g.role.symbolic_id != 'author':
+                continue
+            if not g.game.release_date:
+                continue
+            if not act_start or g.game.release_date < act_start:
+                act_start = g.game.release_date
+            if not act_end or g.game.release_date > act_end:
+                act_end = g.game.release_date
+
+        if act_start:
+            beg = act_start.year
+            end = act_end.year
+            res['activity_start'] = beg
+            if beg != end:
+                res['activity_end'] = end
 
         res['games'] = []
         for role in sorted(games.keys(), key=lambda x: x.order):
@@ -490,9 +515,9 @@ def json_author_search(request):
                 Subquery(
                     GameAuthor.objects.filter(
                         role__symbolic_id='author',
-                        author__personality=OuterRef(
-                            'pk')).values('author__personality').annotate(
-                                cnt=Count('pk')).values('cnt'),
+                        author__personality=OuterRef('pk'))
+                    .values('author__personality').annotate(
+                        cnt=Count('game', distinct=True)).values('cnt'),
                     output_field=models.IntegerField()), 0),
         })
 

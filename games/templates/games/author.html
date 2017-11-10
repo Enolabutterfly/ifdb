@@ -12,23 +12,71 @@
 {% block content %}
     <div class="content-box-outer">
         <div class="content-box-inner">
-            <div class="leftpane">
-                <div class="game-header">
-                    <h1>{{ name }}</h1>
-                    <div class="game-info">
-                    {% if aliases %}
-                        {% if authors|length == 1 %}Псевдоним:{% else %}Псевдонимы:{% endif %}
-                        {% for x in aliases %}
-                            <span class="gameinfo-author">{{ x }}{% if not forloop.last %}, {% endif %}</span>
-                        {% endfor %}
-                    {% endif %}
-                    </div>
+            <div class="game-header">
+                <h1>{{ name }}</h1>
+                <div class="game-info">
+                {% if aliases %}
+                    {% if authors|length == 1 %}Псевдоним:{% else %}Псевдонимы:{% endif %}
+                    {% for x in aliases %}
+                        <span class="gameinfo-author">{{ x }}{% if not forloop.last %}, {% endif %}</span>
+                    {% endfor %}
+                {% endif %}
                 </div>
+                <div class="game-info">
+                    Почётность:
+                    <span class="gameinfo-author">
+                        {% for x in honor_stars %}
+                          <img src="/static/duck{{x}}.png" />
+                        {% endfor %}
+                        ({{ honor_str }})
+                    </span>       
+                </div>
+                {% if activity_start %}
+                    <div class="game-info">
+                        Годы творчества:
+                        <span class="gameinfo-author">
+                            {{ activity_start }}
+                            {% if activity_end %} 
+                                &mdash; {{ activity_end }}
+                            {% endif %}
+                        </span>
+                    </div>
+                {% endif %}
             </div>
 
-            <div class="leftpane">
-                {% for gs in games %}
-                    <h1>{{ gs.role }}</h1>
+        {% if links %}
+            <table>
+                {% for link in links %}
+                    {% for x in link.items %}
+                        <tr>
+                            <td class="prop-category">
+                                {% if forloop.first %}
+                                    {{ link.category.title }}:
+                                {% endif %}
+                            </td>
+                            <td class="prop-value">
+                                <a {% if x.url.is_broken %}title="Битая ссылка!"{% endif %} href="{{ x.url.original_url }}">
+                                    {% if x.url.is_broken %}
+                                        <img src="{% static 'brokenlink.svg' %}"/>
+                                    {% endif %}
+                                    {{ x.description }}
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% endfor %}
+            </table>
+        {% endif %}
+
+        {% if games %}        
+            <h1>Игры</h1>
+            {% for gs in games %}
+                <h2>{{ gs.role }}
+                    <span class="header-comment">
+                        (всего {{ gs.games|length|rupl:"игра,игры,игр" }})
+                    </span>
+                </h2>
+                <div class="gamelist-thumb-container">
                     {% for g in gs.games %}
                         <a class="gamelist-thumb gamelist-thumb-index" href="{% url 'show_game' game_id=g.id %}">
                             <div class="poster-container">
@@ -49,43 +97,19 @@
                             </div>
                         </a>
                     {% endfor %}
-                {% endfor %}
-            </div>
-
-
-            <div class="leftpane">
-                <div class="game-description">
-                    {{ bio|safe }}
                 </div>
-            </div>
+            {% endfor %}
+        {% endif %}
 
-        {% if links %}
-            <div class="rightpane">
-                <table>
-                    {% for link in links %}
-                        {% for x in link.items %}
-                            <tr>
-                                <td class="prop-category">
-                                    {% if forloop.first %}
-                                        {{ link.category.title }}:
-                                    {% endif %}
-                                </td>
-                                <td class="prop-value">
-                                    <a {% if x.url.is_broken %}title="Битая ссылка!"{% endif %} href="{{ x.url.original_url }}">
-                                        {% if x.url.is_broken %}
-                                            <img src="{% static 'brokenlink.svg' %}"/>
-                                        {% endif %}
-                                        {{ x.description }}
-                                    </a>
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    {% endfor %}
-                </table>
+
+        {% if bio %}
+            <hr/>
+            <div class="game-description">
+                {{ bio|safe }}
             </div>
         {% endif %}
 
-        <div style="clear: both;"></div>
+
     </div>
 </div>
 {% endblock %}

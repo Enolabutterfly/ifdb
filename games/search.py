@@ -2,7 +2,7 @@ import re
 from .models import (Game, GameTag, GameTagCategory, URL, PersonalityAlias,
                      GameAuthorRole, Personality, GameAuthor, GameVote)
 import statistics
-from .tools import FormatDate, ComputeGameRating
+from .tools import FormatDate, ComputeGameRating, ComputeHonors
 from django.db.models import Q, Count, prefetch_related_objects, F
 
 RE_WORD = re.compile(r"\w(?:[\w']+\w)?")
@@ -681,29 +681,8 @@ class SB_AuthorSorting(SearchBit):
     def NeedsFullSet(self):
         return self.method in [self.HONOUR]
 
-    def ComputeHonors(self):
-        xs = dict()
-
-        for x in GameVote.objects.filter(
-                game__gameauthor__role__symbolic_id='author').annotate(
-                    gameid=F('game__id'),
-                    author=F('game__gameauthor__author__personality__id')):
-            xs.setdefault(x.author, {}).setdefault(x.gameid,
-                                                   []).append(x.star_rating)
-
-        def DiscountRating(x, count, P1=2.7, P2=0.5):
-            return (x - P1) * (P2 + count) / (P2 + count + 1) + P1
-
-        res = dict()
-        for a, games in xs.items():
-            sms = 0.0
-            for votes in games.values():
-                sms += DiscountRating(sum(votes) / len(votes), len(votes))
-            res[a] = DiscountRating(sms / len(games), len(games), P1=2.3)
-        return res
-
     def ModifyResult(self, authors):
-        honors = self.ComputeHonors()
+        honors = ComputeHonors()
         for x in authors:
             x.honor = honors.get(x.id, 0.0)
         if self.method == self.HONOUR:

@@ -217,6 +217,11 @@ textarea {
     background-color: #175887;
 }
 
+.header-comment {
+    font-size: 50%;
+    font-weight: normal;
+}
+
 .root {
     background-image: url("/static/f5ce5546.png");
     background-color: #625b61;

@@ -1,7 +1,9 @@
 import markdown
 from urllib.parse import urlparse, parse_qs
 from django import template
+from django.db.models import F
 import statistics
+from .models import GameVote
 
 
 def FormatDate(x):
@@ -87,14 +89,13 @@ def StarsFromRating(rating):
     return res
 
 
+def DiscountRating(x, count, P1=2.7, P2=0.5):
+    return (x - P1) * (P2 + count) / (P2 + count + 1) + P1
+
+
 def ComputeGameRating(votes):
     if not votes:
         return {}
-
-    def DiscountRating(x, count):
-        P1 = 2.7
-        P2 = 0.5
-        return (x - P1) * (P2 + count) / (P2 + count + 1) + P1
 
     avg = statistics.mean(votes)
     ds = {}
@@ -102,6 +103,31 @@ def ComputeGameRating(votes):
     ds['scores'] = len(votes)
     ds['vote'] = DiscountRating(avg, len(votes))
     return ds
+
+
+def ComputeHonors(author=None):
+    xs = dict()
+    votes = GameVote.objects.filter(
+        game__gameauthor__role__symbolic_id='author').annotate(
+            gameid=F('game__id'),
+            author=F('game__gameauthor__author__personality__id'))
+    if author:
+        votes = votes.filter(author=author)
+
+    for x in votes:
+        xs.setdefault(x.author, {}).setdefault(x.gameid,
+                                               []).append(x.star_rating)
+
+    res = dict()
+    for a, games in xs.items():
+        sms = 0.0
+        for votes in games.values():
+            sms += DiscountRating(sum(votes) / len(votes), len(votes))
+        res[a] = DiscountRating(sms / len(games), len(games), P1=2.3)
+    if author:
+        return res.get(author, 0.0)
+    else:
+        return res
 
 
 def RenderMarkdown(content):
