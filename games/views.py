@@ -9,7 +9,8 @@ from .models import (GameURL, GameComment, Game, GameVote, InterpretedGameUrl,
                      GameTagCategory, GameURLCategory, GameAuthor, Personality,
                      PersonalityURLCategory, PersonalityUrl)
 from .search import MakeSearch, MakeAuthorSearch
-from .tools import (FormatLag, ExtractYoutubeId, RenderMarkdown)
+from .tools import (FormatLag, ExtractYoutubeId, RenderMarkdown,
+                    ComputeGameRating)
 from .updater import UpdateGame, Importer2Json
 from django import forms
 from django.db import models
@@ -239,9 +240,15 @@ def show_author(request, author_id):
 
         games = dict()
 
-        for g in GameAuthor.objects.filter(
-                author__personality=author_id).select_related():
+        for g in GameAuthor.objects.filter(author__personality=author_id
+                                           ).select_related().prefetch_related(
+                                               'game__gameauthor_set__role',
+                                               'game__gameauthor_set__author',
+                                               'game__gamevote_set'):
             gs = games.setdefault(g.role, [])
+            rating = ComputeGameRating(
+                [x.star_rating for x in g.game.gamevote_set.all()])
+            g.game.ds = rating
             gs.append(g.game)
 
         res['games'] = []

@@ -2,7 +2,7 @@ import re
 from .models import (Game, GameTag, GameTagCategory, URL, PersonalityAlias,
                      GameAuthorRole, Personality, GameAuthor, GameVote)
 import statistics
-from .tools import FormatDate, StarsFromRating
+from .tools import FormatDate, ComputeGameRating
 from django.db.models import Q, Count, prefetch_related_objects, F
 
 RE_WORD = re.compile(r"\w(?:[\w']+\w)?")
@@ -192,20 +192,15 @@ class SB_Sorting(SearchBit):
             ratings = []
             nones = []
             for g in games:
-
-                def DiscountRating(x, count):
-                    P1 = 2.7
-                    P2 = 0.5
-                    return (x - P1) * (P2 + count) / (P2 + count + 1) + P1
-
                 votes = [x.star_rating for x in g.gamevote_set.all()]
                 if not votes:
                     nones.append(g)
                     continue
-                avg = statistics.mean(votes)
-                g.ds['stars'] = StarsFromRating(avg)
-                g.ds['scores'] = len(votes)
-                vote = DiscountRating(avg, len(votes))
+
+                gamerating = ComputeGameRating(votes)
+                g.ds['stars'] = gamerating['stars']
+                g.ds['scores'] = gamerating['scores']
+                vote = gamerating['vote']
                 ratings.append((vote, g))
 
             ratings.sort(key=lambda x: x[0], reverse=self.desc)

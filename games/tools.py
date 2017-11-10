@@ -1,6 +1,7 @@
 import markdown
 from urllib.parse import urlparse, parse_qs
 from django import template
+import statistics
 
 
 def FormatDate(x):
@@ -47,15 +48,20 @@ def FormatLag(x):
         fmtstr = "через %s"
 
     def GetDurationStr(x):
-        if x < 60: return ConcoreNumeral(x, 'секунду,секунды,секунд')
+        if x < 60:
+            return ConcoreNumeral(x, 'секунду,секунды,секунд')
         x //= 60
-        if x < 60: return ConcoreNumeral(x, 'минуту,минуты,минут')
+        if x < 60:
+            return ConcoreNumeral(x, 'минуту,минуты,минут')
         x //= 60
-        if x < 24: return ConcoreNumeral(x, 'час,часа,часов')
+        if x < 24:
+            return ConcoreNumeral(x, 'час,часа,часов')
         x //= 24
-        if x < 31: return ConcoreNumeral(x, 'день,дня,дней')
+        if x < 31:
+            return ConcoreNumeral(x, 'день,дня,дней')
         x //= 30
-        if x < 12: return ConcoreNumeral(x, 'месяц,месяца,месяцев')
+        if x < 12:
+            return ConcoreNumeral(x, 'месяц,месяца,месяцев')
         x //= 12
         return ConcoreNumeral(x, 'год,года,лет')
 
@@ -79,6 +85,23 @@ def StarsFromRating(rating):
         res.append(avg % 10)
     res.extend([0] * (5 - len(res)))
     return res
+
+
+def ComputeGameRating(votes):
+    if not votes:
+        return {}
+
+    def DiscountRating(x, count):
+        P1 = 2.7
+        P2 = 0.5
+        return (x - P1) * (P2 + count) / (P2 + count + 1) + P1
+
+    avg = statistics.mean(votes)
+    ds = {}
+    ds['stars'] = StarsFromRating(avg)
+    ds['scores'] = len(votes)
+    ds['vote'] = DiscountRating(avg, len(votes))
+    return ds
 
 
 def RenderMarkdown(content):
