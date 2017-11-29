@@ -11,6 +11,7 @@ upstream django-staging {
 server {
 {% if c.host == 'prod' %}
     server_name db.mooskagh.com;
+    server_name crem.xyz;
 
     error_log    /home/ifdb/logs/nginx-error.log;
     access_log    /home/ifdb/logs/nginx-access.log;
