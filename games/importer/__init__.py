@@ -3,9 +3,11 @@ from .plut import PlutImporter
 from .ifwiki import IfwikiImporter
 from .qspsu import QspsuImporter
 from .apero import AperoImporter
+from .rilarhiv import RilarhivImporter
 
 REGISTERED_IMPORTERS.append(PlutImporter)
 REGISTERED_IMPORTERS.append(IfwikiImporter)
 REGISTERED_IMPORTERS.append(QspsuImporter)
 REGISTERED_IMPORTERS.append(AperoImporter)
+REGISTERED_IMPORTERS.append(RilarhivImporter)
 Importer
