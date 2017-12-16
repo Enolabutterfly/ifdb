@@ -44,6 +44,8 @@ server {
         uwsgi_pass  django;
         include     /home/ifdb/configs/uwsgi_params;
     }
+
+
 {% elif c.conf == 'staging' %}
     location /f  {
         alias /home/ifdb/files;
