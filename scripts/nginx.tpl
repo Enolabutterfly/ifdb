@@ -40,17 +40,10 @@ server {
         alias /home/ifdb/static;
     }
 
-    {% if c.conf == 'staging' %}
-        location / {
-            uwsgi_pass  django-staging;
-            include     /home/ifdb/configs/uwsgi_params;
-        }
-    {% else %}
-        location / {
-            uwsgi_pass  django;
-            include     /home/ifdb/configs/uwsgi_params;
-        }
-    {% endif %}
+    location / {
+        uwsgi_pass  django;
+        include     /home/ifdb/configs/uwsgi_params;
+    }
 
 
 {% elif c.conf == 'staging' %}
