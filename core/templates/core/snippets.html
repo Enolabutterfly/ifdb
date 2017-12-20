@@ -1,0 +1,16 @@
+<div class="grid-container">
+  {% for s in snippets %}
+  <div class="grid-box {{ s.box_style }}">
+    <div class="grid-box-header">{{ s.title }}</div>
+    {{ s.content }}
+  </div>
+  {% endfor %}
+</div>
+<script type="text/javascript">
+  $('.grid-container').masonry({
+    itemSelector: '.grid-box',
+    columnWidth: 300,
+    gutter: 30,
+    fitWidth: true,
+  });
+</script>

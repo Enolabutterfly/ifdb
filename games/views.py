@@ -12,6 +12,7 @@ from .search import MakeSearch, MakeAuthorSearch
 from .tools import (FormatLag, ExtractYoutubeId, RenderMarkdown,
                     ComputeGameRating, ComputeHonors, IsTor)
 from .updater import UpdateGame, Importer2Json
+from core.snippets import RenderSnippets
 from django import forms
 from django.db import models
 from django.conf import settings
@@ -126,6 +127,7 @@ def index(request):
         if idd:
             x['thumb'] = 'https://img.youtube.com/vi/%s/default.jpg' % idd
     res['reviews'] = LastUrlCat(request, 'review', 4)
+    res['snippets'] = RenderSnippets(request)
 
     return render(request, 'games/index.html', res)
 
