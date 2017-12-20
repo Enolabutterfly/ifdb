@@ -50,6 +50,92 @@ a.author-link:hover {
     text-align: left;
 }
 
+.grid-container {
+    margin: 50px auto;
+}
+
+.grid-box {
+    background-color: #ebebeb;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    margin: 0 0 1em;
+    width: 300px;
+    margin-bottom: 30px;
+}
+
+.grid-box-item {
+    overflow: hidden;
+    border-top: 1px solid #ebebeb;
+    border-radius: 2px;    
+    background-color: #fff;
+    display: block;
+    text-decoration: none;
+    color: inherit;
+}
+
+a.grid-box-item:hover {
+    background-color: #eee;
+}
+
+.grid-box-line {
+    height: 20px;
+    padding: 0 10px;
+    vertical-align: middle;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.grid-box-line-comment {
+    font-size: 11px;
+    color: #989898;
+}
+
+.grid-box-line-float-right {
+    float: right;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.grid-box-line-recent-comment {
+    font-size: 11px;
+    color: #ff3200;
+}
+
+.grid-box-line-strong {
+    font-weight: bold;
+}
+
+.grid-box-icon {
+    max-width: 90px;
+    max-height: 60px;
+    display: block;
+    float: left;
+    margin-right: 5px;
+}
+
+.grid-box-header {
+    color: #fff;
+    background-color: #666;
+    padding: 10px 5px;
+    font-size: 110%;
+    font-weight: bold;
+}
+
+.grid-box-subheader {
+    color: #fff;
+    background-color: #444;
+    padding: 3px 5px;
+    font-size: 100%;
+}
+
+.grid-box-green .grid-box-header {
+    background-color: #0e9d40;
+}
+
+.grid-box-green .grid-box-subheader {
+    background-color: #095925;
+}
+
+
 .content {
     margin: 50px auto 5px;
     width: 1024px;

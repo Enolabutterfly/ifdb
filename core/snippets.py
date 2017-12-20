@@ -1,7 +1,7 @@
 from .models import Snippet
 from django.template.loader import render_to_string
 from django.utils import timezone
-from games.models import GameURL
+from games.models import GameURL, GameComment
 from games.search import MakeSearch
 from games.tools import FormatLag
 from django.urls import reverse
@@ -14,7 +14,7 @@ def GameListFromSearch(request, query, reltime_field=None):
     games = s.Search(
         prefetch_related=['gameauthor_set__author', 'gameauthor_set__role'],
         start=0,
-        limit=20)[:5]
+        limit=30)
 
     posters = (GameURL.objects.filter(category__symbolic_id='poster').filter(
         game__in=games).select_related('url'))
@@ -29,11 +29,18 @@ def GameListFromSearch(request, query, reltime_field=None):
             x for x in x.gameauthor_set.all() if x.role.symbolic_id == 'author'
         ]
 
+    total_recent = 0
     if reltime_field:
         for x in games:
-            x.lag = FormatLag(
-                (getattr(x, reltime_field) - timezone.now()).total_seconds())
-    return games
+            delta = (
+                getattr(x, reltime_field) - timezone.now()).total_seconds()
+            x.recent_lag = delta > -60 * 60 * 24
+            if x.recent_lag:
+                total_recent += 1
+            x.lag = FormatLag(delta)
+    if total_recent < 5:
+        total_recent = 5
+    return games[:total_recent]
 
 
 def GameListSnippet(request, query, reltime_field=None):
@@ -42,7 +49,10 @@ def GameListSnippet(request, query, reltime_field=None):
     for x in games:
         lines = []
         if hasattr(x, 'lag'):
-            lines.append({'style': 'comment', 'text': x.lag})
+            lines.append({
+                'style': ('recent-comment' if x.recent_lag else 'comment'),
+                'text': (x.lag),
+            })
         lines.append({'style': 'strong', 'text': x.title})
         lines.append({'text': ', '.join([y.author.name for y in x.authors])})
         items.append({
@@ -51,6 +61,57 @@ def GameListSnippet(request, query, reltime_field=None):
             'link': reverse('show_game', kwargs={
                 'game_id': x.id
             }),
+        })
+    return render_to_string('core/snippet.html', {'items': items})
+
+
+def LastComments(request):
+    games = set()
+    # TODO Game permissions!
+    comments = GameComment.objects.select_related().filter(
+        is_deleted=False).order_by('-creation_time')[:300]
+    res = []
+    for x in comments:
+        if x.game.id in games:
+            continue
+        games.add(x.game.id)
+        delta = (x.creation_time - timezone.now()).total_seconds()
+        recent = -delta < 60 * 60 * 24
+        if not recent and len(res) == 5:
+            break
+        x.lag = FormatLag(delta)
+        x.recent_lag = recent
+        res.append(x)
+        if len(res) == 30:
+            break
+    return res
+
+
+def CommentsSnippet(request):
+    comments = LastComments(request)
+    items = []
+    for x in comments:
+        items.append({
+            'link': (reverse('show_game', kwargs={
+                'game_id': x.game.id
+            })),
+            'lines': [
+                {
+                    'style': 'float-right',
+                    'text': (x.user.username if x.user else 'Анонимоўс'),
+                },
+                {
+                    'style': ('recent-comment' if x.recent_lag else 'comment'),
+                    'text': (x.lag),
+                },
+                {
+                    'style': 'strong',
+                    'text': (x.game.title),
+                },
+                {
+                    'text': (x.subject),
+                },
+            ]
         })
     return render_to_string('core/snippet.html', {'items': items})
 

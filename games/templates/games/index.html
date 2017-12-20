@@ -1,5 +1,9 @@
 {% extends "./base.html" %}
-{% block content %}
+{% block scripts %}
+    <script src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js"></script>
+{% endblock %}
+{% block content_wide %}
+    {{ snippets | safe }}
     <div class="content-box">
         <h2>Последние добавленные</h2>
         <div class="gamelist-thumb-container">

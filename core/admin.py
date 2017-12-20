@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import (TaskQueueElement, User, Package, PackageVersion,
-                     PackageSession, Document)
+                     PackageSession, Document, Snippet)
 from django.contrib.sessions.models import Session
 
 
@@ -55,8 +55,18 @@ class PackageSessionAdmin(admin.ModelAdmin):
         'is_finished'
     ]
 
+
 @admin.register(Document)
 class DocumentAdmin(admin.ModelAdmin):
     list_display = ['title', 'last_update', 'view_perm', 'list_perm', 'order']
     list_filter = ['last_update', 'view_perm', 'list_perm']
     search_fields = ['title', 'text']
+
+
+@admin.register(Snippet)
+class SnippetAdmin(admin.ModelAdmin):
+    list_display = [
+        'title', 'view_perm', 'order', 'show_start', 'show_end', 'is_async'
+    ]
+    search_fields = ['title']
+    list_filter = ['view_perm', 'order', 'is_async']
