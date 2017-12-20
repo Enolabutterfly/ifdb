@@ -1,0 +1,25 @@
+{% for x in items %}
+{% if x.style == 'subheader' %}
+  <div class="grid-box-subheader">Последние добавленные игры</div>
+{% else %}
+  {% if x.link %}
+    <a class="grid-box-item" href="{{ x.link }}">  
+  {% else %}
+    <div class="grid-box-item">
+  {% endif %}
+    {% if x.image %}
+      <img class="grid-box-icon" src="{{ x.image }}">
+    {% endif %}
+    {% for y in x.lines %}
+      <div class="grid-box-line {% if y.style %}grid-box-line-{{y.style}}{% endif %}">
+        {{ y.text }}
+      </div>
+    {% endfor %}
+  {% if x.link %}
+    </a>
+  {% else %}
+    </div>
+  {% endif %}
+{% endif %}
+{% endfor %}
+
