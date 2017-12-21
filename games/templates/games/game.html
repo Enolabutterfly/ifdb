@@ -323,7 +323,7 @@
                     {% endif %}
                 </table>
             {% endif %}
-            {% if comment_perm %}
+            {% if user.is_authenticated %}
                 {% if votes.user_played %}
                     {% comment %}
                         <div class="prop-comment">
