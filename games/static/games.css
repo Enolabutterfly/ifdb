@@ -338,6 +338,14 @@ textarea {
     z-index: 1;
 }
 
+#bottom-nav {
+    bottom: 0;
+    font-size: 11px;
+    position: fixed;
+    right: 0;
+    text-align: right;
+}
+
 #top-nav {
     background-color: #666;
     background-size: 100% 100%;
