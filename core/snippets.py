@@ -129,7 +129,7 @@ def LastUrlCatSnippet(request,
             'lines': [
                 {
                     'style': ('recent-comment'
-                              if x['lag'] > highlight_secs else 'comment'),
+                              if -x['lag'] < highlight_secs else 'comment'),
                     'text': (FormatLag(x['lag'])),
                 },
                 {
