@@ -17,7 +17,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     Email and password are required. Other fields are optional.
     """
 
-    class Meta(object):
+    class Meta:
+        default_permissions = ()
         verbose_name = _('User')
         verbose_name_plural = _('Users')
         abstract = False
@@ -126,6 +127,9 @@ class TaskQueueElement(models.Model):
 
 
 class Package(models.Model):
+    class Meta:
+        default_permissions = ()
+
     def __str__(self):
         return self.name
 
@@ -136,6 +140,9 @@ class Package(models.Model):
 
 
 class PackageVersion(models.Model):
+    class Meta:
+        default_permissions = ()
+
     package = models.ForeignKey(Package)
     version = models.CharField(max_length=32)
     md5hash = models.CharField(max_length=32)
@@ -144,6 +151,9 @@ class PackageVersion(models.Model):
 
 
 class PackageSession(models.Model):
+    class Meta:
+        default_permissions = ()
+
     package = models.ForeignKey(Package, db_index=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True)
     client = models.CharField(max_length=64)
@@ -154,6 +164,9 @@ class PackageSession(models.Model):
 
 
 class Document(models.Model):
+    class Meta:
+        default_permissions = ()
+
     slug = models.SlugField(db_index=True)
     parent = models.ForeignKey('Document', null=True, blank=True)
     title = models.CharField(max_length=256)
@@ -165,6 +178,9 @@ class Document(models.Model):
 
 
 class Snippet(models.Model):
+    class Meta:
+        default_permissions = ()
+
     title = models.CharField(max_length=256)
     url = models.CharField(max_length=256, null=True, blank=True)
     style_json = models.CharField(max_length=256)
@@ -174,3 +190,31 @@ class Snippet(models.Model):
     show_start = models.DateTimeField(null=True, blank=True)
     show_end = models.DateTimeField(null=True, blank=True)
     is_async = models.BooleanField(default=False)
+
+
+class FeedCache(models.Model):
+    class Meta:
+        default_permissions = ()
+        unique_together = (("feed_id", "item_id"), )
+        indexes = [
+            models.Index(fields=['date_published']),
+            models.Index(fields=['feed_id', 'item_id']),
+        ]
+
+    feed_id = models.CharField(max_length=32)
+    item_id = models.CharField(max_length=512)
+    date_published = models.DateTimeField()
+    date_discovered = models.DateTimeField()
+    title = models.CharField(max_length=256)
+    authors = models.CharField(max_length=256)
+    url = models.CharField(max_length=2048)
+
+
+class RssFeedsToCache(models.Model):
+    class Meta:
+        default_permissions = ()
+
+    feed_id = models.CharField(max_length=32)
+    title = models.CharField(max_length=512)
+    rss_url = models.CharField(max_length=2048)
+    link_url = models.CharField(max_length=2048, null=True, blank=True)

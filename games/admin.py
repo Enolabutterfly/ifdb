@@ -61,20 +61,20 @@ class PersonalityAdmin(admin.ModelAdmin):
         return '; '.join(aliases)
 
     list_display = ['pk', 'name', '_alias_count', '_aliases']
-    search_fields = ['name', 'personalityalias__name']
+    search_fields = ['pk', 'name', 'personalityalias__name']
     inlines = [InlinePersonalityUrlAdmin, InlinePersonalityAliasAdmin]
 
 
 @admin.register(GameTagCategory)
 class GameTagCategoryAdmin(admin.ModelAdmin):
     list_display = ['name', 'symbolic_id', 'allow_new_tags']
-    search_fields = ['name', 'symbolic_id']
+    search_fields = ['pk', 'name', 'symbolic_id']
 
 
 @admin.register(GameTag)
 class GameTagAdmin(admin.ModelAdmin):
     list_display = ['name', 'category', 'symbolic_id']
-    search_fields = ['name', 'symbolic_id']
+    search_fields = ['pk', 'name', 'symbolic_id']
     list_filter = ['category']
 
 
@@ -89,7 +89,7 @@ class URLAdmin(admin.ModelAdmin):
         '_original_url', 'local_url', 'ok_to_clone', 'is_uploaded',
         'is_broken', 'creation_date'
     ]
-    search_fields = ['original_url', 'local_url']
+    search_fields = ['pk', 'original_url', 'local_url']
     list_filter = [
         'ok_to_clone', 'is_uploaded', 'is_broken', 'creation_date', 'creator'
     ]
@@ -98,7 +98,7 @@ class URLAdmin(admin.ModelAdmin):
 @admin.register(GameURLCategory)
 class GameURLCategoryAdmin(admin.ModelAdmin):
     list_display = ['title', 'symbolic_id', 'allow_cloning']
-    search_fields = ['title', 'symbolic_id']
+    search_fields = ['pk', 'title', 'symbolic_id']
 
 
 @admin.register(GameURL)
@@ -114,20 +114,20 @@ class GameURLAdmin(admin.ModelAdmin):
         return obj.url.original_url[:80] + '…'
 
     list_display = ['description', '_game', 'category', '_url']
-    search_fields = ['description', 'game__title']
+    search_fields = ['pk', 'description', 'game__title']
     list_filter = ['category']
 
 
 @admin.register(GameAuthorRole)
 class GameAuthorRoleAdmin(admin.ModelAdmin):
     list_display = ['title', 'symbolic_id', 'order']
-    search_fields = ['title', 'symbolic_id']
+    search_fields = ['pk', 'title', 'symbolic_id']
 
 
 @admin.register(GameAuthor)
 class GameAuthorAdmin(admin.ModelAdmin):
     list_display = ['game', 'author', 'role']
-    search_fields = ['game', 'author']
+    search_fields = ['pk', 'game', 'author']
     list_filter = ['role']
 
 
@@ -140,14 +140,14 @@ class GameVoteAdmin(admin.ModelAdmin):
         'star_rating', 'game_finished', 'play_time_mins', 'creation_time',
         'edit_time'
     ]
-    search_fields = ['game', 'author']
+    search_fields = ['pk', 'game', 'author']
 
 
 @admin.register(GameComment)
 class GameCommentAdmin(admin.ModelAdmin):
     list_display = ['game', 'user', 'creation_time', 'subject', 'is_deleted']
     list_filter = ['creation_time', 'is_deleted']
-    search_fields = ['subject', 'text']
+    search_fields = ['pk', 'subject', 'text']
 
 
 @admin.register(InterpretedGameUrl)

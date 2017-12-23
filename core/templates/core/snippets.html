@@ -3,7 +3,11 @@
 <div class="grid-container">
   {% for s in snippets %}
   <div class="grid-box {{ s.box_style }}">
-    <div class="grid-box-header">{{ s.title }}</div>
+    {% if s.url %}
+      <a class="grid-box-header" href="{{ s.url }}"{% if s.box_style.newtab %}target="_blank"{% endif %}>{{ s.title }}</a>
+    {% else %}
+      <div class="grid-box-header">{{ s.title }}</div>
+    {% endif %}
     {% if s.async_snippet_id %}
       <div class="grid-box-item grid-box-async" grid-box-snippet-id="{{s.async_snippet_id}}">
         <img src="{% static 'ellipsis.gif' %}">

@@ -132,6 +132,12 @@ a.grid-box-line:hover {
     padding: 10px 5px;
     font-size: 110%;
     font-weight: bold;
+    display: block;
+    text-decoration: none;
+}
+
+a.grid-box-header:hover {
+    text-decoration: underline;
 }
 
 .grid-box-subheader {

@@ -7,6 +7,8 @@ from django.utils import timezone
 from games.models import GameURL, GameComment
 from games.search import GameListFromSearch
 from games.tools import FormatLag, ExtractYoutubeId
+from .models import FeedCache, RssFeedsToCache
+
 import json
 
 
@@ -156,6 +158,40 @@ def LastUrlCatSnippet(request,
     return render_to_string('core/snippet.html', {'items': items})
 
 
+def FeedSnippet(request,
+                feed_ids,
+                highlight_secs=60 * 60 * 24,
+                max_secs=7 * 24 * 60 * 60,
+                min_count=5,
+                max_count=30):
+    now = timezone.now()
+    items = []
+    for x in FeedCache.objects.filter(
+            feed_id__in=feed_ids).order_by('-date_published')[:max_count]:
+        lag = (now - x.date_published).total_seconds()
+        if lag > max_secs and len(items) >= min_count:
+            break
+        items.append({
+            'link': (x.url),
+            'newtab': (True),
+            'lines': [
+                {
+                    'style': ('recent-comment'
+                              if lag <= highlight_secs else 'comment'),
+                    'text': (FormatLag(-lag)),
+                },
+                {
+                    'style': 'strong',
+                    'text': (x.title),
+                },
+                {
+                    'text': (x.authors),
+                },
+            ]
+        })
+    return render_to_string('core/snippet.html', {'items': items})
+
+
 def RenderSnippetContent(request, snippet):
     content_json = json.loads(snippet.content_json)
 
@@ -202,6 +238,7 @@ def RenderSnippets(request):
 
         snippets.append({
             'title': x.title,
+            'url': x.url,
             'box_style': box_style,
             'async_snippet_id': async_id,
             'content': content,

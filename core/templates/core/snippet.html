@@ -3,7 +3,7 @@
   <div class="grid-box-subheader">Последние добавленные игры</div>
 {% else %}
   {% if x.link %}
-    <a class="grid-box-item" href="{{ x.link }}">  
+    <a class="grid-box-item" href="{{ x.link }}" {% if x.newtab %}target="_blank"{% endif %}>  
   {% else %}
     <div class="grid-box-item">
   {% endif %}
