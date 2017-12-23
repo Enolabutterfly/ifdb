@@ -20,6 +20,7 @@ IS_PROD = socket.gethostname() == 'crem.xyz'
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+VERSION = open(os.path.join(BASE_DIR, 'version.txt')).read().strip()
 
 # SECURITY WARNING: keep the secret key used in production secret!
 if IS_PROD:

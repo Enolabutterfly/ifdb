@@ -1,10 +1,11 @@
 import re
 
 from django import template
+from django.conf import settings
 from django.core.urlresolvers import reverse, NoReverseMatch
-from django.utils.safestring import mark_safe
-from django.template.defaultfilters import stringfilter
 from django.template import TemplateSyntaxError
+from django.template.defaultfilters import stringfilter
+from django.utils.safestring import mark_safe
 
 register = template.Library()
 
@@ -42,3 +43,8 @@ def rupl(value, arg):
     except:
         raise TemplateSyntaxError
     return ''
+
+
+@register.simple_tag(takes_context=False)
+def version():
+    return settings.VERSION

@@ -1,6 +1,7 @@
 from django.contrib import admin
 from .models import (TaskQueueElement, User, Package, PackageVersion,
-                     PackageSession, Document, Snippet)
+                     PackageSession, Document, Snippet, FeedCache,
+                     RssFeedsToCache)
 from django.contrib.sessions.models import Session
 
 
@@ -28,7 +29,7 @@ class UserAdmin(admin.ModelAdmin):
         'username', 'email', 'last_login', 'is_staff', 'is_superuser',
         'is_active', 'pk'
     ]
-    search_fields = ['username']
+    search_fields = ['pk', 'username']
     list_filter = ['last_login', 'is_active']
 
 
@@ -39,7 +40,7 @@ class InlinePackageVersionAdmin(admin.TabularInline):
 
 @admin.register(Package)
 class PackageAdmin(admin.ModelAdmin):
-    search_fields = ['name', 'game__title']
+    search_fields = ['pk', 'name', 'game__title']
     list_display = ['name', 'download_perm', 'edit_perm', 'game']
     raw_id_fields = ['game']
     inlines = [InlinePackageVersionAdmin]
@@ -60,7 +61,7 @@ class PackageSessionAdmin(admin.ModelAdmin):
 class DocumentAdmin(admin.ModelAdmin):
     list_display = ['title', 'last_update', 'view_perm', 'list_perm', 'order']
     list_filter = ['last_update', 'view_perm', 'list_perm']
-    search_fields = ['title', 'text']
+    search_fields = ['pk', 'title', 'text']
 
 
 @admin.register(Snippet)
@@ -68,5 +69,15 @@ class SnippetAdmin(admin.ModelAdmin):
     list_display = [
         'title', 'view_perm', 'order', 'show_start', 'show_end', 'is_async'
     ]
-    search_fields = ['title']
+    search_fields = ['pk', 'title']
     list_filter = ['view_perm', 'order', 'is_async']
+
+
+@admin.register(FeedCache)
+class FeedCacheAdminAdmin(admin.ModelAdmin):
+    list_display = ['feed_id', 'item_id', 'date_published', 'title']
+
+
+@admin.register(RssFeedsToCache)
+class RssFeedsToCacheAdmin(admin.ModelAdmin):
+    list_display = ['feed_id', 'title']
