@@ -1,6 +1,8 @@
 import re
 from .models import (Game, GameTag, GameTagCategory, URL, PersonalityAlias,
-                     GameAuthorRole, Personality, GameAuthor, GameVote)
+                     GameAuthorRole, Personality, GameAuthor, GameVote,
+                     GameURL)
+from django.utils import timezone
 import statistics
 from .tools import FormatDate, ComputeGameRating, ComputeHonors
 from django.db.models import Q, Count, prefetch_related_objects, F
@@ -486,8 +488,8 @@ class SB_AuxFlags(SB_Flags):
         Q(release_date__isnull=True),
         3:
         Q(gameurl__interpretedgameurl__is_playable=True),
-        4: (Q(gameurl__interpretedgameurl__isnull=False) & Q(
-            gameurl__interpretedgameurl__is_playable__isnull=True)),
+        4: (Q(gameurl__interpretedgameurl__isnull=False) &
+            Q(gameurl__interpretedgameurl__is_playable__isnull=True)),
         5:
         Q(gameurl__interpretedgameurl__is_playable=False),
         6:
@@ -495,9 +497,10 @@ class SB_AuxFlags(SB_Flags):
         7:
         Q(edit_time__isnull=False),
         8:
-        Q(gameurl__url__in=URL.objects.annotate(
-            Count('gameurl__game', distinct=True)).filter(
-                gameurl__game__count__gt=1)),
+        Q(
+            gameurl__url__in=URL.objects.annotate(
+                Count('gameurl__game', distinct=True)).filter(
+                    gameurl__game__count__gt=1)),
         9:
         Q(gameurl__url__is_broken=True),
     }
@@ -747,3 +750,43 @@ def MakeAuthorSearch(perm):
     s.Add(SB_AuthorName())
     s.Add(SB_AuthorSorting())
     return s
+
+
+def GameListFromSearch(request, query, reltime_field, max_secs, min_count,
+                       max_count):
+    s = MakeSearch(request.perm)
+    s.UpdateFromQuery(query)
+    # TODO(crem) Game permissions!
+    games = s.Search(
+        prefetch_related=['gameauthor_set__author', 'gameauthor_set__role'],
+        start=0,
+        limit=max_count)
+
+    posters = (GameURL.objects.filter(category__symbolic_id='poster').filter(
+        game__in=games).select_related('url'))
+
+    g2p = {}
+    for x in posters:
+        g2p[x.game_id] = x.GetLocalUrl()
+
+    for x in games:
+        x.poster = g2p.get(x.id)
+        x.authors = [
+            x for x in x.gameauthor_set.all() if x.role.symbolic_id == 'author'
+        ]
+
+    res = []
+    if reltime_field:
+        for (i, x) in enumerate(games):
+            delta = (
+                getattr(x, reltime_field) - timezone.now()).total_seconds()
+            if -delta > max_secs and i >= min_count:
+                break
+            res.append({
+                'lag': delta,
+                'title': x.title,
+                'authors': x.authors,
+                'poster': x.poster,
+                'id': x.id
+            })
+    return res

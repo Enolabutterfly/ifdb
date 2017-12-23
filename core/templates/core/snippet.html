@@ -8,12 +8,32 @@
     <div class="grid-box-item">
   {% endif %}
     {% if x.image %}
-      <img class="grid-box-icon" src="{{ x.image }}">
+      {% if x.image.link %}
+        <a class="grid-box-icon-container" href="{{x.image.link}}" {% if x.image.newtab %}target="_blank"{% endif %}>
+      {% else %}
+        <div class="grid-box-icon-container">
+      {% endif %}
+          {% if x.image.src %}        
+            <img class="grid-box-icon" src="{{ x.image.src }}">
+          {% endif %}
+      {% if x.image.link %}
+        </a>
+      {% else %}
+        </div>
+      {% endif %}
     {% endif %}
     {% for y in x.lines %}
-      <div class="grid-box-line {% if y.style %}grid-box-line-{{y.style}}{% endif %}">
-        {{ y.text }}
-      </div>
+      {% if y.link %}
+        <a class="grid-box-line {% if y.style %}grid-box-line-{{y.style}}{% endif %}" href="{{y.link}}" {% if y.newtab %}target="_blank"{% endif %}>
+      {% else %}
+        <div class="grid-box-line {% if y.style %}grid-box-line-{{y.style}}{% endif %}">
+      {% endif %}
+          {{ y.text }}
+      {% if y.link %}
+        </a>
+      {% else %}
+        </div>
+      {% endif %}
     {% endfor %}
   {% if x.link %}
     </a>

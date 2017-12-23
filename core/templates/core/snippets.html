@@ -1,8 +1,16 @@
+{% load static %}
+
 <div class="grid-container">
   {% for s in snippets %}
   <div class="grid-box {{ s.box_style }}">
     <div class="grid-box-header">{{ s.title }}</div>
-    {{ s.content }}
+    {% if s.async_snippet_id %}
+      <div class="grid-box-item grid-box-async" grid-box-snippet-id="{{s.async_snippet_id}}">
+        <img src="{% static 'ellipsis.gif' %}">
+      </div>
+    {% else %}
+      {{ s.content }}
+    {% endif %}
   </div>
   {% endfor %}
 </div>
