@@ -27,8 +27,8 @@ a.author-link:hover {
     max-width: 70px;
     max-height: 70px;
     border-radius: 50%;
-    border: 2px solid #512da8;
-    box-shadow: -1px 1px 3px rgba(0, 0, 0, .3);
+    border: 1px solid #512da8;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);    
 }
 
 .clean-table {
