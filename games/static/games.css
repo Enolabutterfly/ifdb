@@ -1,5 +1,5 @@
 a {
-    color: #1a237e;
+    color: #ff5431;
 }
 
 a.author-link {
@@ -27,7 +27,7 @@ a.author-link:hover {
     max-width: 70px;
     max-height: 70px;
     border-radius: 50%;
-    border: 2px solid #1a237e;
+    border: 2px solid #512da8;
     box-shadow: -1px 1px 3px rgba(0, 0, 0, .3);
 }
 
@@ -168,7 +168,7 @@ a.grid-box-header:hover {
 }
 
 .grid-box-green .grid-box-subheader {
-    background-color: #004d40;
+    background-color: ##4db6ac;
 }
 
 .grid-box-blue .grid-box-header {
@@ -176,15 +176,17 @@ a.grid-box-header:hover {
 }
 
 .grid-box-blue .grid-box-subheader {
-    background-color: #283593;
+    background-color: #7986cb;
 }
 
 .grid-box-yellow .grid-box-header {
     background-color: #ffc107;
+    color: black;
 }
 
 .grid-box-yellow .grid-box-subheader {
-    background-color: #ff8f00;
+    background-color: #ffca28;
+    color: black;
 }
 
 .grid-box-red .grid-box-header {
@@ -192,7 +194,7 @@ a.grid-box-header:hover {
 }
 
 .grid-box-red .grid-box-subheader {
-    background-color: #880e4f;
+    background-color: #f06292;
 }
 
 
@@ -231,7 +233,7 @@ a.grid-box-header:hover {
     min-width: 16px;
     height: 16px;
     border-radius: 2.5px;
-    background-color: #1a237e;
+    background-color: #ff5431;
     border: none;
     color: #fff;
     margin: 2px;
@@ -332,7 +334,7 @@ textarea {
 }
 
 .doc-list {
-    background-color: #666;
+    background-color: #512da8;
     color: #fff;
     float: left;
     padding: 10px;
@@ -356,7 +358,7 @@ textarea {
 }
 
 .floating-add-button {
-    background-color: #ffc107;
+    background-color: #ff5431;
     border-radius: 50%;
     bottom: 30px;
     box-shadow: 8px 8px 8px rgba(0, 0, 0, 0.15);
@@ -422,7 +424,7 @@ textarea {
 }
 
 #top-nav a:hover {
-    color: #31322D;
+    text-decoration: underline;
 }
 
 #top-nav a.current {
@@ -468,7 +470,7 @@ textarea {
 }
 
 #top-nav input[type="submit"] {
-    background-color: #1a237e;
+    background-color: #ff5431;
     border: 1px solid rgba(0, 0, 0, .1);
     font-family: 'Roboto', sans-serif;
     font-size: 13px;
@@ -740,7 +742,7 @@ span.gameinfo-author {
 
 .sort.current,
 .tag.current {
-    background-color: #1a237e;
+    background-color: #ff5431;
     border: none;
     color: #fff;
 }
@@ -864,7 +866,7 @@ textarea#description {
 button,
 input[type="submit"],
 .button-like {
-    background-color: #1a237e;
+    background-color: #ff5431;
     border: none;
     color: #fff;
     text-align: center;
@@ -965,20 +967,20 @@ button#submit,
 progress {
     display: block;
     width: 655px;
-    color: #1a237e;
+    color: #ff5431;
     height: 0.3em;
 }
 
 progress::-moz-progress-bar {
-    background-color: #1a237e;
+    background-color: #ff5431;
 }
 
 progress::-webkit-progress-value {
-    background-color: #1a237e !important;
+    background-color: #ff5431 !important;
 }
 
 .vote-timeselect {
-    background-color: #1a237e;
+    background-color: #ff5431;
     border-radius: 2.5px;
     color: #fff;
     cursor: pointer;
@@ -1073,7 +1075,7 @@ table.search-box a {
 }
 
 #top-nav a.register {
-    color: #1a237e;
+    color: #ff5431;
     display: inline-block;
     font: bold 12px/42px 'Trebuchet MS', 'Helvetica Neue', Arial, Sans-Serif;
     height: 40px;
@@ -1110,7 +1112,7 @@ table.search-box a {
     display: block;
     margin: auto;
     width: 200px;
-    background-color: #1a237e;
+    background-color: #ff5431;
     border: none;
     color: #fff;
     text-align: center;
