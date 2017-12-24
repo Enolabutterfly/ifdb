@@ -378,7 +378,7 @@ textarea {
 }
 
 .floating-add-button:hover {
-    background-color: #ffd54f;
+    background-color: #ff7e64;
 }
 
 .header-comment {
@@ -853,15 +853,13 @@ textarea#description {
 }
 
 #errorheader {
-    background-image: linear-gradient(to bottom, #AAA95A, #9B9A52);
-    background-position: 0 0;
-    background-repeat: no-repeat;
-    background-size: 100% 100%;
+    background-color: #512da8;
     box-shadow: 0 1px 3px rgba(0, 0, 0, .3);
     height: 40px;
     text-align: center;
-    color: #31322D;
-    font: bold 14px/40px 'Trebuchet MS', 'Helvetica Neue', Arial, Sans-Serif;
+    color: #fff;
+    font-size: 14px;
+    line-height: 40px;
     padding: 0 10px;
     text-decoration: none;
     text-transform: uppercase;
@@ -1084,9 +1082,9 @@ table.search-box a {
 }
 
 #top-nav a.register {
-    color: #ff5431;
     display: inline-block;
-    font: bold 12px/42px 'Trebuchet MS', 'Helvetica Neue', Arial, Sans-Serif;
+    font-size: 12px;
+    line-height: 42px;
     height: 40px;
     padding: 0 5px;
     text-decoration: underline;
