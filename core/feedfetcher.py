@@ -1,5 +1,5 @@
 from django.utils import timezone
-from .models import FeedCache
+from .models import FeedCache, BlogFeed
 import feedparser
 from time import mktime
 from html import unescape
@@ -84,3 +84,5 @@ def FetchFeeds():
     FetchIficionFeed()
     FetchUrqFeed()
     FetchFeed('http://instead.syscall.ru/talk/feed.php', 'inst')
+    for x in BlogFeed.objects.all():
+        FetchFeed(x.rss, x.feed_id)
