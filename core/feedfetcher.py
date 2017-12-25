@@ -1,18 +1,21 @@
 from django.utils import timezone
-from .models import FeedCache, RssFeedsToCache
+from .models import FeedCache
 import feedparser
 from time import mktime
+from html import unescape
 from datetime import datetime
 from logging import getLogger
+from .crawler import FetchUrlToString
+from ast import literal_eval
+from collections import namedtuple
+import re
 
 logger = getLogger('worker')
 
 
-def FetchFeed(url, feed_id):
-    logger.info("Fetching feed at %s" % url)
-    feed = feedparser.parse(url)
+def ProcessFeedEntries(feed_id, items):
     now = timezone.now()
-    for x in feed.entries:
+    for x in items:
         try:
             f = FeedCache.objects.get(feed_id=feed_id, item_id=x.id)
         except FeedCache.DoesNotExist:
@@ -20,13 +23,63 @@ def FetchFeed(url, feed_id):
             f.feed_id = feed_id
             f.item_id = x.id
             f.date_discovered = now
-        f.date_published = datetime.fromtimestamp(mktime(x.published_parsed))
+        if hasattr(x, 'date_published'):
+            f.date_published = x.date_published
+        else:
+            f.date_published = datetime.fromtimestamp(
+                mktime(x.published_parsed))
         f.title = x.title
         f.authors = x.author
         f.url = x.link
         f.save()
 
 
+def FetchFeed(url, feed_id):
+    logger.info("Fetching feed at %s" % url)
+    feed = feedparser.parse(url)
+    ProcessFeedEntries(feed_id, feed.entries)
+
+
+def FetchIficionFeed():
+    logger.info("Fetching forum.ifiction.ru")
+    feed = feedparser.parse(
+        "http://forum.ifiction.ru/extern.php?action=active&type=rss")
+    for x in feed.entries:
+        (thema, url, author,
+         timestamp) = [unescape(x) for x in x.description_int.split('<br />')]
+        x.feed_id = url
+        x.author = author
+        x.id = x.link
+        x.date_published = datetime.fromtimestamp(int(timestamp))
+    ProcessFeedEntries('ifru', feed.entries)
+
+
+URQF_RE = re.compile(r'ubb(\([^\x0d]*\));')
+
+
+def FetchUrqFeed():
+    logger.info("Fetching http://urq.borda.ru")
+    PseudoFeed = namedtuple(
+        'PseudoFeed', ['author', 'id', 'date_published', 'title', 'link'])
+    x = FetchUrlToString(
+        "http://urq.borda.ru/", use_cache=False, encoding="cp1251")
+    items = []
+    for m in URQF_RE.finditer(x):
+        (_, _, sect, id, _, title, count, _, _, author, date_published,
+         _) = literal_eval(m.group(1))
+        link = 'http://urq.borda.ru/?1-%d-0-%d-0-%d-0-%d' % (
+            int(sect), int(id), (int(count) // 20 * 20), int(date_published))
+        items.append(
+            PseudoFeed(
+                id=id,
+                title=title,
+                author=author,
+                date_published=datetime.fromtimestamp(int(date_published)),
+                link=link))
+    ProcessFeedEntries('urq', items)
+
+
 def FetchFeeds():
-    for x in RssFeedsToCache.objects.all():
-        FetchFeed(x.rss_url, x.feed_id)
+    FetchFeed('https://ifhub.club/rss/full', 'ifhub')
+    FetchIficionFeed()
+    FetchUrqFeed()

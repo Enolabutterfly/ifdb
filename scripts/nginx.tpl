@@ -32,6 +32,8 @@ server {
     client_max_body_size 512M;
 
 {% if c.conf == 'prod' %}
+    rewrite ^$ /index/ last;
+
     location /f  {
         alias /home/ifdb/files;
     }
