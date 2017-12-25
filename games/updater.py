@@ -27,15 +27,14 @@ def GetOrCreateAlias(alias, is_automated):
     if not alias.strip():
         return None
     if is_automated:
-        try:
-            x = PersonalityAlias.objects.get(name=alias)
+        x = PersonalityAlias.objects.filter(name=alias)
+        if x:
+            x = x[0]
             if x.is_blacklisted:
                 return None
             if x.hidden_for:
                 return x.hidden_for.id
             return x.id
-        except PersonalityAlias.DoesNotExist:
-            pass
         aliases = list(PersonalityAlias.objects.all())
         candidates = [NormalizeName(alias)]
         m = FIRST_LAST_RE.match(candidates[0])
