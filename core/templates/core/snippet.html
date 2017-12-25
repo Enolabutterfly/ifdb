@@ -1,6 +1,10 @@
 {% for x in items %}
 {% if x.style == 'subheader' %}
-  <div class="grid-box-subheader">{{ x.text }}</div>
+  {% if x.link %}
+    <a class="grid-box-subheader" href="{{x.link}}" {% if x.newtab %}target="_blank"{% endif %}>{{ x.text }}</a>
+  {% else %}
+    <div class="grid-box-subheader">{{ x.text }}</div>
+  {% endif %}
 {% else %}
   {% if x.link %}
     <a class="grid-box-item" href="{{ x.link }}" {% if x.newtab %}target="_blank"{% endif %}>  
