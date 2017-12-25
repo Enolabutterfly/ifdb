@@ -7,7 +7,7 @@ from django.utils import timezone
 from games.models import GameURL, GameComment
 from games.search import GameListFromSearch
 from games.tools import FormatLag, ExtractYoutubeId, FormatDateShort
-from .models import FeedCache, Game
+from .models import FeedCache, Game, BlogFeed
 import json
 
 
@@ -178,32 +178,30 @@ def FeedSnippet(request,
         if lag > max_secs and count >= min_count:
             break
         count += 1
+        lines = [{
+            'style': ('recent-comment'
+                      if lag <= highlight_secs else 'comment'),
+            'text': (FormatLag(-lag)),
+        }, {
+            'style': 'strong',
+            'text': (x.title),
+        }]
+        if feed_ids[x.feed_id].get('show_author', True):
+            lines.append({'text': (x.authors)})
+
         items[x.feed_id].append({
             'link': (x.url),
             'newtab': (True),
-            'lines': [
-                {
-                    'style': ('recent-comment'
-                              if lag <= highlight_secs else 'comment'),
-                    'text': (FormatLag(-lag)),
-                },
-                {
-                    'style': 'strong',
-                    'text': (x.title),
-                },
-                {
-                    'text': (x.authors),
-                },
-            ]
+            'lines': lines,
         })
     res = []
     for k, v in itemses:
         if len(feed_ids) != 1:
             res.append({
                 'style': 'subheader',
-                'text': feed_ids[k][0],
+                'text': feed_ids[k].get('title'),
                 'newtab': True,
-                'link': feed_ids[k][1]
+                'link': feed_ids[k].get('link')
             })
         res.extend(v)
     if len(feed_ids) != 1 and rest_str:
@@ -215,10 +213,10 @@ def FeedSnippet(request,
             })
             for x in sorted(not_shown):
                 res.append({
-                    'link': feed_ids[x][1],
+                    'link': feed_ids[k].get('link'),
                     'newtab': True,
                     'lines': [{
-                        'text': feed_ids[x][0],
+                        'text': feed_ids[k].get('title'),
                     }]
                 })
     return render_to_string('core/snippet.html', {'items': res})
@@ -274,6 +272,29 @@ def ThisDayInHistorySnippet(request):
 
 def RawHtmlSnippet(request, raw_html):
     return raw_html
+
+
+def BlogSnippet(request,
+                highlight_secs=60 * 60 * 24,
+                max_secs=7 * 24 * 60 * 60,
+                min_count=5,
+                max_count=30,
+                rest_str="Остальные блоги"):
+    feed_ids = dict()
+    for x in BlogFeed.objects.all():
+        feed_ids[x.feed_id] = {
+            'title': x.title,
+            'link': x.url,
+            'show_author': x.show_author
+        }
+    return FeedSnippet(
+        request=request,
+        feed_ids=feed_ids,
+        highlight_secs=highlight_secs,
+        max_secs=max_secs,
+        min_count=min_count,
+        max_count=max_count,
+        rest_str=rest_str)
 
 
 ###############################################################################

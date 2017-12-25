@@ -208,3 +208,15 @@ class FeedCache(models.Model):
     title = models.CharField(max_length=256)
     authors = models.CharField(max_length=256)
     url = models.CharField(max_length=2048)
+
+
+class BlogFeed(models.Model):
+    class Meta:
+        default_permissions = ()
+
+    feed_id = models.CharField(max_length=32)
+    title = models.CharField(max_length=256)
+    url = models.CharField(max_length=256, null=True, blank=True)
+    show_author = models.BooleanField()
+    rss = models.CharField(max_length=256)
+    rss_comments = models.CharField(max_length=256, null=True, blank=True)

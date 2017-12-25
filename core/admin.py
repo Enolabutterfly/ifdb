@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import (TaskQueueElement, User, Package, PackageVersion,
-                     PackageSession, Document, Snippet, FeedCache)
+                     PackageSession, Document, Snippet, FeedCache, BlogFeed)
 from django.contrib.sessions.models import Session
 
 
@@ -73,5 +73,10 @@ class SnippetAdmin(admin.ModelAdmin):
 
 
 @admin.register(FeedCache)
-class FeedCacheAdminAdmin(admin.ModelAdmin):
+class FeedCacheAdmin(admin.ModelAdmin):
     list_display = ['feed_id', 'item_id', 'date_published', 'title']
+
+
+@admin.register(BlogFeed)
+class BlogFeedAdmin(admin.ModelAdmin):
+    list_display = ['feed_id', 'title']
