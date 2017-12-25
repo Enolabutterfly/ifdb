@@ -41,9 +41,9 @@ class ImportedGame:
             self.title = game.title
             self.title_bow = GetBagOfWords(self.title)
             self.seed_urls = [
-                x.url.original_url
-                for x in game.gameurl_set.filter(
-                    category__symbolic_id='game_page')
+                x.url.original_url for x in game.gameurl_set.select_related()
+                if self.importer.IsFamiliarUrl(x.url.original_url,
+                                               x.category.symbolic_id)
             ]
             self.hash_urls = [
                 HashizeUrl(x.url.original_url)
@@ -91,7 +91,7 @@ class ImportedGame:
 
         self.seed_urls = [
             x['url'] for x in self.content['urls']
-            if x['urlcat_slug'] == 'game_page'
+            if self.importer.IsFamiliarUrl(x['url'], x['urlcat_slug'])
         ]
         self.hash_urls = [
             HashizeUrl(x['url']) for x in self.content['urls']

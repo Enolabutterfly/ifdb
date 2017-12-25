@@ -13,6 +13,9 @@ logger = getLogger('crawler')
 
 
 class IfwikiImporter:
+    def MatchWithCat(self, url, cat):
+        return cat == 'game_page' and self.Match(url)
+
     def Match(self, url):
         return IFWIKI_URL.match(url)
 
