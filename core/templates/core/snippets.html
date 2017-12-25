@@ -13,7 +13,7 @@
         <img src="{% static 'ellipsis.gif' %}">
       </div>
     {% else %}
-      {{ s.content }}
+      {{ s.content | safe }}
     {% endif %}
   </div>
   {% endfor %}

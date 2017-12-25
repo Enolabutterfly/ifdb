@@ -224,25 +224,6 @@ def FeedSnippet(request,
     return render_to_string('core/snippet.html', {'items': res})
 
 
-def ForumFeedSnippet(request,
-                     highlight_secs=60 * 60 * 24,
-                     max_secs=7 * 24 * 60 * 60,
-                     min_count=5,
-                     max_count=30):
-    return FeedSnippet(
-        request=request,
-        feed_ids={
-            'ifru': ['Форум forum.ifiction.ru', 'http://forum.ifiction.ru'],
-            'urq': ['Форум URQ', 'http://http://urq.borda.ru/'],
-            'inst': ['Форум Instead', 'https://instead.syscall.ru/talk/'],
-        },
-        highlight_secs=highlight_secs,
-        max_secs=max_secs,
-        min_count=min_count,
-        max_count=max_count,
-        rest_str='Остальные форумы')
-
-
 def ThisDayInHistorySnippet(request):
     now = timezone.now()
     items = []
@@ -289,6 +270,10 @@ def ThisDayInHistorySnippet(request):
             })),
         })
     return render_to_string('core/snippet.html', {'items': items})
+
+
+def RawHtmlSnippet(request, raw_html):
+    return raw_html
 
 
 ###############################################################################

@@ -184,7 +184,7 @@ class Snippet(models.Model):
     title = models.CharField(max_length=256)
     url = models.CharField(max_length=256, null=True, blank=True)
     style_json = models.CharField(max_length=256)
-    content_json = models.CharField(max_length=512)
+    content_json = models.TextField()
     view_perm = models.CharField(max_length=256, default="@all")
     order = models.SmallIntegerField(default=0)
     show_start = models.DateTimeField(null=True, blank=True)
