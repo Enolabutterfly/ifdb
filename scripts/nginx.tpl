@@ -14,6 +14,18 @@ server {
 
     error_log    /home/ifdb/logs/nginx-error.log;
     access_log    /home/ifdb/logs/nginx-access.log;
+
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    ssl_certificate /etc/letsencrypt/live/crem.xyz/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/crem.xyz/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+    if ($scheme != "https") {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
 {% elif c.host == 'staging' %}
     server_name db-staging.crem.xyz;
 
@@ -34,34 +46,18 @@ server {
 {% if c.conf == 'prod' %}
     rewrite ^$ /index/ last;
 
-    location /f  {
-        alias /home/ifdb/files;
+    location /f/  {
+        alias /home/ifdb/files/;
     }
 
-    location /static {
-        alias /home/ifdb/static;
+    location /static/ {
+        alias /home/ifdb/static/;
     }
 
     location / {
         uwsgi_pass  django;
         include     /home/ifdb/configs/uwsgi_params;
     }
-
-    {% if c.host == 'prod' %}
-
-    listen 443 ssl;
-    listen [::]:443 ssl;
-    ssl_certificate /etc/letsencrypt/live/crem.xyz/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/crem.xyz/privkey.pem;
-    include /etc/letsencrypt/options-ssl-nginx.conf;
-    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
-
-    if ($scheme != "https") {
-        return 301 https://$host$request_uri;
-    } # managed by Certbot
-
-    {% endif %}
-
 
 {% elif c.conf == 'staging' %}
     location /f  {
