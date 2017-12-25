@@ -119,7 +119,8 @@ class ImportedGame:
         if self.game:
             game['game_id'] = self.game.id
         logger.info("Updating %s" % self)
-        UpdateGame(request, game, update_edit_time=False)
+        UpdateGame(
+            request, game, update_edit_time=False, kill_existing_urls=False)
 
     def __str__(self):
         s = 'Game: [%s]' % self.title
@@ -249,6 +250,7 @@ def ImportGames():
 
 def ForceReimport():
     importer = Importer()
+    importer.GetUrlCandidates()
     gameset = GameSet()
     for x in Game.objects.prefetch_related('gameurl_set__category',
                                            'gameurl_set__url').all():
