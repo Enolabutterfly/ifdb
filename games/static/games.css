@@ -161,6 +161,12 @@ a.grid-box-header:hover {
     background-color: #444;
     padding: 3px 5px;
     font-size: 100%;
+    display: block;
+    text-decoration: none;
+}
+
+a.grid-box-subheader:hover {
+    text-decoration: underline;
 }
 
 .grid-box-green .grid-box-header {
@@ -168,7 +174,7 @@ a.grid-box-header:hover {
 }
 
 .grid-box-green .grid-box-subheader {
-    background-color: ##4db6ac;
+    background-color: #4db6ac;
 }
 
 .grid-box-blue .grid-box-header {

@@ -208,13 +208,3 @@ class FeedCache(models.Model):
     title = models.CharField(max_length=256)
     authors = models.CharField(max_length=256)
     url = models.CharField(max_length=2048)
-
-
-class RssFeedsToCache(models.Model):
-    class Meta:
-        default_permissions = ()
-
-    feed_id = models.CharField(max_length=32)
-    title = models.CharField(max_length=512)
-    rss_url = models.CharField(max_length=2048)
-    link_url = models.CharField(max_length=2048, null=True, blank=True)

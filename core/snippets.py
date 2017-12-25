@@ -162,15 +162,23 @@ def FeedSnippet(request,
                 highlight_secs=60 * 60 * 24,
                 max_secs=7 * 24 * 60 * 60,
                 min_count=5,
-                max_count=30):
+                max_count=30,
+                rest_str=None):
     now = timezone.now()
-    items = []
-    for x in FeedCache.objects.filter(
-            feed_id__in=feed_ids).order_by('-date_published')[:max_count]:
+    itemses = []
+    items = dict()
+    count = 0
+    for x in FeedCache.objects.filter(feed_id__in=feed_ids.keys()).order_by(
+            '-date_published')[:max_count]:
+        if x.feed_id not in items:
+            n = []
+            itemses.append((x.feed_id, n))
+            items[x.feed_id] = n
         lag = (now - x.date_published).total_seconds()
-        if lag > max_secs and len(items) >= min_count:
+        if lag > max_secs and count >= min_count:
             break
-        items.append({
+        count += 1
+        items[x.feed_id].append({
             'link': (x.url),
             'newtab': (True),
             'lines': [
@@ -188,7 +196,51 @@ def FeedSnippet(request,
                 },
             ]
         })
-    return render_to_string('core/snippet.html', {'items': items})
+    res = []
+    for k, v in itemses:
+        if len(feed_ids) != 1:
+            res.append({
+                'style': 'subheader',
+                'text': feed_ids[k][0],
+                'newtab': True,
+                'link': feed_ids[k][1]
+            })
+        res.extend(v)
+    if len(feed_ids) != 1 and rest_str:
+        not_shown = set(feed_ids.keys()) - set(items.keys())
+        if not_shown:
+            res.append({
+                'style': 'subheader',
+                'text': rest_str,
+            })
+            for x in sorted(not_shown):
+                res.append({
+                    'link': feed_ids[x][1],
+                    'newtab': True,
+                    'lines': [{
+                        'text': feed_ids[x][0],
+                    }]
+                })
+    return render_to_string('core/snippet.html', {'items': res})
+
+
+def ForumFeedSnippet(request,
+                     highlight_secs=60 * 60 * 24,
+                     max_secs=7 * 24 * 60 * 60,
+                     min_count=5,
+                     max_count=30):
+    return FeedSnippet(
+        request=request,
+        feed_ids={
+            'ifru': ['Форум forum.ifiction.ru', 'http://forum.ifiction.ru'],
+            'urq': ['Форум URQ', 'http://http://urq.borda.ru/'],
+            'inst': ['Форум Instead', 'https://instead.syscall.ru/talk/'],
+        },
+        highlight_secs=highlight_secs,
+        max_secs=max_secs,
+        min_count=min_count,
+        max_count=max_count,
+        rest_str='Остальные форумы')
 
 
 def ThisDayInHistorySnippet(request):

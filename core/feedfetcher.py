@@ -35,7 +35,7 @@ def ProcessFeedEntries(feed_id, items):
 
 
 def FetchFeed(url, feed_id):
-    logger.info("Fetching feed at %s" % url)
+    logger.info("Fetching feed at %s, feed ud %s" % (url, feed_id))
     feed = feedparser.parse(url)
     ProcessFeedEntries(feed_id, feed.entries)
 
@@ -83,3 +83,4 @@ def FetchFeeds():
     FetchFeed('https://ifhub.club/rss/full', 'ifhub')
     FetchIficionFeed()
     FetchUrqFeed()
+    FetchFeed('http://instead.syscall.ru/talk/feed.php', 'inst')
