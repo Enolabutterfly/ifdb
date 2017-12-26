@@ -12,6 +12,7 @@ UNAUTH_GROUP = '@guest'
 AUTH_GROUP = '@auth'
 SUPERUSER_GROUP = '@admin'
 NOTOR_GROUP = '@notor'
+TOR_GROUP = '@tor'
 
 # Add groups to the right if it's to the left.
 EXPAND_GROUPS = [
@@ -50,7 +51,8 @@ def IsTor(request):
     except:
         pass
 
-    caches['tor-ips'].set(ip, False)
+    if ip:
+        caches['tor-ips'].set(ip, False)
     return False
 
 
@@ -86,7 +88,9 @@ class Permissioner:
         user = request.user
         self.tokens = set()
         self.tokens.add(EVERYONE_GROUP)
-        if not IsTor(request):
+        if IsTor(request):
+            self.tokens.add(TOR_GROUP)
+        else:
             self.tokens.add(NOTOR_GROUP)
         if not user.is_authenticated:
             self.tokens.add(UNAUTH_GROUP)
