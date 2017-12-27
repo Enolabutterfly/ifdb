@@ -21,6 +21,10 @@ def GameListSnippet(request,
                     max_count=30):
     games = GameListFromSearch(request, query, reltime_field, max_secs,
                                min_count, max_count)
+
+    if not games:
+        return {}
+
     items = []
     for x in games:
         lines = []
@@ -43,7 +47,12 @@ def GameListSnippet(request,
                 'game_id': x['id']
             }),
         })
-    return render_to_string('core/snippet.html', {'items': items})
+    return {
+        'content': render_to_string('core/snippet.html', {
+            'items': items
+        }),
+        'age': -games[0]['lag']
+    }
 
 
 def LastComments(request):
@@ -60,7 +69,7 @@ def LastComments(request):
         recent = -delta < 60 * 60 * 24
         if not recent and len(res) >= 5:
             break
-        x.lag = FormatLag(delta)
+        x.lag = delta
         x.recent_lag = recent
         res.append(x)
         if len(res) == 30:
@@ -70,6 +79,8 @@ def LastComments(request):
 
 def CommentsSnippet(request):
     comments = LastComments(request)
+    if not comments:
+        return {}
     items = []
     for x in comments:
         items.append({
@@ -83,7 +94,7 @@ def CommentsSnippet(request):
                 },
                 {
                     'style': ('recent-comment' if x.recent_lag else 'comment'),
-                    'text': (x.lag),
+                    'text': (FormatLag(x.lag)),
                 },
                 {
                     'style': 'strong',
@@ -94,7 +105,12 @@ def CommentsSnippet(request):
                 },
             ]
         })
-    return render_to_string('core/snippet.html', {'items': items})
+    return {
+        'content': render_to_string('core/snippet.html', {
+            'items': items
+        }),
+        'age': -comments[0].lag,
+    }
 
 
 def LastUrlCat(request, cat, max_secs, min_count, max_count):
@@ -123,6 +139,9 @@ def LastUrlCatSnippet(request,
                       min_count=5,
                       max_count=30):
     urls = LastUrlCat(request, cat, max_secs, min_count, max_count)
+    if not urls:
+        return {}
+
     items = []
     for x in urls:
         v = {
@@ -155,7 +174,12 @@ def LastUrlCatSnippet(request,
                     'newtab': True,
                 }
         items.append(v)
-    return render_to_string('core/snippet.html', {'items': items})
+    return {
+        'content': render_to_string('core/snippet.html', {
+            'items': items
+        }),
+        'age': -urls[0]['lag']
+    }
 
 
 def FeedSnippet(request,
@@ -164,14 +188,18 @@ def FeedSnippet(request,
                 max_secs=7 * 24 * 60 * 60,
                 min_count=5,
                 max_count=30,
-                rest_str=None):
+                rest_str=None,
+                default_age=7 * 24 * 60 * 60):
     now = timezone.now()
     itemses = []
     items = dict()
     count = 0
+    age = default_age
     for x in FeedCache.objects.filter(feed_id__in=feed_ids.keys()).order_by(
             '-date_published')[:max_count]:
         lag = (now - x.date_published).total_seconds()
+        if lag < age:
+            age = lag
         if lag > max_secs and count >= min_count:
             break
         if x.feed_id not in items:
@@ -220,10 +248,15 @@ def FeedSnippet(request,
                         'text': feed_ids[x].get('title'),
                     }]
                 })
-    return render_to_string('core/snippet.html', {'items': res})
+    return {
+        'content': render_to_string('core/snippet.html', {
+            'items': res
+        }),
+        'age': age,
+    }
 
 
-def ThisDayInHistorySnippet(request):
+def ThisDayInHistorySnippet(request, default_age=24 * 60 * 60):
     now = timezone.now()
     items = []
     games = Game.objects.filter(
@@ -257,11 +290,16 @@ def ThisDayInHistorySnippet(request):
                 'game_id': x.id
             })),
         })
-    return render_to_string('core/snippet.html', {'items': items})
+    return {
+        'content': render_to_string('core/snippet.html', {
+            'items': items
+        }),
+        'age': default_age
+    }
 
 
-def RawHtmlSnippet(request, raw_html):
-    return raw_html
+def RawHtmlSnippet(request, raw_html, default_age=10 * 24 * 60 * 60):
+    return {'content': raw_html, 'age': default_age}
 
 
 def BlogSnippet(request,
@@ -269,7 +307,8 @@ def BlogSnippet(request,
                 max_secs=7 * 24 * 60 * 60,
                 min_count=5,
                 max_count=30,
-                rest_str="Остальные блоги"):
+                rest_str="Остальные блоги",
+                default_age=7 * 24 * 60 * 60):
     feed_ids = dict()
     for x in BlogFeed.objects.all():
         feed_ids[x.feed_id] = {
@@ -284,7 +323,8 @@ def BlogSnippet(request,
         max_secs=max_secs,
         min_count=min_count,
         max_count=max_count,
-        rest_str=rest_str)
+        rest_str=rest_str,
+        default_age=default_age)
 
 
 ###############################################################################
@@ -298,7 +338,7 @@ def RenderSnippetContent(request, snippet):
         del content_json['method']
         return globals()[method](request, **content_json)
     else:
-        return None
+        return {}
 
 
 def AsyncSnippet(request):
@@ -307,7 +347,7 @@ def AsyncSnippet(request):
     if not request.perm(snippet.view_perm):
         raise PermissionDenied()
     x = RenderSnippetContent(request, snippet)
-    return HttpResponse(x)
+    return HttpResponse(x.get('content', ''))
 
 
 def RenderSnippets(request):
@@ -323,15 +363,18 @@ def RenderSnippets(request):
             continue
 
         async_id = None
-        content = None
+        style = json.loads(x.style_json)
         if x.is_async:
             async_id = x.id
+            data = {
+                'content': '',
+                'age': style.get('age', 14 * 24 * 60 * 60),
+            }
         else:
-            content = RenderSnippetContent(request, x)
-            if not content:
+            data = RenderSnippetContent(request, x)
+            if not data:
                 continue
 
-        style = json.loads(x.style_json)
         box_style = "grid-box-%s" % style['color'] if 'color' in style else ''
 
         snippets.append({
@@ -339,7 +382,11 @@ def RenderSnippets(request):
             'url': x.url,
             'box_style': box_style,
             'async_snippet_id': async_id,
-            'content': content,
+            'content': data.get('content'),
+            'age': data.get('age'),
+            'order': x.order,
         })
+
+    snippets.sort(key=lambda y: (y['order'], y['age']))
 
     return render_to_string('core/snippets.html', {'snippets': snippets})
