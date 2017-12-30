@@ -8,7 +8,7 @@ from django.db.models import Max, Count
 from games.models import GameURL, GameComment
 from games.search import MakeSearch
 from games.tools import (FormatLag, ExtractYoutubeId, FormatDateShort,
-                         SnippetFromList, ComputeGameRating)
+                         SnippetFromList, ComputeGameRating, ConcoreNumeral)
 from .models import FeedCache, Game, BlogFeed
 import json
 
@@ -384,10 +384,13 @@ def ThisDayInHistorySnippet(request, default_age=24 * 60 * 60):
         'text': "Игры, выпущенные %s" % FormatDateShort(now),
     })
     for x in games:
+        ago = now.year - x.release_date.year
         lines = []
         lines.append({
             'style': ('comment'),
-            'text': "%d год" % x.release_date.year,
+            'text':
+            "%d год (%s назад)" % (x.release_date.year,
+                                   ConcoreNumeral(ago, 'год,года,лет')),
         })
         lines.append({'style': 'strong', 'text': x.title})
         lines.append({'text': ', '.join([y.author.name for y in x.authors])})
