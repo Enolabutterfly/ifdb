@@ -1,7 +1,3 @@
-* {
-    box-sizing: border-box;
-}
-
 a {
     color: #ff5431;
 }
@@ -432,83 +428,26 @@ textarea {
     text-align: right;
 }
 
-header {
+#top-nav {
     background-color: #512da8;
+    background-size: 100% 100%;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
     color: #fff;
     height: 40px;
     left: 0;
+    min-width: 1024px;
     position: fixed;
+    text-align: center;
     top: 0;
-    width:100%;
-    z-index:1000;
+    width: 100%;
+    z-index: 2;
 }
 
-.top-nav-login-box {
-    height: 40px;
-    float: right;
-    vertical-align: middle;
-    white-space: nowrap;
-    overflow: hidden;
-    margin: 0 10px;
-}
-
-.top-nav-login-box form {
-    height: 40px;
-    line-height: 40px;
-    vertical-align: middle;
-    display: inline-block;
-}
-
-#top-nav-hamburger-menu {
-    display: none;
-}
-
-.top-nav-hamburger-menu {
-    color:#fff;
-    font-size: 26px;
-    cursor: pointer;
-    margin-left: 10px;
-    margin-top: 5px;
-    margin-bottom: 5px;
-    padding: 0;
-    display: inline-block;
-}
-
-.top-nav-hamburger-menu svg {
-    height: 24px;
-    width: 24px;
-}
-
-.top-nav-hamburger-menu path {
-    fill: currentColor;
-}
-
-.top-nav-hamburger-menu:hover path{
-    fill: #ddd;
-}
-
-#top-nav-hamburger-menu:checked ~ .top-nav-drawer {
-    left: 0px;
-}
-
-.top-nav-drawer {
-    padding-top: 20px;
-    top: 40px;
-    position: fixed;
-    left: -140px;
-    background-color: #512da8;
-    height: 100%;
-    z-index: 100;
-    width: 140px;
-    transition: .25s ease-in-out;
-}
-
-.top-nav-drawer a:hover {
+#top-nav a:hover {
     text-decoration: underline;
 }
 
-.top-nav-drawer a.current {
+#top-nav a.current {
     background-color: #f8f8f8;
     border-color: rgba(0, 0, 0, .3);
     border-style: solid;
@@ -516,16 +455,45 @@ header {
     color: #625B61;
 }
 
-.top-nav-drawer a {
+#top-nav a {
     color: #fff;
     display: inline-block;
     font-size: 14px;
     line-height: 40px;
     height: 40px;
-    width: 100%;
+    min-width: 80px;
     padding: 0 10px;
     text-decoration: none;
     text-transform: uppercase;
+}
+
+#top-nav > div,
+#top-nav > form {
+    display: inline-block;
+}
+
+#top-nav form input[type="text"],
+#top-nav form input[type="password"] {
+    width: 6em;
+}
+
+#top-nav .spacer {
+    width: 60px;
+}
+
+#top-nav .halfspacer {
+    width: 15px;
+}
+
+#top-nav .loginbox {
+    margin-left: 20px;
+}
+
+#top-nav input[type="submit"] {
+    background-color: #ff5431;
+    border: 1px solid rgba(0, 0, 0, .1);
+    font-family: 'Roboto', sans-serif;
+    font-size: 13px;
 }
 
 .header {
@@ -1207,23 +1175,4 @@ table.search-box a {
     position: absolute;
     right: 0;
     top: 0;
-}
-
-@media only screen and (min-width: 650px)  {
-    .top-nav-hamburger-menu {
-        display: none;
-    }
-
-    .top-nav-drawer {
-        position: initial;
-        display: inline;
-        padding: 0 0 0 40px;
-    }
-
-    .top-nav-drawer a {
-        width: auto;
-        min-width: 80px;
-        text-align: center;
-    }
-
 }
