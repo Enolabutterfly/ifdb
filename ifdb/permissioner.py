@@ -21,8 +21,10 @@ EXPAND_GROUPS = [
 
 GROUP_ALIAS = {
     'game_view': '@all',
-    'game_edit': '@auth',
-    'game_comment': '@notor',
+    'game_edit': '(a @auth (n @ban))',
+    'game_comment': '(a @notor (n @ban))',
+    'game_delete': '@moder',
+    'game_vote': '(a @auth (n @ban))',
     'personality_view': '@all',
     'personality_edit': '@moder',
 }
@@ -119,16 +121,20 @@ class Permissioner:
     def Eval(self, x):
         if isinstance(x, str):
             return x in self.tokens
-        if x[0] == 'or':
+        if x[0] in ['or', 'o']:
             for y in x[1:]:
                 if self.Eval(y):
                     return True
             return False
-        if x[0] == 'and':
+        if x[0] in ['and', 'a']:
             for y in x[1:]:
                 if not self.Eval(y):
                     return False
             return True
+        if x[0] in ['not', 'n']:
+            if len(x) != 2:
+                raise ValueError(x)
+            return not self.Eval(x[1])
         if x[0] == 'alias':
             if len(x) != 2:
                 raise ValueError(x)
