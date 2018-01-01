@@ -114,7 +114,7 @@ class GameURLAdmin(admin.ModelAdmin):
         return obj.url.original_url[:80] + '…'
 
     list_display = ['description', '_game', 'category', '_url']
-    search_fields = ['pk', 'description', 'game__title']
+    search_fields = ['pk', 'description', 'game__title', 'url__id']
     list_filter = ['category']
 
 
