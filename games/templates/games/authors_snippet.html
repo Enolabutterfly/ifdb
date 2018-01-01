@@ -4,13 +4,13 @@
 
 {% if start == 0 %}
 <colgroup>
-  <col style="width: 100px">
-  <col>
-  <col style="width: 100px">
-  <col style="width: 200px">
+  <col class="col-avatar">
+  <col class="col-author">
+  <col class="col-gamecount">
+  <col class="col-honour">
 </colgroup>
 <thead>
-  <tr>
+  <tr class="authors-header">
     <th>&nbsp;</th>
     <th>Имя</th>
     <th style="max-width: 100px;">Количество игр</th>
@@ -41,9 +41,11 @@
     </td>
     <td>{{ a.game_count }}</td>
     <td>
-        {% for x in a.stars %}
-          <img src="/static/duck{{x}}.png" />
-        {% endfor %}
+        <span class="ducks">
+          {% for x in a.stars %}
+            <img src="/static/duck{{x}}.png" />
+          {% endfor %}
+        </span>
         ({{ a.honor_str }})
     </td>
   </tr>

@@ -245,6 +245,14 @@ a.grid-box-subheader:hover {
     text-align: right;    
 }
 
+.content-box-fullwidth {
+    background-color: #fff;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    border-radius: 2px;
+    text-align: left;    
+}
+
 .content-moder-line {
     text-align: right;
 }
@@ -352,7 +360,7 @@ textarea {
 
 .doc-list {
     color: #fff;
-    padding: 100px 10px 0 0;
+    padding: 50px 10px 0 0;
     width: 20%;
     display: inline-block;
     margin: 20px;
@@ -379,8 +387,18 @@ textarea {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
     float: left;
     padding: 0px 50px 20px;
-    margin: 60px 10px 10px;
-    width: 800px;
+    margin: 60px 0 10px;
+    width: 100%;
+}
+
+@media only screen and (min-width: 800px)  {
+
+    .doc-content {
+        margin: 60px 10px 10px;
+        width: 72%;
+        max-width: 800px;
+    }
+
 }
 
 .floating-add-button {
@@ -1315,7 +1333,44 @@ progress::-webkit-progress-value {
     top: 0;
 }
 
+.ducks {
+    display: none;
+}
+
+.authors-header {
+    display: none;
+}
+
+.col-avatar {
+    width: 80px;
+}
+
+.col-honour {
+    width: 50px;
+}
+
+.col-gamecount {
+    width: 30px;
+}
+
+
 @media only screen and (min-width: 650px)  {
+    .ducks {
+        display: inline;
+    }
+
+    .authors-header {
+        display: table-row;
+    }
+
+    .col-honour {
+        width: 100px;
+    }
+
+    .col-gamecount {
+        width: 100px;
+    }
+
     .grid-box {
         width: 300px;
     }
