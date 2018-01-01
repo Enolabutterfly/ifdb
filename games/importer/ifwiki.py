@@ -83,7 +83,7 @@ def FetchCategoryUrls(category):
                 r'http://ifwiki.ru/api.php?action=query&list=categorymembers&'
                 r'cmtitle=%D0%9A%D0%B0%D1%82%D0%B5%D0%B3%D0%BE%D1%80%D0'
                 r'%B8%D1%8F:' + quote(category) + r'&rawcontinue=1&'
-                r'cmlimit=2000&format=json&cmsort=sortkey&'
+                r'cmlimit=400&format=json&cmsort=sortkey&'
                 r'cmprop=ids|title|sortkey&cmstarthexsortkey=' + keystart,
                 use_cache=False))
         res = r['query']['categorymembers']
