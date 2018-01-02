@@ -50,8 +50,6 @@
                     {% endif %}
                 </div>
 
-
-
                 <input type="checkbox" id="top-nav-hamburger-menu"/>
                 <label class="top-nav-hamburger-menu" for="top-nav-hamburger-menu">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
@@ -59,7 +57,7 @@
                     </svg>
                 </label>
                 <nav class="top-nav-drawer">
-                    <a class="{% current 'index' %}" href="{% url 'index' %}">Главная</a>
+                    <a class="{% current 'index' %}" href="/">Главная</a>
                     <a class="{% current 'list_games' %}" href="{% url 'list_games' %}">Игры</a>
                     <a class="{% current 'list_authors' %}" href="{% url 'list_authors' %}">Авторы</a>
                     <a class="{% current '/docs/' %}" href="{% url 'showdoc' 'index' %}">Справка</a>
