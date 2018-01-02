@@ -260,7 +260,9 @@ a.grid-box-subheader:hover {
 .content-moder-line a {
     display: inline-block;
     min-width: 16px;
-    height: 16px;
+    height: 18px;
+    line-height: 18px;
+    vertical-align: middle;
     border-radius: 2.5px;
     background-color: #ff5431;
     border: none;
@@ -269,12 +271,14 @@ a.grid-box-subheader:hover {
     text-align: center;
     vertical-align: middle;
     text-decoration: none;
+    padding: 2px 2px;
 }
 
 .content-moder-line a svg {
     width: 12px;
     height: 12px;
-    fill: white;
+    fill: currentColor;
+    margin: 0 1px;
 }
 
 .comment-box {
