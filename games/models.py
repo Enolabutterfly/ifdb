@@ -25,7 +25,11 @@ class Game(models.Model):
     comment_perm = models.CharField(
         _('Comment permission'), max_length=255, default='@all')
     tags = models.ManyToManyField('GameTag', blank=True)
-    added_by = models.ForeignKey(settings.AUTH_USER_MODEL)
+    added_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True)
 
     # -(GameContestEntry)
     # (LoadLog) // For computing popularity
@@ -61,7 +65,10 @@ class URL(models.Model):
     use_count = models.IntegerField(default=0)
     file_size = models.IntegerField(null=True, blank=True)
     creator = models.ForeignKey(
-        settings.AUTH_USER_MODEL, null=True, blank=True)
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True)
 
 
 class GameURLCategory(models.Model):
@@ -108,9 +115,9 @@ class GameURL(models.Model):
     def GetRemoteUrl(self):
         return self.url.original_url
 
-    game = models.ForeignKey(Game)
-    url = models.ForeignKey(URL)
-    category = models.ForeignKey(GameURLCategory)
+    game = models.ForeignKey(Game, on_delete=models.CASCADE)
+    url = models.ForeignKey(URL, on_delete=models.CASCADE)
+    category = models.ForeignKey(GameURLCategory, on_delete=models.CASCADE)
     description = models.CharField(null=True, blank=True, max_length=255)
 
 
@@ -176,9 +183,10 @@ class PersonalityUrl(models.Model):
     class Meta:
         default_permissions = ()
 
-    personality = models.ForeignKey(Personality)
-    url = models.ForeignKey(URL)
-    category = models.ForeignKey(PersonalityURLCategory)
+    personality = models.ForeignKey(Personality, on_delete=models.CASCADE)
+    url = models.ForeignKey(URL, on_delete=models.CASCADE)
+    category = models.ForeignKey(
+        PersonalityURLCategory, on_delete=models.CASCADE)
     description = models.CharField(null=True, blank=True, max_length=255)
 
 
@@ -192,7 +200,8 @@ class PersonalityAlias(models.Model):
     personality = models.ForeignKey(
         Personality, null=True, blank=True, on_delete=models.SET_NULL)
     name = models.CharField(max_length=255)
-    hidden_for = models.ForeignKey('PersonalityAlias', null=True, blank=True)
+    hidden_for = models.ForeignKey(
+        'PersonalityAlias', null=True, blank=True, on_delete=models.SET_NULL)
     is_blacklisted = models.BooleanField(default=False)
 
 
@@ -216,9 +225,9 @@ class GameAuthor(models.Model):
     def __str__(self):
         return "%s -- %s (%s)" % (self.game, self.author, self.role)
 
-    game = models.ForeignKey(Game)
-    author = models.ForeignKey(PersonalityAlias)
-    role = models.ForeignKey(GameAuthorRole)
+    game = models.ForeignKey(Game, on_delete=models.CASCADE)
+    author = models.ForeignKey(PersonalityAlias, on_delete=models.CASCADE)
+    role = models.ForeignKey(GameAuthorRole, on_delete=models.CASCADE)
 
 
 class GameTagCategory(models.Model):
@@ -248,7 +257,7 @@ class GameTag(models.Model):
 
     symbolic_id = models.SlugField(
         max_length=32, null=True, blank=True, db_index=True, unique=True)
-    category = models.ForeignKey(GameTagCategory)
+    category = models.ForeignKey(GameTagCategory, on_delete=models.CASCADE)
     name = models.CharField(max_length=255, db_index=True)
 
 
@@ -260,8 +269,13 @@ class GameVote(models.Model):
     def __str__(self):
         return "%s: %s (%d)" % (self.user, self.game, self.star_rating)
 
-    game = models.ForeignKey(Game, db_index=True)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, db_index=True)
+    game = models.ForeignKey(Game, db_index=True, on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        db_index=True,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL)
     creation_time = models.DateTimeField()
     edit_time = models.DateTimeField(null=True, blank=True)
     star_rating = models.SmallIntegerField()
@@ -282,10 +296,15 @@ class GameComment(models.Model):
             return self.user.username
         return 'Анонимоўс'
 
-    game = models.ForeignKey(Game, db_index=True)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True)
+    game = models.ForeignKey(Game, db_index=True, on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL)
     username = models.CharField(max_length=64, null=True, blank=True)
-    parent = models.ForeignKey('GameComment', null=True, blank=True)
+    parent = models.ForeignKey(
+        'GameComment', null=True, blank=True, on_delete=models.SET_NULL)
     creation_time = models.DateTimeField()
     edit_time = models.DateTimeField(null=True, blank=True)
     subject = models.CharField(max_length=255, null=True, blank=True)
