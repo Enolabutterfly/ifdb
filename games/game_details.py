@@ -7,6 +7,7 @@ from django.conf import settings
 from django.urls import reverse
 from logging import getLogger
 from statistics import mean
+from moder.actions import GetModerActions
 
 logger = getLogger('web')
 
@@ -86,15 +87,14 @@ class GameDetailsBuilder:
                  BuildPackageUserFingerprint(
                      self.request.user
                      if self.request.user.is_authenticated else None, x.id)))
-        can_comment = self.request.perm(self.game.comment_perm)
         return {
-            'edit_perm': self.request.perm(self.game.edit_perm),
-            'comment_perm': can_comment,
-            'delete_perm': False,
+            'comment_perm': self.request.perm(self.game.comment_perm),
+            'vote_perm': self.request.perm(self.game.vote_perm),
             'added_date': added_date,
             'authors': authors,
             'participants': participants,
             'game': self.game,
+            'moder_actions': GetModerActions(self.request, 'Game', self.game),
             'last_edit_date': last_edit_date,
             'markdown': md,
             'release_date': release_date,

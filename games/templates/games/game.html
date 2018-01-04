@@ -12,26 +12,23 @@
 {% block titlesection %}{{ game.title }} - {% endblock %}
 {% block content %}
     <div class="content-box-outer">
+        {% if moder_actions %}
         <div class="content-moder-line">
-            {% if edit_perm %}
-                <a href="{% url 'edit_game' game.id %}" title="Редактировать">
-                    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
-                        <path d="M27 0c2.761 0 5 2.239 5 5 0 1.126-0.372 2.164-1 3l-2 2-7-7 2-2c0.836-0.628 1.874-1 3-1zM2 23l-2 9 9-2 18.5-18.5-7-7-18.5 18.5zM22.362 11.362l-14 14-1.724-1.724 14-14 1.724 1.724z">
-                        </path>
-                    </svg>
-                </a>
-            {% endif %}
-            {% if delete_perm %}
-                <a href="#" title="Удалить">
-                    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
-                        <path d="M64 160v320c0 17.6 14.4 32 32 32h288c17.6 0 32-14.4 32-32v-320h-352zM160 448h-32v-224h32v224zM224 448h-32v-224h32v224zM288 448h-32v-224h32v224zM352 448h-32v-224h32v224z">
-                        </path>
-                        <path d="M424 64h-104v-40c0-13.2-10.8-24-24-24h-112c-13.2 0-24 10.8-24 24v40h-104c-13.2 0-24 10.8-24 24v40h416v-40c0-13.2-10.8-24-24-24zM288 64h-96v-31.599h96v31.599z">
-                        </path>
-                    </svg>
-                </a>
-            {% endif %}
+            {% for x in moder_actions %}
+                {% if x.GetUrl %}
+                    <a href="{{ x.GetUrl }}" title="{{ x.GetTitle }}">
+                        {% if x.GetIcon %}
+                            {% include x.GetIcon %}
+                        {% else %}
+                            {{ x.GetTitle }}
+                        {% endif %}
+                    </a>
+                {% else %}
+                    (not implemented)
+                {% endif %}
+            {% endfor %}
         </div>
+        {% endif %}
         <div class="content-box-inner">
             <div class="leftpane">
                 <div class="game-header">
