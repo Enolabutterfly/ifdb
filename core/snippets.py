@@ -528,6 +528,7 @@ def RenderSnippets(request):
             'id': x.id,
             'title': x.title,
             'url': x.url,
+            'style': style,
             'box_style': box_style,
             'async_snippet_id': async_id,
             'content': data.get('content'),
@@ -563,16 +564,27 @@ def RenderSnippets(request):
         snip.sort(key=lambda y: (y['order'], y['age']))
         snippets = pref + snip
         if hid:
+            hid.sort(key=lambda y: (y['order'], y['age']))
             items = []
             for x in hid:
+                lines = []
+                if x.get('age') is not None and x['style'].get('show_age'):
+                    lines.append({
+                        'style': ['float-right'],
+                        'text': FormatLag(-x['age'])
+                    })
+                    lines[-1]['style'].append('recent-comment' if x['age'] <=
+                                              60 * 60 * 24 else 'comment')
+                lines.append({
+                    'text': x['title'],
+                })
                 items.append({
                     'link':
                     reverse('forget_snippet', kwargs={
                         'id': x['id']
                     }),
-                    'lines': [{
-                        'text': x['title'],
-                    }]
+                    'lines':
+                    lines,
                 })
             snippets.append({
                 'title': ('Скрытые карточки'),
