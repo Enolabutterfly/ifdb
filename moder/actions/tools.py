@@ -1,7 +1,5 @@
 import json
-from django.urls import reverse
 from django.http.response import JsonResponse
-from games.models import Game
 from django.template.loader import render_to_string
 
 BUTTON_LABELS = {
@@ -18,6 +16,7 @@ class ModerAction:
     LINES = []
     FORM = None
     BUTTONS = ['ok', 'cancel']
+    BUTTONS_NEED_FORM = {'ok'}
 
     def __init__(self, request, obj):
         self.request = request
@@ -39,19 +38,30 @@ class ModerAction:
         else:
             return ''
 
+    def OnAction(self, action, form):
+        return "(no action defined)"
+
     def Handle(self, form, action):
         if (action == 'cancel'):
             return None
-        buttons = []
-        for x in self.BUTTONS:
-            buttons.append({'id': x, 'label': BUTTON_LABELS[x]})
 
-        lines = self.LINES
-        if isinstance(lines, str):
-            lines = [lines]
+        buttons = []
+        lines = []
+        raw = None
+        if action and (not self.FORM or action not in self.BUTTONS_NEED_FORM):
+            raw = self.OnAction(action, form)
+            buttons.append({'id': 'cancel', 'label': 'ОК!'})
+        else:
+            for x in self.BUTTONS:
+                buttons.append({'id': x, 'label': BUTTON_LABELS[x]})
+            lines = self.LINES
+
+            if isinstance(lines, str):
+                lines = [lines]
 
         return render_to_string('moder/moder.html', {
             'lines': lines,
+            'raw': raw,
             'buttons': buttons,
         })
 
@@ -81,39 +91,12 @@ class ModerAction:
             return obj
 
 
-class GameAction(ModerAction):
-    MODEL = Game
+ACTIONS = []
 
 
-class GameEditAction(GameAction):
-    TITLE = 'Править'
-    ICON = 'svg/edit.svg'
-
-    @classmethod
-    def IsAllowed(cls, request, obj):
-        return request.perm(obj.edit_perm)
-
-    def GetUrl(self):
-        return reverse('edit_game', kwargs={'game_id': self.obj.id})
-
-
-class GameCloneAction(GameAction):
-    TITLE = 'Клонировать'
-    LINES = 'Клонировать эту игру?'
-
-
-class GameAdminzAction(GameAction):
-    TITLE = 'Админка'
-
-    def GetUrl(self):
-        return reverse("admin:games_game_change", args=(self.obj.id, ))
-
-
-ACTIONS = [
-    GameAdminzAction,
-    #GameCloneAction,
-    GameEditAction,
-]
+def RegisterAction(cls):
+    ACTIONS.append(cls)
+    return cls
 
 
 def GetModerActions(request, context, obj=None):
@@ -139,7 +122,6 @@ def GetModerActions(request, context, obj=None):
 
 def HandleAction(request):
     j = json.loads(request.POST.get('request'))
-    print(j)
     object = j['object']
 
     action = None

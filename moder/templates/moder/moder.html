@@ -10,6 +10,12 @@
 </form>
 {% endif %}
 
+{% if raw %}
+<div>
+  {{ raw | safe }}
+</div>
+{% endif %}
+
 {% if buttons %}  
   {% for x in buttons %}
     <button action-action="{{ x.id }}">{{ x.label }}</button>

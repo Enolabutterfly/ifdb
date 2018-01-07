@@ -7,7 +7,7 @@ from django.conf import settings
 from django.urls import reverse
 from logging import getLogger
 from statistics import mean
-from moder.actions import GetModerActions
+from moder.actions.tools import GetModerActions
 
 logger = getLogger('web')
 
