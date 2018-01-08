@@ -169,7 +169,7 @@ class SB_Sorting(SearchBit):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.method = self.ALLOWED_SORTINGS[0]
+        self.method = self.ALLOWED_SORTINGS[1]
         self.desc = True
 
     def ProduceDict(self):
@@ -492,7 +492,7 @@ class SB_AuxFlags(SB_Flags):
 
     ANNOTATIONS = {
         1: (Count('gameauthor')),
-       10: (Count('gameauthor')),
+        10: (Count('gameauthor')),
     }
 
     QUERIES = {
@@ -519,7 +519,7 @@ class SB_AuxFlags(SB_Flags):
                     gameurl__game__count__gt=1)),
         9:
         Q(gameurl__url__is_broken=True),
-       10:
+        10:
         Q(gameauthor__count__gt=1),
     }
 
