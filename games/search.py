@@ -158,14 +158,16 @@ class SB_Sorting(SearchBit):
     CREATION_DATE = 0
     RELEASE_DATE = 1
     RATING = 2
+    TITLE = 3
 
     STRINGS = {
         CREATION_DATE: 'дате добавления',
         RELEASE_DATE: 'дате релиза',
         RATING: 'рейтингу',
+        TITLE: 'названию',
     }
 
-    ALLOWED_SORTINGS = [CREATION_DATE, RELEASE_DATE, RATING]
+    ALLOWED_SORTINGS = [CREATION_DATE, RELEASE_DATE, RATING, TITLE]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -200,6 +202,9 @@ class SB_Sorting(SearchBit):
 
         if self.method == self.CREATION_DATE:
             return query.order_by(('-' if self.desc else '') + 'creation_time')
+
+        if self.method == self.TITLE:
+            return query.order_by(('' if self.desc else '-') + 'title')
 
         return query
 
@@ -240,6 +245,8 @@ class SB_Sorting(SearchBit):
             ratings.sort(key=lambda x: x[0], reverse=self.desc)
             rated_games = list(list(zip(*ratings))[1]) if ratings else []
             return rated_games + nones
+
+        return games
 
     def IsActive(self):
         return True
