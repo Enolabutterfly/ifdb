@@ -203,8 +203,8 @@ def FixGameAuthors():
     logger.info('*** Checking hidden_for to be correct')
     for x in PersonalityAlias.objects.filter(
             hidden_for__isnull=False).select_related():
-        if x.personality != x.hidden_for.personality:
-            x.personality = x.hidden_for.personality
+        if x.personality != None:
+            x.personality = None
             logger.info('Resetting hidden_for for alias [%s]' % x)
             x.save()
 
