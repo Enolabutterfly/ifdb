@@ -8,6 +8,25 @@ class AuthorAction(ModerAction):
     MODEL = Personality
 
 
+# @RegisterAction
+class AliasEditAction(AuthorAction):
+    TITLE = 'Редактор псевдонимов'
+
+    class Form:
+        def __init__(self, obj, var):
+            self.obj = obj
+            pass
+
+        def is_valid(self):
+            return False
+
+        def as_table(self):
+            pass
+
+    def GetForm(self, var):
+        return self.Form(self.obj, var)
+
+
 @RegisterAction
 class AuthorCombineAction(AuthorAction):
     TITLE = 'Объединить'
