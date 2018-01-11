@@ -39,8 +39,11 @@ class GameCombineAction(GameAction):
             if not to.release_date:
                 to.release_date = fro.release_date
 
-            desc = to.description or ''
-            desc += fro.description or ''
+            desc = ''
+            for x in [to.description, fro.description]:
+                val = x or ''
+                if desc and val:
+                    desc += '\n\n' + val
             to.description = desc
             to.save()
 
