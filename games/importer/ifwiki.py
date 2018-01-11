@@ -393,6 +393,9 @@ class WikiParsingContext:
             return 'Media'
         if name in IFWIKI_IGNORE:
             return ''
+        if name == 'URQStead':
+            self.AddUrl(params['1'], 'Игра на URQ-модуле INSTEAD')
+            return ''
         logger.warning('Unknown template: %s %s' % (name, params))
         return ''
 

@@ -216,8 +216,13 @@ class AuthorCombineAction(AuthorAction):
         if not execute:
             return "Будем объединять с %s " % fro
         to = self.obj
-        newbio = to.bio or ''
-        newbio += fro.bio or ''
+
+        newbio = ''
+        for x in [to.bio, fro.bio]:
+            val = x or ''
+            if newbio and val:
+                newbio += '\n\n' + val
+
         if newbio:
             to.bio = newbio
         to.save()

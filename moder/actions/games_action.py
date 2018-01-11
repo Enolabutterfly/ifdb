@@ -39,8 +39,11 @@ class GameCombineAction(GameAction):
             if not to.release_date:
                 to.release_date = fro.release_date
 
-            desc = to.description or ''
-            desc += fro.description or ''
+            desc = ''
+            for x in [to.description, fro.description]:
+                val = x or ''
+                if desc and val:
+                    desc += '\n\n' + val
             to.description = desc
             to.save()
 
@@ -121,19 +124,6 @@ class GameAdminzAction(GameAction):
 
 
 @RegisterAction
-class GameEditAction(GameAction):
-    TITLE = 'Править'
-    ICON = 'svg/edit.svg'
-
-    @classmethod
-    def IsAllowed(cls, request, obj):
-        return request.perm(obj.edit_perm)
-
-    def GetUrl(self):
-        return reverse('edit_game', kwargs={'game_id': self.obj.id})
-
-
-@RegisterAction
 class GameDeleteAction(GameAction):
     TITLE = 'Удалить'
 
@@ -147,3 +137,15 @@ class GameDeleteAction(GameAction):
             return "Удалено!"
         else:
             return "Удалить эту игру?"
+
+
+@RegisterAction
+class GameEditAction(GameAction):
+    TITLE = 'Править'
+
+    @classmethod
+    def IsAllowed(cls, request, obj):
+        return request.perm(obj.edit_perm)
+
+    def GetUrl(self):
+        return reverse('edit_game', kwargs={'game_id': self.obj.id})
