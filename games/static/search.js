@@ -229,10 +229,8 @@ var SEARCH = (function() {
             if (el.find('.sortbutton').text().indexOf('▲') != -1)
                 val += 1;
 
-            if (val !== 2) {
-                enc.addHeader(0, parent.attr('data-val'));
-                enc.addInteger(val);
-            }
+            enc.addHeader(0, parent.attr('data-val'));
+            enc.addInteger(val);
         });
 
         // Type 1: Text.
