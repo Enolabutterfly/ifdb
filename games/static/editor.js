@@ -386,20 +386,26 @@ function GetCookie(name) {
       id: cat,
       showAll: true,
       allowNew: false,
-      placeholder: 'Тип',
+      placeholder: '(автоматически)',
     });
 
-    var desc_el = $('<input class="descinput" placeholder="Описание">');
+    var desc_lab = $('<label><span class="inputlabel">Описание:&nbsp;</span></label>');
+    var desc_el = $('<input class="descinput" placeholder="(по умолчанию)">');
+    var cats_lab = $('<label><span class="inputlabel">Тип&nbsp;ссылки:&nbsp;</span></label>');
     var url_el = $('<input class="urlinput" placeholder="URL">');
+    var url_lab = $('<label><span class="inputlabel">URL:&nbsp;</span></label>');
     var or_el = $('<span>или</span>');
     var button_el = $('<button id="upload_button">Закачать</button>');
     var file_el = $('<input type="file" style="display:none;">');
-    var delicon = $('<span class="ico">&#10006;</span>');
+    var delicon = $('<span class="ico">&#10006; </span>');
     var progress = $('<progress></progress>').hide();
-    desc_el.appendTo(entry);
+    desc_el.appendTo(desc_lab);
+    desc_lab.appendTo(entry);
     delicon.appendTo(entry);
-    cats.appendTo(entry);
-    url_el.appendTo(entry);
+    cats.appendTo(cats_lab);
+    cats_lab.appendTo(entry);
+    url_el.appendTo(url_lab);
+    url_lab.appendTo(entry);
     or_el.appendTo(entry);
     button_el.appendTo(entry);
     file_el.appendTo(entry);
@@ -463,7 +469,11 @@ function GetCookie(name) {
     };
 
     function UpdateUploadButton(event, catId) {
-      button_el.prop('disabled', !enabledCats.hasOwnProperty(catId));
+      var enabled = true;
+      if (catId) {
+        enabled = enabledCats.hasOwnProperty(catId);
+      }      
+      button_el.prop('disabled', !enabled);
     }
 
     cats.on('creminput', UpdateUploadButton);
@@ -497,19 +507,13 @@ function GetCookie(name) {
     });
 
     obj.IsValid = function() {
-      var valid = cats.suggest('isValid');
+      var valid = true;
       if (url_el.val() === '') {
         url_el.addClass('invalidinput');
         valid = false;
       } else {
         url_el.removeClass('invalidinput');
-        }
-      if (desc_el.val() === '') {
-        desc_el.addClass('invalidinput');
-        valid = false;
-      } else {
-        desc_el.removeClass('invalidinput');
-        }
+      }
       return valid;
     };
 

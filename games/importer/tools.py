@@ -19,6 +19,7 @@ URL_CATEGORIZER_RULES = [  # hostname, path, query, slug, desc
     ('', r'.*screenshot.*\.(png|jpg|gif|bmp|jpeg)', '', 'screenshot',
      'Скриншот'),
     ('', r'.*\.(png|jpg|gif|bmp|jpeg)', '', 'poster', 'Обложка'),
+    ('db.crem.xyz', '/f/uploads/.*', '', 'download_direct', 'Скачать'),
     ('ifwiki.ru', '/files/.*', '', 'download_direct', 'Скачать с IfWiki'),
     ('ifwiki.ru', '', '', 'game_page', 'Страница на IfWiki'),
     ('ifwiki.org', '', '', 'game_page', 'Страница на ifwiki.org'),

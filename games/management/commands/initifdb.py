@@ -94,7 +94,7 @@ GAME_URL_CATS = [
     ['screenshot', 'Скриншот', True],
     ['forum', 'Обсуждение (форум)', False],
     ['review', 'Обзор', False],
-    ['video', 'Видео прохождения', False],
+    ['video', 'Видео', False],
     ['other', 'Прочее', False],
     ['unknown', 'Категория не назначена', False],
 ]
