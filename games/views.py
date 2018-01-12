@@ -5,6 +5,7 @@ import timeit
 import random
 from .game_details import GameDetailsBuilder, StarsFromRating
 from .importer import Importer
+from .importer.tools import CategorizeUrl
 from .models import (GameURL, GameComment, Game, GameVote, InterpretedGameUrl,
                      URL, GameTag, GameAuthorRole, PersonalityAlias,
                      GameTagCategory, GameURLCategory, GameAuthor, Personality,
@@ -66,6 +67,14 @@ def store_game(request):
         return render(request, 'games/error.html', {
             'message': 'У игры должно быть название.'
         })
+
+    for x in j['links']:
+        (cat, desc, url) = x
+        if not cat or not desc:
+            res = CategorizeUrl(url, desc, cat or None)
+            x[1] = res['description']
+            x[0] = GameURLCategory.objects.get(
+                symbolic_id=res['urlcat_slug']).id
 
     id = UpdateGame(request, j)
     return redirect(reverse('show_game', kwargs={'game_id': id}))
