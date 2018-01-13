@@ -217,7 +217,11 @@ class SB_Sorting(SearchBit):
         return query
 
     def NeedsFullSet(self):
-        return self.method not in [self.CREATION_DATE]
+        return self.method not in [
+            self.CREATION_DATE,
+            self.RELEASE_DATE,
+            self.TITLE,
+        ]
 
     def ModifyResult(self, games):
         for g in games:
@@ -229,7 +233,6 @@ class SB_Sorting(SearchBit):
                 g.ds['creation_date'] = FormatDate(g.creation_time)
             return games
 
-        # TODO move to Query part
         if self.method == self.RELEASE_DATE:
             for g in games:
                 if g.release_date is not None:
