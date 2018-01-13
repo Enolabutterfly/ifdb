@@ -6,7 +6,7 @@ import statistics
 from .models import GameVote, GameURL
 
 
-def SnippetFromList(games):
+def SnippetFromList(games, populate_authors=True):
     posters = (GameURL.objects.filter(category__symbolic_id='poster').filter(
         game__in=games).select_related('url'))
     screenshots = (GameURL.objects.filter(category__symbolic_id='screenshot')
@@ -21,9 +21,11 @@ def SnippetFromList(games):
 
     for x in games:
         x.poster = g2p.get(x.id)
-        x.authors = [
-            x for x in x.gameauthor_set.all() if x.role.symbolic_id == 'author'
-        ]
+        if populate_authors:
+            x.authors = [
+                x for x in x.gameauthor_set.all()
+                if x.role.symbolic_id == 'author'
+            ]
     return games
 
 

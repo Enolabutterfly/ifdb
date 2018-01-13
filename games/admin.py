@@ -155,9 +155,9 @@ class GameVoteAdmin(admin.ModelAdmin):
 
 @admin.register(GameComment)
 class GameCommentAdmin(admin.ModelAdmin):
-    list_display = ['game', 'user', 'creation_time', 'subject', 'is_deleted']
+    list_display = ['game', 'user', 'creation_time', 'is_deleted']
     list_filter = ['creation_time', 'is_deleted']
-    search_fields = ['pk', 'subject', 'text']
+    search_fields = ['pk', 'text']
     raw_id_fields = ['game', 'parent']
 
 

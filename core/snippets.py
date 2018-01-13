@@ -197,11 +197,16 @@ def LastComments(request):
 
 def CommentsSnippet(request):
     comments = LastComments(request)
+    games = [x.game for x in comments]
+    SnippetFromList(games, False)
     if not comments:
         return {}
     items = []
-    for x in comments:
+    for x, y in zip(comments, games):
         items.append({
+            'image': {
+                'src': y.poster or '/static/noposter_7355.png'
+            },
             'link': (reverse('show_game', kwargs={
                 'game_id': x.game.id
             })),
@@ -216,10 +221,10 @@ def CommentsSnippet(request):
                 },
                 {
                     'style': 'strong',
-                    'text': (x.subject or '(без заголовка)'),
+                    'text': (x.game.title),
                 },
                 {
-                    'text': (x.game.title),
+                    'text': (x.text[:100]),
                 },
             ]
         })

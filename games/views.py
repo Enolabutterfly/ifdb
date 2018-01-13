@@ -158,7 +158,6 @@ def comment_game(request):
             'anonymous_nick', random.choice(ANONYMOUS_ANIMALS))
     comment.parent_id = request.POST.get('parent', None)
     comment.creation_time = timezone.now()
-    comment.subject = request.POST.get('subject', None) or None
     comment.text = request.POST.get('text', None)
     comment.save()
 

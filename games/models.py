@@ -296,8 +296,8 @@ class GameComment(models.Model):
         default_permissions = ()
 
     def __str__(self):
-        return "%s: %s: %s (%s)" % (self.user, self.game, self.subject,
-                                    self.creation_time)
+        return "%s: %s: (%s) \"%s\"" % (self.user, self.game,
+                                        self.creation_time, self.text[:40])
 
     def GetUsername(self):
         if self.username:
@@ -317,6 +317,5 @@ class GameComment(models.Model):
         'GameComment', null=True, blank=True, on_delete=models.SET_NULL)
     creation_time = models.DateTimeField()
     edit_time = models.DateTimeField(null=True, blank=True)
-    subject = models.CharField(max_length=255, null=True, blank=True)
     text = models.TextField()
     is_deleted = models.BooleanField(default=False)
