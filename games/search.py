@@ -200,6 +200,14 @@ class SB_Sorting(SearchBit):
         query = query.prefetch_related('gamevote_set').annotate(
             coms_count=Count('gamecomment'))
 
+        if self.method == self.RELEASE_DATE:
+            return query.extra(
+                select={'date_is_null': 'release_date IS NULL'},
+                order_by=[
+                    'date_is_null', ('-' if self.desc else '') + 'release_date'
+                ],
+            )
+
         if self.method == self.CREATION_DATE:
             return query.order_by(('-' if self.desc else '') + 'creation_time')
 
@@ -212,8 +220,6 @@ class SB_Sorting(SearchBit):
         return self.method not in [self.CREATION_DATE]
 
     def ModifyResult(self, games):
-        r = self.desc
-
         for g in games:
             votes = [x.star_rating for x in g.gamevote_set.all()]
             g.rating = ComputeGameRating(votes)
@@ -228,9 +234,6 @@ class SB_Sorting(SearchBit):
             for g in games:
                 if g.release_date is not None:
                     g.ds['release_date'] = FormatDate(g.release_date)
-            games.sort(
-                key=lambda x: ((x.release_date is None) != r, x.release_date),
-                reverse=self.desc)
             return games
 
         if self.method == self.RATING:
