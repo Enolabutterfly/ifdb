@@ -213,7 +213,6 @@ class GameDetailsBuilder:
                 'created': FormatTime(v.creation_time),
                 'created_raw': v.creation_time,
                 'edited': FormatTime(v.edit_time),
-                'subj': v.subject,
                 'text': RenderMarkdown(v.text),
                 'is_deleted': v.is_deleted,
             })

@@ -413,12 +413,6 @@ a.grid-box-subheader:hover {
     min-height: 10em;
 }
 
-.comment-subj {
-    color: #31322D;
-    font-weight: bold;
-    font-size: 110%;
-}
-
 .comment-nick {
     font-size: 90%;
     color: #625B61;

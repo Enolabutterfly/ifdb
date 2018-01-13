@@ -12,7 +12,6 @@ $(function() {
     var target = $(this).closest('.comment-box');
     if (target != reply.closest('.comment-box')) {
       reply.find('[name="parent"]').val(target.attr('data-id'));
-      reply.find('[name="subject"]').val(target.find('.comment-subj').text());
       reply.find('textarea').val('');
       target.append(reply);
       reply.show();

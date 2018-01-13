@@ -12,20 +12,22 @@
     <div class="grid-box-item">
   {% endif %}
     {% if x.image %}
+      {% spaceless %}
       {% if x.image.link %}
         <a class="grid-box-icon-container" href="{{x.image.link}}" {% if x.image.newtab %}target="_blank"{% endif %}>
       {% else %}
         <div class="grid-box-icon-container">
       {% endif %}
           {% if x.image.src %}        
-            <img class="grid-box-icon" src="{{ x.image.src }}">
             <span class="grid-box-icon-helper"></span>
+            <img class="grid-box-icon" src="{{ x.image.src }}">
           {% endif %}
       {% if x.image.link %}
         </a>
       {% else %}
         </div>
       {% endif %}
+      {% endspaceless %}
     {% endif %}
     <div class="grid-box-lines-container">
     {% for y in x.lines %}
