@@ -278,6 +278,7 @@ def show_author(request, author_id):
                         reverse=True))),
             })
 
+        LogAction(request, 'pers-view', is_mutation=False, obj=a)
         return render(request, 'games/author.html', res)
     except Personality.DoesNotExist:
         raise Http404
@@ -287,7 +288,6 @@ def list_games(request):
     s = MakeSearch(request.perm)
     query = request.GET.get('q', '')
     s.UpdateFromQuery(query)
-
     return render(request, 'games/search.html', s.ProduceBits())
 
 
@@ -582,6 +582,9 @@ def json_author_search(request):
     if elapsed_time > 2.0:
         logger.error("Time for author search query [%s] was %f" %
                      (query, elapsed_time))
+    if start == 0:
+        LogAction(
+            request, 'pers-search', after={'query': query}, is_mutation=False)
     return res
 
 
