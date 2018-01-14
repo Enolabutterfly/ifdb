@@ -15,7 +15,9 @@ def LogAction(request,
               action,
               *,
               is_mutation,
-              obj,
+              obj=None,
+              obj_type=None,
+              obj_id=None,
               obj2=None,
               before=None,
               after=None):
@@ -28,13 +30,15 @@ def LogAction(request,
     x.action = action
     x.is_mutation = is_mutation
     if obj:
-        x.obj_type = obj.__class__.__name__
-        x.obj_id = obj.id
+        obj_type = obj.__class__.__name__
+        obj_id = obj.id
+    x.obj_type = obj_type
+    x.obj_id = obj_id
     if obj2:
         x.obj2_type = obj2.__class__.__name__
         x.obj2_id = obj2.id
     if before:
-        x.before = json.dumps(before, ensure_ascii=False)
+        x.before = json.dumps(before, ensure_ascii=False, sort_keys=2)
     if after:
-        x.after = json.dumps(after, ensure_ascii=False)
+        x.after = json.dumps(after, ensure_ascii=False, sort_keys=2)
     x.save()
