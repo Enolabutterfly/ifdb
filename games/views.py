@@ -30,12 +30,14 @@ from django.utils import timezone
 from django.views.decorators.csrf import ensure_csrf_cookie
 from ifdb.permissioner import perm_required
 from moder.actions.tools import GetModerActions
+from moder.userlog import LogAction
 
 PERM_ADD_GAME = '@auth'  # Also for file upload, game import, vote
 logger = getLogger('web')
 
 
 def index(request):
+    LogAction(request, 'nav-index', is_mutation=False, obj=None)
     return render(request, 'games/index.html', {
         'snippets': RenderSnippets(request)
     })
@@ -68,7 +70,20 @@ def store_game(request):
             'message': 'У игры должно быть название.'
         })
 
+    before = None
+    if 'game_id' in j:
+        before = BuildJsonGameInfo(request, j['game_id'])
+        before['game_id'] = str(j['game_id'])
+
     id = UpdateGame(request, j)
+    LogAction(
+        request,
+        'gam-store',
+        is_mutation=True,
+        obj_type='Game',
+        obj_id=id,
+        before=before,
+        after=j)
     return redirect(reverse('show_game', kwargs={'game_id': id}))
 
 
@@ -159,6 +174,7 @@ def comment_game(request):
 def show_game(request, game_id):
     try:
         g = GameDetailsBuilder(game_id, request)
+        LogAction(request, 'gam-view', is_mutation=False, obj=g.game)
         return render(request, 'games/game.html', g.GetGameDict())
     except Game.DoesNotExist:
         raise Http404()
@@ -420,11 +436,39 @@ def linktypes(request):
     return res
 
 
+def BuildJsonGameInfo(request, game_id):
+    g = {}
+    if game_id:
+        game = Game.objects.get(id=game_id)
+        request.perm.Ensure(game.view_perm)
+        g['title'] = game.title or ''
+        g['desc'] = game.description or ''
+        g['release_date'] = str(game.release_date or '')
+
+        g['authors'] = []
+        for x in game.gameauthor_set.all():
+            g['authors'].append((x.role_id, x.author_id))
+
+        g['tags'] = []
+        for x in game.tags.select_related('category').all():
+            if not request.perm(x.category.show_in_edit_perm):
+                continue
+            g['tags'].append((x.category_id, x.id))
+
+        g['links'] = []
+        for x in game.gameurl_set.select_related('url').all():
+            g['links'].append((x.category_id, x.description or '',
+                               x.url.original_url))
+    return g
+
+
 def json_gameinfo(request):
     res = {
         'authortypes': authors(request),
         'tagtypes': tags(request),
         'linktypes': linktypes(request),
+        'gamedata': BuildJsonGameInfo(request, request.GET.get(
+            'game_id', None)),
     }
     game_id = request.GET.get('game_id', None)
     if game_id:
