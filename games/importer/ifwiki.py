@@ -202,7 +202,7 @@ def ImportFromIfwiki(url):
 IFWIKI_URL = re.compile(r'(https?://ifwiki.ru)/([^/?]+)')
 IFWIKI_LINK_PARSE = re.compile(r'\[\[(.*?)\]\]')
 IFWIKI_LINK_INTERNALS_PARSE = re.compile(
-    r'^(?:([^:\]|]*)::?)?([^:\]|]+)(?:\|([^\]|]+))??(?:\|([^\]|]+))?$')
+    r'^(?:([^:\]|]*)::?)?([^:\]|]+)(?:\|([^\]|]+))?(?:\|([^\]]+))?$')
 
 IFWIKI_ROLES = [
     ('автор', 'author'),
@@ -252,7 +252,7 @@ class WikiAuthorParsingContext:
         typ = m.group(3)
         display_name = m.group(4)
 
-        if role in ['Медиа', 'Media', 'Изображение']:
+        if role in ['Медиа', 'Media', 'Изображение', 'Image']:
             self.AddUrl('/files/' + WikiQuote(name), display_name, 'avatar'
                         if typ == 'thumb' else 'download_direct', self.url)
         elif role:
@@ -286,7 +286,7 @@ class WikiParsingContext:
             return text  # Internal link without a category.
         role = m.group(1)
         name = m.group(2)
-        typ = m.group(3)
+        # typ = m.group(3)
         display_name = m.group(4)
 
         if role in IFWIKI_IGNORE_ROLES:
@@ -302,9 +302,9 @@ class WikiParsingContext:
                 })
                 break
         else:
-            if role in ['Медиа', 'Media']:
-                self.AddUrl('/files/' + WikiQuote(name), display_name, 'poster'
-                            if typ == 'thumb' else 'download_direct', self.url)
+            if role in ['Медиа', 'Media', 'Изображение', 'Image']:
+                self.AddUrl(
+                    '/files/' + WikiQuote(name), display_name, base=self.url)
             elif role in ['Изображение']:
                 self.AddUrl('/files/' + WikiQuote(name), display_name,
                             'screenshot', self.url)

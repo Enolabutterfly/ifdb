@@ -9,7 +9,7 @@ def list_competitions(request):
     logos = CompetitionURL.objects.filter(category__symbolic_id='logo')
     g2l = {}
     for x in logos:
-        g2l[x.competition_id] = x.GetLocalUrl()
+        g2l.setdefault(x.competition_id, x.GetLocalUrl())
 
     contests = []
     for x in Competition.objects.order_by('-end_date'):

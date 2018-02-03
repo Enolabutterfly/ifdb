@@ -4,7 +4,9 @@ import games.importer.ifwiki
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from games.importer import Importer
+from core.taskqueue import Enqueue
 from games.models import URL
+from games.tasks.uploads import CloneFile, MarkBroken
 from contest.models import (CompetitionURLCategory, Competition,
                             CompetitionDocument, CompetitionURL,
                             CompetitionNomination, GameList)
@@ -69,6 +71,8 @@ def TitleToEndDate(title):
 CATEGORIZATION_RULES = [
     ('', '@', '', 'other_site', ''),
     ('', 'ifwiki', 'правила', 'other_site', 'rules'),
+    ('', r'ifwiki.*%D0%9F%D1%80%D0%B0%D0%B2%D0%B8%D0%BB%D0%B0', '',
+     'other_site', 'rules'),
     ('download_direct', '', '', 'download_direct', ''),
     ('', '', 'обзор', 'review', ''),
     ('forum', '', '', 'forum', None),
@@ -90,7 +94,6 @@ class Command(BaseCommand):
         importer = Importer()
         for seed_url in COMPETITION_URLS:
             data = importer.DispatchImport(seed_url)
-            print(repr(data))
             title = data['title']
             self.stdout.write('Competition: %s... ' % title, ending='')
             if Competition.objects.filter(title=title).exists():
@@ -109,6 +112,7 @@ class Command(BaseCommand):
             urls_checked = {seed_url}
             urls_stored = set()
             urls_to_check = [('(@)', '')]
+            used_slugs = set()
 
             while urls_to_check:
                 x, doc_slug = urls_to_check.pop()
@@ -116,6 +120,11 @@ class Command(BaseCommand):
                     data = importer.DispatchImport(x)
                     if 'title' not in data:
                         continue
+
+                if doc_slug in used_slugs:
+                    continue
+
+                used_slugs.add(doc_slug)
 
                 doc = CompetitionDocument()
                 doc.slug = doc_slug
@@ -155,6 +164,12 @@ class Command(BaseCommand):
                             u.creation_date = timezone.now()
                             u.ok_to_clone = cat.allow_cloning
                             u.save()
+                            if u.ok_to_clone:
+                                Enqueue(
+                                    CloneFile,
+                                    u.id,
+                                    name='CloneUrl(%d)' % u.id,
+                                    onfail=MarkBroken)
                         cu = CompetitionURL()
                         cu.competition = comp
                         cu.url = u
@@ -167,15 +182,17 @@ class Command(BaseCommand):
                             urls_to_check.append((url, dst_doc_slug))
                         break
 
+            is_comp = False
             for x in RESULTATIVE_COMPS:
                 if comp.slug.startswith(x):
-                    doc = CompetitionDocument()
-                    doc.slug = 'results'
-                    doc.title = 'Результаты'
-                    doc.text = '{{RESULTS}}'
-                    doc.competition = comp
-                    doc.view_perm = '@all'
-                    doc.save()
+                    is_comp = True
                     break
+            doc = CompetitionDocument()
+            doc.slug = 'results'
+            doc.title = 'Результаты' if is_comp else 'Участники'
+            doc.text = '{{RESULTS}}' if is_comp else '{{PARTICIPANTS}}'
+            doc.competition = comp
+            doc.view_perm = '@all'
+            doc.save()
 
             self.stdout.write(self.style.SUCCESS('done.'))
