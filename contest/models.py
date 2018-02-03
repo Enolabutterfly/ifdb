@@ -91,6 +91,7 @@ class GameList(models.Model):
     competition = models.ForeignKey(
         Competition, null=True, blank=True, on_delete=models.CASCADE)
     title = models.CharField(null=True, blank=True, max_length=255)
+    order = models.SmallIntegerField(default=0)
     # edit_perm = models.CharField(max_length=255, default="@admin")
 
 
@@ -106,5 +107,5 @@ class GameListEntry(models.Model):
     game = models.ForeignKey(
         Game, null=True, blank=True, on_delete=models.SET_NULL)
     datetime = models.DateTimeField(null=True, blank=True)
-    comment = models.CharField(max_length=255)
+    comment = models.CharField(max_length=255, null=True, blank=True)
     # TODO (Add "authors" field for upcoming games in trainli support)

@@ -4,6 +4,10 @@ from django import template
 from django.db.models import F
 import statistics
 from .models import GameVote, GameURL
+from markdown.extensions import Extension
+from markdown.blockprocessors import BlockProcessor
+from markdown.util import AtomicString, etree
+import re
 
 
 def SnippetFromList(games, populate_authors=True):
@@ -213,11 +217,53 @@ def PartitionItems(queryset, partitions, catfield='category', follow=None):
     return res + [rest]
 
 
-def RenderMarkdown(content):
-    return markdown.markdown(
-        content,
-        extensions=[
-            'markdown.extensions.extra', 'markdown.extensions.meta',
-            'markdown.extensions.smarty', 'markdown.extensions.wikilinks',
-            'del_ins'
-        ]) if content else ''
+SNIPPET_PATTERN = re.compile(r'{{(\w+)}}')
+
+
+class MarkdownSnippetProcessor(BlockProcessor):
+    def test(self, parent, block):
+        return SNIPPET_PATTERN.match(block)
+
+    def run(self, parent, blocks):
+        block = blocks.pop(0)
+        m = SNIPPET_PATTERN.match(block)
+        snippet_call = "render_%s" % m.group(1)
+        if hasattr(self.provider, snippet_call):
+            val = self.md.htmlStash.store(
+                getattr(self.provider, snippet_call)())
+        else:
+            val = self.md.htmlStash.store(m.group(2) + '??')
+
+        h = etree.SubElement(parent, 'div')
+        h.text = AtomicString(val)
+
+    def handleMatcddh(self, m):
+        snippet_call = "render_%s" % m.group(2)
+        if hasattr(self.provider, snippet_call):
+            return self.md.htmlStash.store(
+                getattr(self.provider, snippet_call)())
+        else:
+            return self.md.htmlStash.store(m.group(2) + '??')
+
+
+class MarkdownSnippet(Extension):
+    def __init__(self, provider):
+        super().__init__()
+        self.provider = provider
+
+    def extendMarkdown(self, md, md_globals):
+        processor = MarkdownSnippetProcessor(md.parser)
+        processor.provider = self.provider
+        processor.md = md
+        md.parser.blockprocessors.add('snippets', processor, '_begin')
+
+
+def RenderMarkdown(content, snippet_provider=None):
+    extensions = [
+        'markdown.extensions.extra', 'markdown.extensions.meta',
+        'markdown.extensions.smarty', 'markdown.extensions.wikilinks',
+        'del_ins'
+    ]
+    if snippet_provider:
+        extensions.append(MarkdownSnippet(snippet_provider))
+    return markdown.markdown(content, extensions=extensions) if content else ''

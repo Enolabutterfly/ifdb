@@ -19,13 +19,19 @@ class CompetitionURLCategoryAdmin(admin.ModelAdmin):
 @admin.register(CompetitionURL)
 class CompetitionURLAdmin(admin.ModelAdmin):
     list_display = ['competition', 'category', 'description']
-    search_fields = ['competition', 'url', 'category', 'description']
+    search_fields = [
+        'competition__title', 'url__original_url', 'category__title',
+        'category__symbolic_id', 'description'
+    ]
+    raw_id_fields = ['url']
+    list_filter = ['competition', 'category']
 
 
 @admin.register(CompetitionDocument)
 class CompetitionDocumentAdmin(admin.ModelAdmin):
     list_display = ['competition', 'slug', 'title', 'view_perm']
-    search_fields = ['competition', 'slug', 'title', 'text']
+    search_fields = ['competition__title', 'slug', 'title', 'text']
+    list_filter = ['competition']
 
 
 @admin.register(CompetitionSchedule)
@@ -35,9 +41,20 @@ class CompetitionScheduleAdmin(admin.ModelAdmin):
 
 @admin.register(GameList)
 class GameListAdmin(admin.ModelAdmin):
-    pass
+    list_display = ['competition', 'title', 'order']
+    list_filter = ['competition']
 
 
 @admin.register(GameListEntry)
 class GameListEntryAdmin(admin.ModelAdmin):
-    list_display = ['gamelist', 'rank', 'game', 'datetime', 'comment']
+    def Competition(self, obj):
+        return obj.gamelist.competition
+
+    def List(self, obj):
+        return obj.gamelist.title
+
+    list_display = [
+        'Competition', 'List', 'rank', 'game', 'datetime', 'comment'
+    ]
+    list_filter = ['gamelist__competition', 'gamelist__title']
+    raw_id_fields = ['game']

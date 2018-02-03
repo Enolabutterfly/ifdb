@@ -1,8 +1,73 @@
 from django.shortcuts import render
-from .models import Competition, CompetitionURL, CompetitionDocument
+from .models import Competition, CompetitionURL, CompetitionDocument, GameList
 from django.http import Http404
+from django.template.loader import render_to_string
 from django.core.exceptions import ObjectDoesNotExist
 from games.tools import RenderMarkdown, PartitionItems
+from games.models import GameURL
+
+
+def FetchSnippetData(d):
+    games = set()
+    for x in d:
+        for y in ['unranked', 'ranked']:
+            for z in x[y]:
+                if z.game:
+                    games.add(z.game_id)
+
+    posters = (GameURL.objects.filter(category__symbolic_id='poster').filter(
+        game__in=games).select_related('url'))
+    screenshots = (GameURL.objects.filter(category__symbolic_id='screenshot')
+                   .filter(game__in=games).select_related('url'))
+
+    g2p = {}
+    for x in posters:
+        g2p[x.game_id] = x.GetLocalUrl()
+    for x in screenshots:
+        if x.game_id not in g2p:
+            g2p[x.game_id] = x.GetLocalUrl()
+
+    for x in d:
+        for y in ['unranked', 'ranked']:
+            for z in x[y]:
+                if z.game:
+                    z.game.poster = g2p.get(z.game_id, '/static/noposter.png')
+                    z.game.authors = ', '.join([
+                        k.author.name for k in z.game.gameauthor_set.all()
+                        if k.role.symbolic_id == 'author'
+                    ])
+
+
+class SnippetProvider:
+    def __init__(self, comp):
+        self.comp = comp
+
+    def FormatHead(self, g):
+        if g.rank:
+            return {'primary': g.rank, 'secondary': 'место'}
+
+    def render_RESULTS(self):
+        lists = []
+        for x in GameList.objects.filter(
+                competition=self.comp).order_by('order'):
+            ranked = []
+            unranked = []
+            for y in x.gamelistentry_set.order_by('rank', 'datetime',
+                                                  'game__title'):
+                y.head = self.FormatHead(y)
+                if y.rank is None:
+                    unranked.append(y)
+                else:
+                    ranked.append(y)
+            lists.append({
+                'title': x.title,
+                'unranked': unranked,
+                'ranked': ranked,
+            })
+        FetchSnippetData(lists)
+        return render_to_string('contest/rankings.html', {
+            'nominations': lists
+        })
 
 
 def list_competitions(request):
@@ -52,7 +117,7 @@ def show_competition(request, slug, doc=''):
         request, 'contest/competition.html', {
             'comp': comp,
             'doc': docobj,
-            'markdown': RenderMarkdown(docobj.text),
+            'markdown': RenderMarkdown(docobj.text, SnippetProvider(comp)),
             'logo': logo,
             'docs': links,
             'links': ext_links,

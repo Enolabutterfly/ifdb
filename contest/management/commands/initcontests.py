@@ -219,8 +219,7 @@ class Command(BaseCommand):
                             e.rank = m.group(1)
                         e.save()
 
-                except:
-                    print('sss')
+                except GameTag.DoesNotExist:
                     pass
 
             self.stdout.write(self.style.SUCCESS('done.'))
