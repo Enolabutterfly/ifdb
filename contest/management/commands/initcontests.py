@@ -5,11 +5,11 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 from games.importer import Importer
 from core.taskqueue import Enqueue
-from games.models import URL
+from games.models import URL, GameTagCategory, GameTag
 from games.tasks.uploads import CloneFile, MarkBroken
 from contest.models import (CompetitionURLCategory, Competition,
-                            CompetitionDocument, CompetitionURL,
-                            CompetitionNomination, GameList)
+                            CompetitionDocument, CompetitionURL, GameList,
+                            GameListEntry)
 
 COMPETITION_DEFAULT_DOCS = {
     '': 'Главная',
@@ -67,6 +67,15 @@ def TitleToEndDate(title):
     raise ValueError("Unknown title: [%s]" % title)
 
 
+def TitleToTag(title):
+    m = re.match(r'КРИЛ (\d+)', title)
+    if m:
+        return "КРИЛ-" + m.group(1)
+    if 'Зимн' in title:
+        m = re.search(r'(\d\d\d\d)', title)
+        return 'ЗОК-' + m.group(1)
+
+
 # src_slug, src_url, src_desc, dst_cat, dst_doc_slug
 CATEGORIZATION_RULES = [
     ('', '@', '', 'other_site', ''),
@@ -85,6 +94,8 @@ CATEGORIZATION_RULES = [
 RESULTATIVE_COMPS = ['kril-', 'zok-']
 
 games.importer.ifwiki.ALLOW_INTERNAL_LINKS = True
+
+PLACE_RE = re.compile(r'(\d+)-о?е мест')
 
 
 class Command(BaseCommand):
@@ -106,8 +117,7 @@ class Command(BaseCommand):
             comp.end_date = TitleToEndDate(title)
             comp.save()
 
-            CompetitionNomination.objects.create(
-                competition=comp, gamelist=GameList.objects.create())
+            gamelist = GameList.objects.create(competition=comp)
 
             urls_checked = {seed_url}
             urls_stored = set()
@@ -194,5 +204,23 @@ class Command(BaseCommand):
             doc.competition = comp
             doc.view_perm = '@all'
             doc.save()
+
+            tag = TitleToTag(title)
+            if tag:
+                cat = GameTagCategory.objects.get(symbolic_id='competition')
+                try:
+                    t = GameTag.objects.get(category=cat, name=tag)
+                    for g in t.game_set.all():
+                        e = GameListEntry()
+                        e.gamelist = gamelist
+                        e.game = g
+                        m = PLACE_RE.search(g.description)
+                        if m:
+                            e.rank = m.group(1)
+                        e.save()
+
+                except:
+                    print('sss')
+                    pass
 
             self.stdout.write(self.style.SUCCESS('done.'))

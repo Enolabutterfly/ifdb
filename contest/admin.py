@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import (Competition, CompetitionURLCategory, CompetitionURL,
-                     CompetitionNomination, CompetitionDocument,
-                     CompetitionSchedule, GameList, GameListEntry)
+                     CompetitionDocument, CompetitionSchedule, GameList,
+                     GameListEntry)
 
 
 @admin.register(Competition)
@@ -22,12 +22,6 @@ class CompetitionURLAdmin(admin.ModelAdmin):
     search_fields = ['competition', 'url', 'category', 'description']
 
 
-@admin.register(CompetitionNomination)
-class CompetitionNominationAdmin(admin.ModelAdmin):
-    list_display = ['competition', 'title']
-    search_fields = ['competition', 'title']
-
-
 @admin.register(CompetitionDocument)
 class CompetitionDocumentAdmin(admin.ModelAdmin):
     list_display = ['competition', 'slug', 'title', 'view_perm']
@@ -46,4 +40,4 @@ class GameListAdmin(admin.ModelAdmin):
 
 @admin.register(GameListEntry)
 class GameListEntryAdmin(admin.ModelAdmin):
-    pass
+    list_display = ['gamelist', 'rank', 'game', 'datetime', 'comment']

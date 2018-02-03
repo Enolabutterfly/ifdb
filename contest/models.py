@@ -54,19 +54,6 @@ class CompetitionURL(models.Model):
     description = models.CharField(null=True, blank=True, max_length=255)
 
 
-class CompetitionNomination(models.Model):
-    class Meta:
-        default_permissions = ()
-
-    def __str__(self):
-        return "%s -- %s" % (self.competition, self.title)
-
-    competition = models.ForeignKey(Competition, on_delete=models.CASCADE)
-    title = models.CharField(null=True, blank=True, max_length=255)
-    gamelist = models.ForeignKey(
-        'GameList', null=True, blank=True, on_delete=models.SET_NULL)
-
-
 class CompetitionDocument(models.Model):
     class Meta:
         default_permissions = ()
@@ -98,14 +85,21 @@ class GameList(models.Model):
     class Meta:
         default_permissions = ()
 
-    pass
-    # title = models.CharField(max_length=255)
+    def __str__(self):
+        return "%s -- %s" % (self.competition, self.title)
+
+    competition = models.ForeignKey(
+        Competition, null=True, blank=True, on_delete=models.CASCADE)
+    title = models.CharField(null=True, blank=True, max_length=255)
     # edit_perm = models.CharField(max_length=255, default="@admin")
 
 
 class GameListEntry(models.Model):
     class Meta:
         default_permissions = ()
+
+    def __str__(self):
+        return "%s -- %s -- %s" % (str(self.rank), self.game, self.gamelist)
 
     gamelist = models.ForeignKey(GameList, on_delete=models.CASCADE)
     rank = models.IntegerField(null=True, blank=True)
