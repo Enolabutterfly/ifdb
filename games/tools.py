@@ -232,18 +232,10 @@ class MarkdownSnippetProcessor(BlockProcessor):
             val = self.md.htmlStash.store(
                 getattr(self.provider, snippet_call)())
         else:
-            val = self.md.htmlStash.store(m.group(2) + '??')
+            val = self.md.htmlStash.store(m.group(1) + '??')
 
         h = etree.SubElement(parent, 'div')
         h.text = AtomicString(val)
-
-    def handleMatcddh(self, m):
-        snippet_call = "render_%s" % m.group(2)
-        if hasattr(self.provider, snippet_call):
-            return self.md.htmlStash.store(
-                getattr(self.provider, snippet_call)())
-        else:
-            return self.md.htmlStash.store(m.group(2) + '??')
 
 
 class MarkdownSnippet(Extension):

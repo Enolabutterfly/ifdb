@@ -14,6 +14,7 @@ class Competition(models.Model):
     slug = models.SlugField(max_length=32)
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
+    options = models.TextField(default='{}')
     # Support for private contests (view_perm?)
 
 
@@ -106,6 +107,6 @@ class GameListEntry(models.Model):
     rank = models.IntegerField(null=True, blank=True)
     game = models.ForeignKey(
         Game, null=True, blank=True, on_delete=models.SET_NULL)
-    datetime = models.DateTimeField(null=True, blank=True)
+    date = models.DateField(null=True, blank=True)
     comment = models.CharField(max_length=255, null=True, blank=True)
     # TODO (Add "authors" field for upcoming games in trainli support)

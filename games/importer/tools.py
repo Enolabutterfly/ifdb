@@ -40,6 +40,7 @@ URL_CATEGORIZER_RULES = [  # hostname, path, query, slug, desc
     ('youtu.be', '', '', 'video', 'Видео игры'),
     ('www.youtube.com', '', '', 'video', 'Видео игры'),
     ('forum.ifiction.ru', '', '', 'forum', 'Обсуждение на форуме'),
+    ('urq.borda.ru', '', '', 'forum', 'Обсуждение на форуме'),
     ('ifhub.club', '', '', 'review', 'Обзор на ifhub.club'),
     ('qsp.su', '', '.*=dd_download.*', 'download_direct', 'Скачать с qsp.ru'),
     ('qsp.su', '/tools/aero/.*', '', 'play_online', 'Играть онлайн на qsp.ru'),
