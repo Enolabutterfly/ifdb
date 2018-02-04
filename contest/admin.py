@@ -53,8 +53,6 @@ class GameListEntryAdmin(admin.ModelAdmin):
     def List(self, obj):
         return obj.gamelist.title
 
-    list_display = [
-        'Competition', 'List', 'rank', 'game', 'datetime', 'comment'
-    ]
+    list_display = ['Competition', 'List', 'rank', 'game', 'date', 'comment']
     list_filter = ['gamelist__competition', 'gamelist__title']
     raw_id_fields = ['game']

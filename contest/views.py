@@ -5,6 +5,8 @@ from django.template.loader import render_to_string
 from django.core.exceptions import ObjectDoesNotExist
 from games.tools import RenderMarkdown, PartitionItems
 from games.models import GameURL
+import json
+import datetime
 
 
 def FetchSnippetData(d):
@@ -41,10 +43,19 @@ def FetchSnippetData(d):
 class SnippetProvider:
     def __init__(self, comp):
         self.comp = comp
+        self.options = json.loads(comp.options)
 
     def FormatHead(self, g):
         if g.rank:
             return {'primary': g.rank, 'secondary': 'место'}
+
+    def FormatParovoz(self, g):
+        if g.date:
+            end = g.date + datetime.timedelta(days=6)
+            return {
+                'primary': g.date.strftime('%d.%m'),
+                'secondary': end.strftime('— %d.%m')
+            }
 
     def render_RESULTS(self):
         lists = []
@@ -52,9 +63,12 @@ class SnippetProvider:
                 competition=self.comp).order_by('order'):
             ranked = []
             unranked = []
-            for y in x.gamelistentry_set.order_by('rank', 'datetime',
+            for y in x.gamelistentry_set.order_by('rank', 'date',
                                                   'game__title'):
-                y.head = self.FormatHead(y)
+                if self.options.get('listtype') == 'parovoz':
+                    y.head = self.FormatParovoz(y)
+                else:
+                    y.head = self.FormatHead(y)
                 if y.rank is None:
                     unranked.append(y)
                 else:
@@ -68,6 +82,9 @@ class SnippetProvider:
         return render_to_string('contest/rankings.html', {
             'nominations': lists
         })
+
+    def render_PARTICIPANTS(self):
+        return self.render_RESULTS()
 
 
 def list_competitions(request):
