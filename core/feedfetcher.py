@@ -50,14 +50,12 @@ VK_RE = re.compile(r'https://vk.com/(.*)')
 def FetchVkFeed(api, url, feed_id):
     logger.info("Fetching vk feed %s" % url)
     m = VK_RE.match(url)
-    gid = api.groups.getById(group_ids=m.group(1))[0]['gid']
+    gid = api.groups.getById(group_ids=m.group(1))[0]['id']
     posts = api.wall.get(owner_id=-gid)
     now = timezone.now()
     tt = HTML2Text()
     tt.body_width = 0
-    for x in posts:
-        if isinstance(x, int):
-            continue
+    for x in posts['items']:
         if x['marked_as_ads']:
             continue
         item_id = x['id']
