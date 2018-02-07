@@ -1,15 +1,16 @@
-from django.shortcuts import render
 from .models import Competition, CompetitionURL, CompetitionDocument, GameList
+from collections import defaultdict
+from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Count, Max
 from django.http import Http404
+from django.shortcuts import render
 from django.template.loader import render_to_string
 from django.utils import timezone
-from django.core.exceptions import ObjectDoesNotExist
-from games.tools import RenderMarkdown, PartitionItems, ComputeGameRating
 from games.models import GameURL, GameAuthor
-from django.db.models import Count, Max
-import json
+from games.tools import RenderMarkdown, PartitionItems, ComputeGameRating
+from moder.userlog import LogAction
 import datetime
-from collections import defaultdict
+import json
 
 
 def FormatHead(g, options):
@@ -145,6 +146,7 @@ def show_competition(request, slug, doc=''):
         raise Http404()
 
     request.perm.Ensure(docobj.view_perm)
+    LogAction(request, 'comp-view', is_mutation=False, obj=comp, obj2=docobj)
 
     logos = CompetitionURL.objects.filter(
         category__symbolic_id='logo', competition=comp)
