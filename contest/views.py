@@ -9,6 +9,7 @@ from django.utils import timezone
 from games.models import GameURL, GameAuthor
 from games.tools import RenderMarkdown, PartitionItems, ComputeGameRating
 from moder.userlog import LogAction
+from moder.actions import GetModerActions
 import datetime
 import json
 
@@ -168,10 +169,18 @@ def show_competition(request, slug, doc=''):
 
     return render(
         request, 'contest/competition.html', {
-            'comp': comp,
-            'doc': docobj,
-            'markdown': RenderMarkdown(docobj.text, SnippetProvider(comp)),
-            'logo': logo,
-            'docs': links,
-            'links': ext_links,
+            'comp':
+                comp,
+            'doc':
+                docobj,
+            'markdown':
+                RenderMarkdown(docobj.text, SnippetProvider(comp)),
+            'logo':
+                logo,
+            'docs':
+                links,
+            'links':
+                ext_links,
+            'moder_actions':
+                GetModerActions(request, 'CompetitionDocument', docobj)
         })
