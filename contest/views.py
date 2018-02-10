@@ -71,7 +71,7 @@ class CompetitionGameFetcher:
         screenshots = (
             GameURL.objects.filter(category__symbolic_id='screenshot')
             .filter(game__in=games).select_related('url'))
-        authors = GameAuthor.objects.filter(
+        author_objs = GameAuthor.objects.filter(
             game__in=games,
             role__symbolic_id='author').select_related('author')
 
@@ -82,7 +82,7 @@ class CompetitionGameFetcher:
         for x in screenshots:
             if x.game_id not in g2p:
                 g2p[x.game_id] = x.GetLocalUrl()
-        for x in authors:
+        for x in author_objs:
             authors[x.game_id].append(x.author.name)
 
         now = timezone.now()
