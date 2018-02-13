@@ -11,6 +11,7 @@ import json
 import os
 import signal
 import time
+import socket
 
 logger = logging.getLogger('worker')
 
@@ -82,6 +83,7 @@ def EnqueueOrGet(func, *argv, name=None, priority=100, **kwarg):
 
 
 def Worker():
+    socket.setdefaulttimeout(200.0)
     do_exit = False
 
     def null_handler(signal, frame):
@@ -96,7 +98,7 @@ def Worker():
         with open(settings.WORKER_PID_FILE, 'w') as f:
             f.write(str(os.getpid()))
         signal.signal(signal.SIGTERM, exit_handler)
-        signal.signal(signal.SIGINT, exit_handler)
+        # signal.signal(signal.SIGINT, exit_handler)
         signal.signal(signal.SIGUSR1, null_handler)
         signal.signal(signal.SIGALRM, null_handler)
 
