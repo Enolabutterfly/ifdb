@@ -217,7 +217,7 @@ class PrefixList(list):
         return False
 
 
-INTERNAL_IPS = PrefixList(['127.', '10.162.', '2a02:168:520c:'])
+INTERNAL_IPS = PrefixList(['212.51.151.122', '2a02:168:520c:'])
 
 # Application definition
 
