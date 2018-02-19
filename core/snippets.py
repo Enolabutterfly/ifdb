@@ -565,6 +565,7 @@ def ContestSnippet(
             for x in links:
                 res.append({
                     'lines': [{
+                        'style': 'strong',
                         'text': x.description,
                         'link': x.GetRemoteUrl(),
                         'newtab': True,
