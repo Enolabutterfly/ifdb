@@ -4,11 +4,12 @@ from collections import Counter
 from django.utils import timezone
 
 
-def GetPopularGameids(daily_decay=3, anonymous_factor=0.3):
+def GetPopularGameids(daily_decay=3, anonymous_factor=0.3, fetch_limit=1000):
     factor = math.log2(daily_decay)
     seen = set()
     counts = Counter()
-    visits = UserLog.objects.filter(action='gam-view').order_by('-pk')[:2000]
+    visits = UserLog.objects.filter(
+        action='gam-view').order_by('-pk')[:fetch_limit]
     now = timezone.now()
 
     for x in visits:
