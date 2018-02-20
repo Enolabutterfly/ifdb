@@ -1,15 +1,40 @@
 {% extends "games/base.html" %}
 {% load static %}
+{% block scripts %}
+    <script src="/static/contests.js"></script>
+{% endblock %}
 {% block content_wide %}
-  <div class="contests-container">
-    {% for x in contests %}
-        <a href="{% url 'show_competition' slug=x.slug doc='' %}"
-           class="contest-card"
-           style="background-image: url({{ x.logo }})">
-            <div class="contest-title">
-              <span>{{ x.title }}</span>
-            </div>
-        </a>
+<div class="contests-container" style="height: {{ total_height }}px;">
+  <div class="ruler">
+    {% for x in ruler %}
+      <div class="ruler-item" style="height: {{ x.pixels }}px;">
+        <div class="ruler-tick {% if x.long %}ruler-tick-long{% endif %}"></div>
+        {{ x.month }}
+        <div class="ruler-year">
+          {{ x.year }}
+        </div>
+      </div>
     {% endfor %}
   </div>
+
+  {% for x in contests %}
+    <div class="contest-box grid-box {% if x.box_color %}grid-box-{{ x.box_color }}{% endif %}"
+          style="top: {{ x.top }}px; {% if x.height %} min-height: {{ x.height }}px;{% endif %}"
+         >
+      <div class="grid-box-header">
+        <a href="{% url 'show_competition' slug=x.slug doc='' %}">{{ x.title }}</a>
+      </div>
+      {% if x.logo %}
+        <div class="contest-img"
+            style="background-image: url({{ x.logo }})">
+        </div>
+      {% endif %}
+      {{ x.snippet | safe }}
+    </div>
+
+  {% endfor %}
+</div>
+<script type="text/javascript">
+  CONTESTS.LayoutContestBoxes();
+</script>  
 {% endblock %}

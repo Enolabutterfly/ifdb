@@ -17,6 +17,12 @@
         {{ x.head.secondary }}
       </div>
     {% endif %}
+    {% if x.tinyhead %}
+      <div class="grid-box-item-head-container-tiny">
+        {{ x.tinyhead.primary }}
+        <span class="rank-tiny">{{ x.tinyhead.secondary }}</span>
+      </div>
+    {% endif %}
     {% if x.image %}
       {% spaceless %}
       {% if x.image.link %}
