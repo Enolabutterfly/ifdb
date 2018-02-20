@@ -141,8 +141,21 @@ a.grid-box-item:hover {
     padding-top: 5px;
 }
 
+.grid-box-item-head-container-tiny {
+    width: 80px;
+    text-align: center;
+    flex-shrink: 0;
+    flex-grow: 0;
+    background-color: #bdbdbd;
+    color: #fff;
+}
+
 .grid-box-item-head-container .rank {
     font-size: 20px;
+}
+
+.grid-box-item-head-container-tiny .rank-tiny {
+    font-size: 10px;
 }
 
 .grid-box-line {
@@ -295,6 +308,7 @@ a.grid-box-subheader:hover {
 }
 
 .grid-box-green .grid-box-subheader,
+.grid-box-green .grid-box-item-head-container-tiny,
 .grid-box-green .grid-box-item-head-container {
     background-color: #4db6ac;
 }
@@ -304,6 +318,7 @@ a.grid-box-subheader:hover {
 }
 
 .grid-box-blue .grid-box-subheader,
+.grid-box-blue .grid-box-item-head-container-tiny,
 .grid-box-blue .grid-box-item-head-container {
     background-color: #7986cb;
 }
@@ -314,6 +329,7 @@ a.grid-box-subheader:hover {
 }
 
 .grid-box-yellow .grid-box-subheader,
+.grid-box-yellow .grid-box-item-head-container-tiny,
 .grid-box-yellow .grid-box-item-head-container {
     background-color: #ffca28;
     color: black;
@@ -324,6 +340,7 @@ a.grid-box-subheader:hover {
 }
 
 .grid-box-red .grid-box-subheader,
+.grid-box-red .grid-box-item-head-container-tiny,
 .grid-box-red .grid-box-item-head-container {
     background-color: #f06292;
 }
@@ -793,37 +810,8 @@ textarea {
 
 .contests-container {
     margin-top: 50px;
-    text-align: center;
-}
-
-.contest-card {
-    background-color: white;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, .3);
-    display: inline-block;
-    height: 180px;
-    width: 300px;
-    margin: 10px;
-    background-repeat: no-repeat;
-    background-size: cover;
-    background-position: center;
-    background-blend-mode: multiply;
-    color: #fff;
-    text-decoration: none;
     text-align: left;
     position: relative;
-    vertical-align: top;
-}
-
-.contest-title {
-    position: absolute;
-    bottom: 0;
-}
-
-.contest-title span {
-    background-color: rgba(0, 0, 0, 0.5);
-    font-size: 30px;
-    line-height: 45px;
-    margin: 2px;
 }
 
 .contest-result-item {
@@ -1279,6 +1267,42 @@ span.gameinfo-author {
     color: #625B61;
     font-size: 90%;
     text-align: center;
+}
+
+.ruler {
+    position: absolute;
+    z-index: -1;
+}
+
+.ruler-tick {
+    border-top: 2px solid #666;
+    width: 40px;
+}
+
+.ruler-tick-long {
+    border-top: 3px solid black;
+    width: 50px;
+}
+
+.ruler-year {
+    width: 40px;
+    text-align: center;
+    font-size: 14px;
+}
+
+.contest-box {
+    left: 100px;
+    position: absolute;
+}
+
+.contest-img {
+    background-color: white;
+    height: 100px;
+    width: 100%;
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: center;
+    background-blend-mode: multiply;
 }
 
 #title_warning,

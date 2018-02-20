@@ -1,15 +1,19 @@
-from .models import Competition, CompetitionURL, CompetitionDocument, GameList
+from .models import (Competition, CompetitionURL, CompetitionDocument,
+                     GameList, CompetitionSchedule)
 from collections import defaultdict
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Count, Max
 from django.http import Http404
 from django.shortcuts import render
 from django.template.loader import render_to_string
+from django.urls import reverse
 from django.utils import timezone
 from games.models import GameURL, GameAuthor
-from games.tools import RenderMarkdown, PartitionItems, ComputeGameRating
+from games.tools import (RenderMarkdown, PartitionItems, ComputeGameRating,
+                         FormatDate)
 from moder.userlog import LogAction
 from moder.actions import GetModerActions
+from dateutil import relativedelta
 import datetime
 import json
 
@@ -115,28 +119,11 @@ class SnippetProvider:
 
     def render_RESULTS(self):
         lists = self.fetcher.FetchSnippetData()
-        return render_to_string('contest/rankings.html', {
-            'nominations': lists
-        })
+        return render_to_string('contest/rankings.html',
+                                {'nominations': lists})
 
     def render_PARTICIPANTS(self):
         return self.render_RESULTS()
-
-
-def list_competitions(request):
-    logos = CompetitionURL.objects.filter(category__symbolic_id='logo')
-    g2l = {}
-    for x in logos:
-        g2l.setdefault(x.competition_id, x.GetLocalUrl())
-
-    contests = []
-    for x in Competition.objects.order_by('-end_date'):
-        contests.append({
-            'slug': x.slug,
-            'title': x.title,
-            'logo': g2l.get(x.id, '/static/default_competition_logo.jpg')
-        })
-    return render(request, 'contest/index.html', {'contests': contests})
 
 
 def show_competition(request, slug, doc=''):
@@ -183,4 +170,168 @@ def show_competition(request, slug, doc=''):
                 ext_links,
             'moder_actions':
                 GetModerActions(request, 'CompetitionDocument', docobj)
+        })
+
+
+MONTHS = [
+    'январь', 'февраль', 'март', 'апрель', 'май', 'июнь', 'июль', 'август',
+    'сентябрь', 'октябрь', 'ноябрь', 'декабрь'
+]
+
+PIXELS_PER_DAY = 3
+
+SHOW_LINKS = [
+    'official_page',
+    'other_site',
+    'forum',
+]
+
+COLOR_RULES = [
+    ('kril', 'blue'),
+    ('parovoz', 'red'),
+    ('lok', 'green'),
+    ('zok', 'yellow'),
+]
+
+
+def list_competitions(request):
+    end_date = datetime.date.today().replace(
+        day=1) + relativedelta.relativedelta(months=1)
+    now = timezone.now()
+
+    schedule = defaultdict(list)
+    for x in CompetitionSchedule.objects.filter(show=True).order_by('when'):
+        schedule[x.competition_id].append({
+            'lines': [
+                {
+                    'text':
+                        FormatDate(x.when),
+                    'style': (['float-right'] + (['dimmed']
+                                                 if x.when < now else [])),
+                },
+                {
+                    'text': x.title,
+                    'style': 'strong'
+                },
+            ]
+        })
+
+    links = defaultdict(list)
+    for x in CompetitionURL.objects.filter(
+            category__symbolic_id__in=SHOW_LINKS).select_related():
+        links[x.competition_id].append({
+            'lines': [{
+                'style': 'strong',
+                'text': x.description,
+                'link': x.GetRemoteUrl(),
+                'newtab': True,
+            }]
+        })
+
+    logos = {}
+    for x in CompetitionURL.objects.filter(
+            category__symbolic_id='logo').select_related():
+        logos[x.competition_id] = x.GetLocalUrl()
+
+    upcoming = []
+    contests = []
+
+    d = now.date()
+    for x in Competition.objects.order_by('-end_date'):
+        options = json.loads(x.options)
+        if x.start_date and x.start_date < d:
+            d = x.start_date
+
+        if x.end_date - relativedelta.relativedelta(months=2) < d:
+            d = x.end_date - relativedelta.relativedelta(months=2)
+
+        x.box_color = None
+        for pref, col in COLOR_RULES:
+            if x.slug.startswith(pref):
+                x.box_color = col
+                break
+        if x.end_date < now.date():
+            x.top = (30 + (end_date - x.end_date).days) * PIXELS_PER_DAY
+            if x.start_date:
+                x.height = (x.end_date - x.start_date).days * PIXELS_PER_DAY
+        else:
+            x.top = 0
+            if x.start_date:
+                x.height = ((end_date - x.start_date).days) * PIXELS_PER_DAY
+        x.logo = logos.get(x.id)
+
+        items = []
+
+        if x.end_date >= now.date():
+            if schedule[x.id]:
+                items.append({
+                    'style': 'subheader',
+                    'text': 'Расписание',
+                })
+                items.extend(schedule[x.id])
+            if links[x.id]:
+                items.append({
+                    'style': 'subheader',
+                    'text': 'Ссылки',
+                })
+                items.extend(links[x.id])
+
+        games = CompetitionGameFetcher(x).GetCompetitionGamesRaw()
+        if games:
+            for entry in games:
+                items.append({
+                    'style': 'subheader',
+                    'text': entry['title'] or 'Участники',
+                })
+                for z in entry['ranked'] + entry['unranked']:
+                    lines = []
+                    item = {}
+                    item['lines'] = lines
+                    item['tinyhead'] = FormatHead(z, options)
+                    if z.game:
+                        g = z.game
+                        lines.append({'style': 'strong', 'text': g.title})
+                        item['link'] = reverse(
+                            'show_game', kwargs={'game_id': g.id})
+
+                    else:
+                        if z.comment:
+                            lines.append({'text': z.comment})
+                        else:
+                            lines.append({})
+                    items.append(item)
+        x.snippet = render_to_string('core/snippet.html', {'items': items})
+        if x.start_date and x.start_date >= now.date():
+            upcoming.append(x)
+        else:
+            contests.append(x)
+
+    d.replace(day=1)
+    ruler = []
+    total_height = 30
+    while d != end_date:
+        days = (d + relativedelta.relativedelta(months=1) - d).days
+        ruler.append({
+            'year': d.year,
+            'month': MONTHS[d.month - 1],
+            'days': days,
+            'pixels': days * PIXELS_PER_DAY,
+            'long': d.month == 12,
+        })
+        total_height += days
+        d += relativedelta.relativedelta(months=1)
+    ruler.append({
+        'month': 'текущие',
+        'days': 30,
+        'pixels': 30 * PIXELS_PER_DAY,
+        'long': True
+    })
+    ruler.reverse()
+
+    return render(
+        request, 'contest/index.html', {
+            'ruler': ruler,
+            'contests': contests,
+            'upcoming': upcoming,
+            'total_height': PIXELS_PER_DAY * total_height,
         })
