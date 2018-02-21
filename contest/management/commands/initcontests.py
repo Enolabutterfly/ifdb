@@ -45,8 +45,13 @@ COMPETITION_URLS_OLD = [
     'https://ifwiki.ru/%D0%9B%D0%9E%D0%9A_2017',
 ]
 
-COMPETITION_URLS = [
+COMPETITION_URLS_OLD2 = [
     'https://ifwiki.ru/QSP-Compo_' + str(x) for x in range(2009, 2018)
+]
+
+COMPETITION_URLS = [
+    'https://ifwiki.ru/%D0%97%D0%BE%D0%BB%D0%BE%D1%82%D0%BE%D0%B9_%D0%A5%D0%BE%D0%BC%D1%8F%D0%BA_'
+    + str(x) for x in range(2009, 2016)
 ]
 
 
@@ -65,6 +70,9 @@ def TitleToSlug(title):
     if 'QSP-Compo' in title:
         m = re.search(r'(\d\d\d\d)$', title)
         return 'qspcompo-' + m.group(1)
+    if 'Хомяк' in title:
+        m = re.search(r'(\d\d\d\d)$', title)
+        return 'zh-' + m.group(1)
     raise ValueError("Unknown title: [%s]" % title)
 
 
@@ -90,6 +98,9 @@ def TitleToEndDate(title):
     if 'QSP-Compo' in title:
         m = re.search(r'(\d\d\d\d)$', title)
         return datetime.date(int(m.group(1)), 3, 31)
+    if 'Хомяк' in title:
+        m = re.search(r'(\d\d\d\d)$', title)
+        return datetime.date(int(m.group(1)), 12, 31)
     raise ValueError("Unknown title: [%s]" % title)
 
 
@@ -108,6 +119,9 @@ def TitleToTag(title):
     if 'QSP-Compo' in title:
         m = re.search(r'(\d\d\d\d)$', title)
         return 'QSP-Compo ' + m.group(1)
+    if 'Хомяк' in title:
+        m = re.search(r'(\d\d\d\d)$', title)
+        return 'Золотой Хомяк ' + m.group(1)
 
 
 # src_slug, src_url, src_desc, dst_cat, dst_doc_slug
@@ -125,7 +139,7 @@ CATEGORIZATION_RULES = [
     ('screenshot', '', '', 'logo', ''),
 ]
 
-RESULTATIVE_COMPS = ['kril-', 'zok-', 'qspcompo-']
+RESULTATIVE_COMPS = ['kril-', 'zok-', 'qspcompo-', 'zh-']
 
 games.importer.ifwiki.ALLOW_INTERNAL_LINKS = True
 
