@@ -273,10 +273,11 @@ def list_competitions(request):
         games = CompetitionGameFetcher(x).GetCompetitionGamesRaw()
         if games:
             for entry in games:
-                items.append({
-                    'style': 'subheader',
-                    'text': entry['title'] or 'Участники',
-                })
+                if entry['title'] or x.end_date >= now.date():
+                    items.append({
+                        'style': 'subheader',
+                        'text': entry['title'] or 'Участники',
+                    })
                 for z in entry['ranked'] + entry['unranked']:
                     lines = []
                     item = {}
