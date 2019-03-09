@@ -4,6 +4,7 @@ from logging import getLogger
 from urllib.parse import quote
 import hashlib
 import json
+import ssl
 import os.path
 import shutil
 import urllib.request
@@ -29,9 +30,14 @@ def _ResponseInfoToMetadata(url, response):
 
 def FetchUrlToFileLike(url, use_cache=True):
     logger.info('Fetching: %s' % url)
+
+    ctx = ssl.create_default_context()
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
+
     url = quote(url.encode('utf-8'), safe='/+=&?%:@;!#$*()_-')
     if not settings.CRAWLER_CACHE_DIR or not use_cache:
-        response = urllib.request.urlopen(url)
+        response = urllib.request.urlopen(url, context=ctx)
         response.metadata = _ResponseInfoToMetadata(url, response.info())
         return response
 
@@ -46,7 +52,7 @@ def FetchUrlToFileLike(url, use_cache=True):
         with open(metadata_filename, 'r') as f:
             metadata = json.loads(f.read())
     else:
-        response = urllib.request.urlopen(url)
+        response = urllib.request.urlopen(url, context=ctx)
         metadata = _ResponseInfoToMetadata(url, response.info())
         with open(filename, 'wb') as f:
             shutil.copyfileobj(response, f)

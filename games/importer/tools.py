@@ -20,6 +20,8 @@ URL_CATEGORIZER_RULES = [  # hostname, path, query, slug, desc
      'Скриншот'),
     ('', r'(?i).*\.(png|jpg|gif|bmp|jpeg)', '', 'poster', 'Обложка'),
     ('db.crem.xyz', '/f/uploads/.*', '', 'download_direct', 'Скачать'),
+    ('ifiction.ru', '/game.php', '', 'download_landing',
+     'Скачать с ifiction.ru'),
     ('ifwiki.ru', '/files/.*', '', 'download_direct', 'Скачать с IfWiki'),
     ('ifwiki.ru', '', '', 'game_page', 'Страница на IfWiki'),
     ('ifwiki.org', '', '', 'game_page', 'Страница на ifwiki.org'),
@@ -47,6 +49,8 @@ URL_CATEGORIZER_RULES = [  # hostname, path, query, slug, desc
     ('youtube.com', '', '', 'video', 'Видео игры'),
     ('youtu.be', '', '', 'video', 'Видео игры'),
     ('www.youtube.com', '', '', 'video', 'Видео игры'),
+    ('forum.ifiction.ru', '/file.php', '', 'download_direct',
+     'Скачать с ifiction.ru'),
     ('forum.ifiction.ru', '', '', 'forum', 'Обсуждение на форуме'),
     ('urq.borda.ru', '', '', 'forum', 'Обсуждение на форуме'),
     ('ifhub.club', '', '', 'review', 'Обзор на ifhub.club'),
@@ -81,6 +85,8 @@ def ComputeSimilarity(s1, s2):
 
 
 def CategorizeUrl(url, desc='', category=None, base=None):
+    if desc == url:
+        desc = ''
     if base:
         url = urljoin(base, url)
     purl = urlparse(url)
@@ -256,12 +262,11 @@ class Importer:
             for setz, field, extractor in [
                 (s_urls, 'urls',
                  lambda xx: (HashizeUrl(xx['url']), xx['urlcat_slug'])),
-                    (s_tags, 'tags', lambda xx: (
-                        xx.get('tag_slug'),
-                        xx.get('tag'), xx.get('cat_slug'))),
-                    (s_auth, 'authors', lambda v: (
-                        v.get('role_slug'),
-                        v.get('role_slug'), v.get('name'))),
+                (s_tags, 'tags', lambda xx: (xx.get('tag_slug'), xx.get('tag'),
+                                             xx.get('cat_slug'))),
+                (s_auth, 'authors',
+                 lambda v: (v.get('role_slug'), v.get('role_slug'),
+                            v.get('name'))),
             ]:
                 if field in x:
                     if field not in y:
