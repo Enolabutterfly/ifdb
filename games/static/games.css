@@ -478,6 +478,16 @@ a.grid-box-subheader:hover {
     background-color: #424242;
 }
 
+.grid-box-purple .grid-box-header {
+    background-color: #673ab7;
+}
+
+.grid-box-purple .grid-box-subheader,
+.grid-box-purple .grid-box-item-head-container-tiny,
+.grid-box-purple .grid-box-item-head-container {
+    background-color: #9575cd;
+}
+
 .content {
     margin: 50px auto 5px;
     max-width: 1024px;

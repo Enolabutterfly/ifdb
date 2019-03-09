@@ -174,7 +174,6 @@ enricher.AddRule(
         'apero',
         'axma.*',
         'ink.*',
-        'instead',
         'questbox',
         'tweebox',
         'twine',

@@ -6,6 +6,7 @@ from .apero import AperoImporter
 from .rilarhiv import RilarhivImporter
 from .insteadgames import InsteadGamesImporter
 from .questbook import QuestBookImporter
+from .ifiction import IfictionImporter
 
 REGISTERED_IMPORTERS.append(PlutImporter)
 REGISTERED_IMPORTERS.append(IfwikiImporter)
@@ -14,4 +15,5 @@ REGISTERED_IMPORTERS.append(AperoImporter)
 REGISTERED_IMPORTERS.append(RilarhivImporter)
 REGISTERED_IMPORTERS.append(InsteadGamesImporter)
 REGISTERED_IMPORTERS.append(QuestBookImporter)
+REGISTERED_IMPORTERS.append(IfictionImporter)
 Importer
