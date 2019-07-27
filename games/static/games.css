@@ -755,12 +755,13 @@ textarea {
     background-color: #f1f1f1;
     color: #31322D;
     font-family: 'Roboto', sans-serif;
+    font-size-adjust: 0.5;    
     font-size: 13px;
+    left: 0;
     min-height: 100vh;
     overflow-x: visible;
     position: absolute;
     top: 0;
-    left: 0;
     width: 100%;
     z-index: 1;
 }
@@ -913,18 +914,6 @@ textarea {
 .rightpane img {
     max-width: 100%;
 }
-
-@media only screen and (min-width: 800px)  {
-    .leftpane {
-        width: 65%;
-    }
-    .rightpane {
-        width: 34%;
-        display: block;
-        float: right;
-    }
-}
-
 
 .rightpane button,
 .rightpane input[type="submit"] {
@@ -1171,6 +1160,11 @@ textarea {
 
 .game-description {
     margin-bottom: 1em;
+    font-size: 14px;
+}
+
+.game-description h1 {
+    border-bottom: 1px solid rgba(0,0,0,0.3);
 }
 
 .game-header {
@@ -1525,15 +1519,6 @@ textarea#description {
     font-size: 95%;
 }
 
-.loonchator-fail {
-    display: none;
-    border: 1px solid red;
-}
-
-.loonchator-fail h2 {
-    text-align: center;
-}
-
 #messagebox {
     background-color: #fff;
     border-radius: 2px;
@@ -1860,6 +1845,77 @@ progress::-webkit-progress-value {
     width: 30px;
 }
 
+h1 {
+  font-size: 2em;
+  line-height: 1.25;  
+}
+
+@media (min-width: 43.75em) {
+  h1 {
+    font-size: 2.5em;
+    line-height: 1.125;
+  }
+}
+
+@media (min-width: 56.25em) {
+  h1 {
+    font-size: 3em;
+    line-height: 1.05;
+  }
+}
+
+h2 {
+  font-size: 1.625em;
+  line-height: 1.15384615;
+}
+
+@media (min-width: 43.75em) {
+  h2 {
+    font-size: 2em;
+    line-height: 1.25;
+  }
+}
+
+@media (min-width: 56.25em) {
+  h2 {
+    font-size: 2.25em;
+    line-height: 1.25;
+  }
+}
+
+h3 {
+  font-size: 1.375em;
+  line-height: 1.13636364;
+}
+
+@media (min-width: 43.75em) {
+  h3 {
+    font-size: 1.5em;
+    line-height: 1.25;
+  }
+}
+
+@media (min-width: 56.25em) {
+  h3 {
+    font-size: 1.75em;
+    line-height: 1.25;
+  }
+}
+
+h4,h5,h6 {
+  font-size: 1.125em;
+  line-height: 1.11111111;
+  margin-block-start: 1.33em;
+  margin-block-end: 1.33em;
+  margin-inline-start: 0px;
+  margin-inline-end: 0px;
+}
+
+@media (min-width: 43.75em) {
+  h4,h5,h6 {
+    line-height: 1.22222222;
+  }
+}
 
 @media only screen and (min-width: 650px)  {
     .ducks {
@@ -1915,5 +1971,33 @@ progress::-webkit-progress-value {
         width: auto;
         min-width: 80px;
         text-align: center;
+    }
+
+    .leftpane {
+        width: 65%;
+    }
+    .rightpane {
+        width: 34%;
+        display: block;
+        float: right;
+    }
+}
+
+
+@media only screen and (min-width: 1700px)  {
+    .content {
+        max-width: 1400px;
+    }
+    .game-description {
+        font-size: 15px;
+    }
+
+    .leftpane {
+        width: 1000px;
+    }
+    .rightpane {
+        width: 340px;
+        display: block;
+        float: right;
     }
 }

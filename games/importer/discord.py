@@ -23,6 +23,9 @@ class FakeRequest:
 
 
 def PostNewGameToDiscord(game_id):
+    if not settings.DISCORD_WEBHOOK:
+        return
+
     request = FakeRequest(USER)
     gameinfo = GameDetailsBuilder(game_id, request).GetGameDict()
 
@@ -62,7 +65,6 @@ def PostNewGameToDiscord(game_id):
                     'url': urljoin('https://db.crem.xyz/', entry['img'])
                 }
 
-    requests.post(
-        url,
-        data=json.dumps(hook),
-        headers={'Content-type': 'application/json'})
+    requests.post(url,
+                  data=json.dumps(hook),
+                  headers={'Content-type': 'application/json'})

@@ -67,10 +67,7 @@ else:
     SILENCED_SYSTEM_CHECKS = ['captcha.recaptcha_test_key_error']
     SECRET_KEY = 'l3uja(27m53i#c)#9ziwmf*3n^e59eieal=3i$z0j@&$0i$!hr'
     VK_SERVICE_KEY = open('/home/crem/my/vk.key').read().strip()
-    DISCORD_WEBHOOK = (
-        'https://discordapp.com/api/webhooks/556212956858286101'
-        '/LHKQcWH5df_hXKkn-jaPHeLozEXMHheohOzIW-r1DTbA_AqcaMJfPzW1y0AluqOJACus'
-    )
+    DISCORD_WEBHOOK = None
     DEBUG = True
     ALLOWED_HOSTS = []
     # DATABASES = {
