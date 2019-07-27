@@ -152,7 +152,7 @@ def show_competition(request, slug, doc=''):
     links = []
     for x in CompetitionDocument.objects.filter(
             competition=comp).order_by('slug'):
-        if not request.perm(docobj.view_perm):
+        if not request.perm(x.view_perm):
             continue
         if x.slug == doc:
             continue
@@ -160,9 +160,6 @@ def show_competition(request, slug, doc=''):
 
     logos, ext_links = PartitionItems(comp.competitionurl_set.all(),
                                       [('logo', )])
-    #    for x in CompetitionURL.objects.exclude(category__symbolic_id='logo'):
-    #        ext_links.append({'description': x.description
-
     return render(
         request, 'contest/competition.html', {
             'comp':
