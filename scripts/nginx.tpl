@@ -12,8 +12,8 @@ server {
 {% if c.host == 'prod' %}
     server_name db.crem.xyz;
 
-    error_log    /home/ifdb/logs/nginx-error.log main;
-    access_log    /home/ifdb/logs/nginx-access.log;
+    error_log    /home/ifdb/logs/nginx-error.log;
+    access_log    /home/ifdb/logs/nginx-access.log main;
 
     listen 443 ssl;
     listen [::]:443 ssl;
