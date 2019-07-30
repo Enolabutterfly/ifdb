@@ -88,9 +88,8 @@ def CheckFromTemplate(template, dst):
         parms = json.loads(m.group(1))
         cnt = [x.rstrip() for x in m.group(2).split('\n')]
         tpl = [
-            x.rstrip()
-            for x in GenerateStringFromTemplate(template, parms, False)
-            .split('\n')
+            x.rstrip() for x in GenerateStringFromTemplate(
+                template, parms, False).split('\n')
         ]
         diff = list(difflib.context_diff(tpl, cnt))
         if not diff:
@@ -163,10 +162,9 @@ class Pipeline:
             task_f = self.steps[self.context['idx']]
             try:
                 click.echo(
-                    click.style(
-                        '[%2d/%2d]' % (self.context['idx'] + 1,
-                                       len(self.steps)),
-                        fg='green') + ' %s...' % task_f.__doc__)
+                    click.style('[%2d/%2d]' %
+                                (self.context['idx'] + 1, len(self.steps)),
+                                fg='green') + ' %s...' % task_f.__doc__)
                 if self.step_by_step:
                     if not click.confirm('Should I run it?'):
                         raise click.Abort
@@ -177,12 +175,11 @@ class Pipeline:
                 raise
             except Jump as jmp:
                 self.context['idx'] += jmp.whereto
-                click.secho(
-                    '[ JMP ] Jumping to %d (%s)' %
-                    (self.context['idx'] + 1,
-                     self.steps[self.context['idx']].__doc__),
-                    fg='green',
-                    bold=True)
+                click.secho('[ JMP ] Jumping to %d (%s)' %
+                            (self.context['idx'] + 1,
+                             self.steps[self.context['idx']].__doc__),
+                            fg='green',
+                            bold=True)
                 continue
             except:
                 click.secho(traceback.format_exc(), fg='red')
@@ -212,18 +209,18 @@ def cli(ctx, start, list, steps):
 
 
 @cli.command()
-@click.option(
-    '--message',
-    '-m',
-    default='Сайт временно не работает (что-то поломалось).',
-    type=str)
+@click.option('--message',
+              '-m',
+              default='Сайт временно не работает (что-то поломалось).',
+              type=str)
 @click.pass_context
 def red(ctx, message):
     p = ctx.obj['pipeline']
     p.AddStep(
-        GetFromTemplate('wallpage.tpl', 'wallpage/index.html',
-                        {'message': message,
-                         'timestamp': int(time.time())}, False))
+        GetFromTemplate('wallpage.tpl', 'wallpage/index.html', {
+            'message': message,
+            'timestamp': int(time.time())
+        }, False))
     p.AddStep(CheckFromTemplate('nginx.tpl', 'nginx.conf'))
     p.AddStep(
         GetFromTemplate(
@@ -232,12 +229,16 @@ def red(ctx, message):
                     'host': 'prod',
                     'conf': 'wallpage'
                 }, {
+                    'host': 'kontigr',
+                    'conf': 'wallpage'
+                }, {
                     'host': 'staging',
                     'conf': 'deny'
                 }]
             }))
     p.AddStep(RunCmdStep('sudo /bin/systemctl reload nginx'))
     p.AddStep(RunCmdStep('sudo /bin/systemctl stop ifdb-uwsgi'))
+    p.AddStep(RunCmdStep('sudo /bin/systemctl stop ifdb-uwsgi-kontigr'))
     p.AddStep(RunCmdStep('sudo /bin/systemctl stop ifdb-worker'))
     p.Run('red')
 
@@ -259,11 +260,15 @@ def green(ctx):
                     'host': 'prod',
                     'conf': 'prod'
                 }, {
+                    'host': 'kontigr',
+                    'conf': 'kontigr'
+                }, {
                     'host': 'staging',
                     'conf': 'deny'
                 }]
             }))
     p.AddStep(RunCmdStep('sudo /bin/systemctl start ifdb-uwsgi'))
+    p.AddStep(RunCmdStep('sudo /bin/systemctl start ifdb-uwsgi-kontigr'))
     p.AddStep(RunCmdStep('sudo /bin/systemctl reload nginx'))
     p.AddStep(RunCmdStep('sudo /bin/systemctl start ifdb-worker'))
     p.Run('green')
@@ -287,8 +292,8 @@ def stage(ctx, tag):
     p.AddStep(KillStaging)
     p.AddStep(CreateStaging)
     p.AddStep(
-        RunCmdStep(
-            'git clone git@bitbucket.org:mooskagh/ifdb.git %s' % django_dir))
+        RunCmdStep('git clone git@bitbucket.org:mooskagh/ifdb.git %s' %
+                   django_dir))
     p.AddStep(ChDir(django_dir))
     p.AddStep(RunCmdStep('git checkout -b staging %s' % (tag or '')))
     p.AddStep(RunCmdStep('virtualenv -p python3 %s' % virtualenv_dir))
@@ -301,13 +306,13 @@ def stage(ctx, tag):
     p.AddStep(StagingDiff('django/games/management/commands/initifdb.py'))
     p.AddStep(StagingDiff('django/scripts/nginx.tpl'))
     p.AddStep(
-        RunCmdStep('%s %s/manage.py collectstatic --clear' % (python_dir,
-                                                              django_dir)))
+        RunCmdStep('%s %s/manage.py collectstatic --clear' %
+                   (python_dir, django_dir)))
     p.AddStep(StagingDiff('static/'))
     p.AddStep(RunCmdStep('chmod -R a+rX %s/static' % STAGING_DIR))
     p.AddStep(
-        RunCmdStep('%s/bin/uwsgi %s/uwsgi-staging.ini' % (virtualenv_dir,
-                                                          CONFIGS_DIR)))
+        RunCmdStep('%s/bin/uwsgi %s/uwsgi-staging.ini' %
+                   (virtualenv_dir, CONFIGS_DIR)))
     p.AddStep(CheckFromTemplate('nginx.tpl', 'nginx.conf'))
     p.AddStep(
         GetFromTemplate(
@@ -316,21 +321,26 @@ def stage(ctx, tag):
                     'host': 'prod',
                     'conf': 'prod'
                 }, {
+                    'host': 'kontigr',
+                    'conf': 'kontigr'
+                }, {
                     'host': 'staging',
                     'conf': 'staging'
                 }]
             }))
     p.AddStep(RunCmdStep('sudo /bin/systemctl reload nginx'))
     p.AddStep(
-        LoopStep(
-            RunCmdStep('kill -HUP `cat /tmp/uwsgi-ifdb-staging.pid`'),
-            'Check STAGING and reload if needed.'))
+        LoopStep(RunCmdStep('kill -HUP `cat /tmp/uwsgi-ifdb-staging.pid`'),
+                 'Check STAGING and reload if needed.'))
     p.AddStep(
         GetFromTemplate(
             'nginx.tpl', 'nginx.conf', {
                 'configs': [{
                     'host': 'prod',
                     'conf': 'prod'
+                }, {
+                    'host': 'kontigr',
+                    'conf': 'kontigr'
                 }, {
                     'host': 'staging',
                     'conf': 'deny'
@@ -366,23 +376,25 @@ def deploy(ctx, hot, from_master):
             BACKUPS_DIR, 'database', time.strftime("%Y%m%d_%H%M"))))
     p.AddStep(ChDir(django_dir))
     p.AddStep(
-        RunCmdStep(
-            'git diff-index --quiet HEAD --',
-            doc="Check that git doesn't have uncommited changes"))
+        RunCmdStep('git diff-index --quiet HEAD --',
+                   doc="Check that git doesn't have uncommited changes"))
     p.AddStep(RunCmdStep('git fetch'))
 
     if not hot:
         p.AddStep(
-            GetFromTemplate(
-                'wallpage.tpl', 'wallpage/index.html',
-                {'message': 'Сайт обновляется',
-                 'timestamp': int(time.time())}, False))
+            GetFromTemplate('wallpage.tpl', 'wallpage/index.html', {
+                'message': 'Сайт обновляется',
+                'timestamp': int(time.time())
+            }, False))
         p.AddStep(CheckFromTemplate('nginx.tpl', 'nginx.conf'))
         p.AddStep(
             GetFromTemplate(
                 'nginx.tpl', 'nginx.conf', {
                     'configs': [{
                         'host': 'prod',
+                        'conf': 'wallpage'
+                    }, {
+                        'host': 'kontigr',
                         'conf': 'wallpage'
                     }, {
                         'host': 'staging',
@@ -392,6 +404,7 @@ def deploy(ctx, hot, from_master):
         p.AddStep(StartTimer)
         p.AddStep(RunCmdStep('sudo /bin/systemctl reload nginx'))
         p.AddStep(RunCmdStep('sudo /bin/systemctl stop ifdb-uwsgi'))
+        p.AddStep(RunCmdStep('sudo /bin/systemctl stop ifdb-uwsgi-kontigr'))
 
     p.AddStep(RunCmdStep('sudo /bin/systemctl stop ifdb-worker'))
 
@@ -416,26 +429,28 @@ def deploy(ctx, hot, from_master):
         p.AddStep(
             RunCmdStep('%s %s/manage.py migrate' % (python_dir, django_dir)))
         p.AddStep(
-            RunCmdStep("pg_dump ifdb > %s" % os.path.join(
-                BACKUPS_DIR, 'database',
-                time.strftime("%Y%m%d_%H%M-postmigr"))))
+            RunCmdStep("pg_dump ifdb > %s" %
+                       os.path.join(BACKUPS_DIR, 'database',
+                                    time.strftime("%Y%m%d_%H%M-postmigr"))))
 
     if hot:
         p.AddStep(
-            RunCmdStep('%s %s/manage.py collectstatic' % (python_dir,
-                                                          django_dir)))
+            RunCmdStep('%s %s/manage.py collectstatic' %
+                       (python_dir, django_dir)))
     else:
         p.AddStep(
-            RunCmdStep('%s %s/manage.py collectstatic --clear' % (python_dir,
-                                                                  django_dir)))
+            RunCmdStep('%s %s/manage.py collectstatic --clear' %
+                       (python_dir, django_dir)))
     if not hot:
         p.AddStep(
             RunCmdStep('%s %s/manage.py initifdb' % (python_dir, django_dir)))
 
     if hot:
         p.AddStep(RunCmdStep('sudo /bin/systemctl restart ifdb-uwsgi'))
+        p.AddStep(RunCmdStep('sudo /bin/systemctl restart ifdb-uwsgi-kontigr'))
     else:
         p.AddStep(RunCmdStep('sudo /bin/systemctl start ifdb-uwsgi'))
+        p.AddStep(RunCmdStep('sudo /bin/systemctl start ifdb-uwsgi-kontigr'))
     p.AddStep(RunCmdStep('sudo /bin/systemctl start ifdb-worker'))
 
     if not hot:
@@ -446,6 +461,9 @@ def deploy(ctx, hot, from_master):
                         'host': 'prod',
                         'conf': 'wallpage'
                     }, {
+                        'host': 'kontigr',
+                        'conf': 'wallpage'
+                    }, {
                         'host': 'staging',
                         'conf': 'prod'
                     }]
@@ -453,9 +471,8 @@ def deploy(ctx, hot, from_master):
         p.AddStep(RunCmdStep('sudo /bin/systemctl reload nginx'))
 
     p.AddStep(
-        LoopStep(
-            RunCmdStep('sudo /bin/systemctl restart ifdb-uwsgi'),
-            'Check STAGING and reload if needed.'))
+        LoopStep(RunCmdStep('sudo /bin/systemctl restart ifdb-uwsgi'),
+                 'Check STAGING and reload if needed.'))
 
     if not hot:
         p.AddStep(
@@ -464,6 +481,9 @@ def deploy(ctx, hot, from_master):
                     'configs': [{
                         'host': 'prod',
                         'conf': 'prod'
+                    }, {
+                        'host': 'kontigr',
+                        'conf': 'kontigr'
                     }, {
                         'host': 'staging',
                         'conf': 'deny'
@@ -476,15 +496,15 @@ def deploy(ctx, hot, from_master):
                 'Check PROD and break if needed.'))
 
     p.AddStep(
-        RunCmdStep(
-            'git diff-index --exit-code HEAD --',
-            doc="Check that git doesn't have uncommited changes."))
+        RunCmdStep('git diff-index --exit-code HEAD --',
+                   doc="Check that git doesn't have uncommited changes."))
 
     p.AddStep(MaybeCreateNewBugfixVersion)
 
     p.AddStep(JumpIfExists('new-version', if_false=2))
     p.AddStep(WriteVersionConfigAndGitTag)
     p.AddStep(RunCmdStep('sudo /bin/systemctl restart ifdb-uwsgi'))
+    p.AddStep(RunCmdStep('sudo /bin/systemctl restart ifdb-uwsgi-kontigr'))
 
     if from_master:
         p.AddStep(RunCmdStep('git fetch . release:master'))
@@ -499,15 +519,13 @@ def JumpIfExists(var, if_true=1, if_false=1):
     def f(ctx):
         jmp = None
         if var in ctx:
-            click.secho(
-                '%s exists and equal to %s, jumping %+d' % (var, ctx[var],
-                                                            if_true),
-                fg='yellow')
+            click.secho('%s exists and equal to %s, jumping %+d' %
+                        (var, ctx[var], if_true),
+                        fg='yellow')
             jmp = if_true
         else:
-            click.secho(
-                '%s is not in context, jumping %+d' % (var, if_false),
-                fg='yellow')
+            click.secho('%s is not in context, jumping %+d' % (var, if_false),
+                        fg='yellow')
             jmp = if_false
         if jmp == 1:
             return True
@@ -522,8 +540,8 @@ def JumpIfExists(var, if_true=1, if_false=1):
 def MaybeCreateNewBugfixVersion(ctx):
     """Creates a new bugfix version if needed."""
     if 'new-version' in ctx:
-        click.secho(
-            "New version %s already known." % ctx['new-version'], fg='yellow')
+        click.secho("New version %s already known." % ctx['new-version'],
+                    fg='yellow')
         return True
     if RunCmdStep('git describe --exact-match HEAD')(ctx):
         click.secho("No changes since last version.", fg='yellow')
@@ -554,12 +572,12 @@ def GetCurrentVersion():
     cnt = open(os.path.join(ROOT_DIR, 'django/version.txt')).read().strip()
     m = version_re.match(cnt)
     if not m:
-        click.secho(
-            "version.txt contents is [%s], doesn't parse as version" % cnt,
-            fg='red')
+        click.secho("version.txt contents is [%s], doesn't parse as version" %
+                    cnt,
+                    fg='red')
         return None
-    return (int(m.group(1)), int(m.group(2)), int(m.group(3))
-            if m.group(3) else 0)
+    return (int(m.group(1)), int(m.group(2)),
+            int(m.group(3)) if m.group(3) else 0)
 
 
 def GetNextVersion(ctx):
@@ -664,8 +682,9 @@ def StagingDiff(filename):
             diff = list(difflib.context_diff(t1, t2))
             if not diff:
                 return True
-            click.secho(
-                'File %s does not match:' % filename, fg='red', bold=True)
+            click.secho('File %s does not match:' % filename,
+                        fg='red',
+                        bold=True)
             for l in diff:
                 click.secho(l.rstrip(), fg='red')
         if click.confirm('Do you want to continue?'):

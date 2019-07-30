@@ -27,7 +27,9 @@ if IS_PROD:
     SECRET_KEY = open('/home/ifdb/configs/django-secret.txt').read().strip()
     VK_SERVICE_KEY = open('/home/ifdb/configs/vk.txt').read().strip()
     DEBUG = False
-    ALLOWED_HOSTS = ['db.crem.xyz', 'db-staging.crem.xyz']
+    ALLOWED_HOSTS = [
+        'db.crem.xyz', 'db-staging.crem.xyz', 'kontigr.crem.xyz', 'kontigr.com'
+    ]
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -235,6 +237,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
     'games',
     'captcha',
     'core',
@@ -242,6 +245,8 @@ INSTALLED_APPS = [
     'contest',
     'django.contrib.admin',
 ]
+
+SITE_ID = 1
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
