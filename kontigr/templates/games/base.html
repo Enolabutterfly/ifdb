@@ -1,0 +1,78 @@
+{% load tags %}
+<!DOCTYPE html>
+<html>
+    <head>
+    {% if not debug %}
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-100707634-1', 'auto');
+      {% if user.is_authenticated %}ga('set', 'userId', '{{ user.id }}');{% endif %}
+      ga('send', 'pageview');
+    </script>
+    {% endif %}
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon" href="/static/favicon.ico" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">    
+    <link rel="stylesheet" type="text/css" media="screen" href="/static/games.css" />
+    {% block scripts %}{% endblock %}
+        <title>{% block titlesection %}{% endblock %}db.crem.xyz</title>
+    </head>
+    <body>
+        <div class="root">
+
+            <header id="top-nav" {% if debug %}style="background-color: black;"{% endif %}>
+                <div class="top-nav-login-box">
+                    {% if user.is_authenticated %}
+                        <form class="loginbox" method="post" action="{% url 'auth_logout' %}">
+                            {% csrf_token %}
+                            Вы <b>{{ user.username }}</b>.
+                            <input type="submit" value="Выйти" />
+                            <input type="hidden" name="next" value="{{ request.path }}" />
+                        </form>
+                    {% else %}
+                        <form class="loginbox" method="post" action="{% url 'auth_login' %}">
+                            {% csrf_token %}
+                            <input placeholder="E-mail" type="text" name="username" id="id_username" required maxlength="254" />
+                            <input placeholder="Пароль" type="password" name="password" id="id_password" required />
+                            <input type="submit" value="Войти" />
+                            <input type="hidden" name="next" value="{{ request.path }}" />
+                        </form>
+                        <a href="{% url 'registration_register' %}" class="register {% current 'registration_register' %}" >
+                            Регистрация
+                        </a>
+                    {% endif %}
+                </div>
+
+                <input type="checkbox" id="top-nav-hamburger-menu"/>
+                <label class="top-nav-hamburger-menu" for="top-nav-hamburger-menu">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+                        <path d="M6 36h36v-4H6v4zm0-10h36v-4H6v4zm0-14v4h36v-4H6z"/>
+                    </svg>
+                </label>
+                <nav class="top-nav-drawer">
+                    <a href="/">КОНТИГР 2019</a>
+                    {% if user.is_staff %}
+                        <a href="/adminz">Админка</a>
+                    {% endif %}
+                </nav>
+            </header>
+
+                {% block content_wide %}
+                <div class="content">
+                    {% block content %}{% endblock %}
+                </div>
+                {% endblock %}
+            <div style="clear: both;"></div>
+            <nav id="bottom-nav"><a href="https://bitbucket.org/mooskagh/ifdb/issues/" target="_blank">Багтрекер</a>
+            | {% version %}</nav>
+        </div>
+    </body>
+</html>
