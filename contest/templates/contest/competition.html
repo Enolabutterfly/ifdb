@@ -9,7 +9,6 @@
       <div class="leftpane">
         <div class="game-header">
           <h1>{{ comp.title }}</h1>
-          <h2>{{ doc.title }}</h2>
           {% for x in docs %}
             {% if not forloop.first %} | {% endif %}
             <a href="{% url 'show_competition' slug=comp.slug doc=x.slug %}">{{x.title}}</a>
