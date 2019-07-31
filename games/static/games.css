@@ -65,12 +65,7 @@ a.author-link:hover {
 .contest-header {
     margin-top: 0;
     margin-bottom: 0;
-}
-
-.contest-header h1 {
-    color: #31322D;
-    font-weight: normal;
-    margin: 0;
+    text-align: center;
 }
 
 .contestvote-cell {
