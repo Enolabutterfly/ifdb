@@ -11,7 +11,11 @@
           <h1>{{ comp.title }}</h1>
           {% for x in docs %}
             {% if not forloop.first %} | {% endif %}
-            <a href="{% url 'show_competition' slug=comp.slug doc=x.slug %}">{{x.title}}</a>
+            {% if x.current %}
+              <span class="doc-list-current">{{x.title}}</span>
+            {% else %}
+              <a href="{% url 'show_competition' slug=comp.slug doc=x.slug %}">{{x.title}}</a>
+            {% endif %}
           {% endfor %}                  
         </div>
       </div>
