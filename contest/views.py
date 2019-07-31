@@ -151,8 +151,8 @@ def show_competition(request, slug, doc=''):
     logo = logos[0].GetLocalUrl() if logos else None
 
     links = []
-    for x in CompetitionDocument.objects.filter(
-            competition=comp).order_by('slug'):
+    for x in CompetitionDocument.objects.filter(competition=comp).order_by(
+            'order', 'slug'):
         if not request.perm(x.view_perm):
             continue
         x.current = x.slug == doc

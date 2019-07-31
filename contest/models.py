@@ -16,11 +16,10 @@ class Competition(models.Model):
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField()
     options = models.TextField(default='{}')
-    owner = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True)
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL,
+                              on_delete=models.SET_NULL,
+                              null=True,
+                              blank=True)
     published = models.BooleanField()
     # Support for private contests (view_perm?)
 
@@ -32,8 +31,11 @@ class CompetitionURLCategory(models.Model):
     def __str__(self):
         return "%s (%s)" % (self.title, self.symbolic_id)
 
-    symbolic_id = models.SlugField(
-        max_length=32, null=True, blank=True, db_index=True, unique=True)
+    symbolic_id = models.SlugField(max_length=32,
+                                   null=True,
+                                   blank=True,
+                                   db_index=True,
+                                   unique=True)
     title = models.CharField(max_length=255, db_index=True)
     allow_cloning = models.BooleanField(default=True)
     order = models.SmallIntegerField(default=0)
@@ -57,8 +59,8 @@ class CompetitionURL(models.Model):
 
     competition = models.ForeignKey(Competition, on_delete=models.CASCADE)
     url = models.ForeignKey(URL, on_delete=models.CASCADE)
-    category = models.ForeignKey(
-        CompetitionURLCategory, on_delete=models.CASCADE)
+    category = models.ForeignKey(CompetitionURLCategory,
+                                 on_delete=models.CASCADE)
     description = models.CharField(null=True, blank=True, max_length=255)
 
 
@@ -72,6 +74,7 @@ class CompetitionDocument(models.Model):
     competition = models.ForeignKey(Competition, on_delete=models.CASCADE)
     slug = models.SlugField(blank=True)
     title = models.CharField(max_length=256)
+    order = models.SmallIntegerField(default=0)
     text = models.TextField()
     view_perm = models.CharField(max_length=256, default="@all")
 
@@ -96,8 +99,10 @@ class GameList(models.Model):
     def __str__(self):
         return "%s -- %s" % (self.competition, self.title)
 
-    competition = models.ForeignKey(
-        Competition, null=True, blank=True, on_delete=models.CASCADE)
+    competition = models.ForeignKey(Competition,
+                                    null=True,
+                                    blank=True,
+                                    on_delete=models.CASCADE)
     title = models.CharField(null=True, blank=True, max_length=255)
     order = models.SmallIntegerField(default=0)
     # edit_perm = models.CharField(max_length=255, default="@admin")
@@ -113,8 +118,10 @@ class GameListEntry(models.Model):
     gamelist = models.ForeignKey(GameList, on_delete=models.CASCADE)
     rank = models.IntegerField(null=True, blank=True)
     result = models.CharField(max_length=255, null=True, blank=True)
-    game = models.ForeignKey(
-        Game, null=True, blank=True, on_delete=models.SET_NULL)
+    game = models.ForeignKey(Game,
+                             null=True,
+                             blank=True,
+                             on_delete=models.SET_NULL)
     date = models.DateField(null=True, blank=True)
     comment = models.CharField(max_length=255, null=True, blank=True)
     # TODO (Add "authors" field for upcoming games in trainli support)
@@ -141,8 +148,8 @@ class CompetitionVote(models.Model):
         setattr(self, self.FIELD_TYPE_TO_FIELD[typ], val)
 
     competition = models.ForeignKey(Competition, on_delete=models.CASCADE)
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                             on_delete=models.CASCADE)
     when = models.DateTimeField()
     section = models.CharField(max_length=255, null=True, blank=True)
     game = models.ForeignKey(Game, on_delete=models.CASCADE)
