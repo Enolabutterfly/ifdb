@@ -30,7 +30,6 @@ server {
         return 301 https://$host$request_uri;
     } # managed by Certbot
 {% elif c.host == 'kontigr' %}
-    server_name kontigr.crem.xyz;
     server_name kontigr.com;
 
     error_log    /home/ifdb/logs/nginx-kontigr-error.log;
