@@ -8,8 +8,8 @@ upstream django-staging {
     server unix:///home/ifdb/configs/uwsgi-staging.socket;
 }
 {% elif c.conf == 'kontigr' %}
-upstream django-staging {
-    server unix:///home/ifdb/configs/uwsgi-staging.socket;
+upstream django-kontigr {
+    server unix:///home/ifdb/configs/uwsgi-kontigr.socket;
 }
 {% endif %}
 server {
