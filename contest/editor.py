@@ -73,6 +73,7 @@ class DocumentsForm(forms.Form):
                            help_text='Может быть пустым, для главной страницы',
                            label_suffix='')
     title = forms.CharField(label='Заголовок страницы', required=True)
+    order = forms.IntegerField(label='Порядок', required=True, initial=0)
 
     def GetButtonLabels(self):
         return ['Редактировать']
@@ -157,14 +158,15 @@ def edit_competition(request, id):
                                       extra=0,
                                       can_delete=True,
                                       formset=DocumentsFormSet)
-    documents = Documents(
-        request.POST or None,
-        prefix='docs',
-        initial=[{
-            'id': x.id,
-            'slug': x.slug,
-            'title': x.title
-        } for x in CompetitionDocument.objects.filter(competition=comp)])
+    documents = Documents(request.POST or None,
+                          prefix='docs',
+                          initial=[{
+                              'id': x.id,
+                              'slug': x.slug,
+                              'title': x.title,
+                              'order': x.order,
+                          } for x in CompetitionDocument.objects.filter(
+                              competition=comp).order_by('order', 'slug')])
 
     fs = [main, urls, nominations, schedule, documents]
 
@@ -219,6 +221,7 @@ def edit_competition(request, id):
         def PopulateDocument(v, cl):
             v.slug = cl['slug']
             v.title = cl['title']
+            v.order = cl['order']
 
         ProcessFormset(documents, CompetitionDocument, PopulateDocument)
 
