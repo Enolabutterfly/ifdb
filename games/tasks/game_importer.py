@@ -273,8 +273,8 @@ def ImportGames(append_urls=False):
 
         else:
             new_urls = '\n'.join(x.NewUrls())
-            logger.error('New URLs for existing non-updateable game:'
-                         '\n%s\nNew urls are:\n%s' % (x, new_urls))
+            logger.warning('New URLs for existing non-updateable game:'
+                           '\n%s\nNew urls are:\n%s' % (x, new_urls))
 
 
 def ImportForceUpdateUrls():

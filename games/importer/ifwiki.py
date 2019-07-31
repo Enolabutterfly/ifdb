@@ -199,7 +199,7 @@ def ImportFromIfwiki(url):
     return res
 
 
-IFWIKI_URL = re.compile(r'(https?://ifwiki.ru)/([^/?]+)')
+IFWIKI_URL = re.compile(r'(https?://ifwiki.ru)/([^?]+)')
 IFWIKI_LINK_PARSE = re.compile(r'\[\[(.*?)\]\]')
 IFWIKI_LINK_INTERNALS_PARSE = re.compile(
     r'^(?:([^:\]|]*)::?)?([^:\]|]+)(?:\|([^\]|]+))?(?:\|([^\]]+))?$')

@@ -7,6 +7,7 @@ from django.db.models import Count, Max
 from django.http import Http404
 from django.shortcuts import render
 from django.template.loader import render_to_string
+from django.conf import settings
 from django.urls import reverse
 from django.utils import timezone
 from games.models import GameURL, GameAuthor
@@ -176,8 +177,7 @@ def show_competition(request, slug, doc=''):
                 links,
             'links':
                 ext_links,
-            'moder_actions': {}
-            #     GetModerActions(request, 'CompetitionDocument', docobj)
+            'moder_actions': GetModerActions(request, 'CompetitionDocument', docobj) if settings.SITE_ID == 1 else {}
         })
 
 
