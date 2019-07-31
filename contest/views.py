@@ -155,16 +155,13 @@ def show_competition(request, slug, doc=''):
             competition=comp).order_by('slug'):
         if not request.perm(x.view_perm):
             continue
-        if x.slug == doc:
-            continue
+        x.current = x.slug == doc
         links.append(x)
 
     logos, ext_links = PartitionItems(comp.competitionurl_set.all(),
                                       [('logo', )])
     return render(
-        request,
-        'contest/competition.html',
-        {
+        request, 'contest/competition.html', {
             'comp':
                 comp,
             'doc':
@@ -177,7 +174,9 @@ def show_competition(request, slug, doc=''):
                 links,
             'links':
                 ext_links,
-            'moder_actions': GetModerActions(request, 'CompetitionDocument', docobj) if settings.SITE_ID == 1 else {}
+            'moder_actions':
+                GetModerActions(request, 'CompetitionDocument', docobj)
+                if settings.SITE_ID == 1 else {}
         })
 
 
