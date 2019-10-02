@@ -134,7 +134,7 @@ def RenderVotingImpl(request, comp, voting, preview):
             return {'error': 'Голосование закрыто.'}
 
     now = timezone.now()
-    if voting.get('start') and datetime.datetime.fromtimestamp(
+    if not preview and voting.get('start') and datetime.datetime.fromtimestamp(
             voting['start']) > now:
         start = datetime.datetime.fromtimestamp(voting['start'])
         return {
@@ -143,7 +143,7 @@ def RenderVotingImpl(request, comp, voting, preview):
                 (FormatDate(start), start.hour, start.minute)
         }
 
-    if voting.get('end') and datetime.datetime.fromtimestamp(
+    if not preview and voting.get('end') and datetime.datetime.fromtimestamp(
             voting['end']) <= now:
         end = datetime.datetime.fromtimestamp(voting['end'])
         return {
