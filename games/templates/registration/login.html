@@ -6,7 +6,7 @@
     <div id="errorheader">
         Место ввода пароля
     </div>
-    <form method="post" action="{% url 'auth_login' %}" class="password_form">
+    <form method="post" action="{% url 'login' %}" class="password_form">
         {% if form.errors %}
             <p class="perror">
                 Пароль не подошёл.
@@ -29,7 +29,7 @@
         <input type="hidden" name="next" value="{{ next }}" />
     </form>
     {% if form.errors %}
-        <a href="{% url 'auth_password_reset' %}">Забыли пароль? — не беда!</a>
+        <a href="{% url 'password_reset' %}">Забыли пароль? — не беда!</a>
     {% endif %}
 
 </div>

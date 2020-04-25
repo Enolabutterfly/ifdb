@@ -2,7 +2,7 @@ from . import views
 from core.forms import RegistrationForm
 from django.conf import settings
 from django.conf.urls import url, include
-from registration.backends.hmac.views import RegistrationView
+from django_registration.backends.activation.views import RegistrationView
 
 urlpatterns = [
     url(r'^index/$', views.index, name='index'),
@@ -47,9 +47,10 @@ urlpatterns = [
     ),
     url(
         r'^accounts/',
-        include('registration.backends.hmac.urls' if settings.
+        include('django_registration.backends.activation.urls' if settings.
                 REQUIRE_ACCOUNT_ACTIVATION else
-                'registration.backends.simple.urls')),
+                'django_registration.backends.one_step.urls')),
+    url(r'^accounts/', include('django.contrib.auth.urls')),
 ]
 
 if settings.DEBUG:
