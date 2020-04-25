@@ -1,10 +1,10 @@
 from .models import User
 
-import registration.forms
+import django_registration.forms
 from captcha.fields import ReCaptchaField
 
 
-class RegistrationForm(registration.forms.RegistrationForm):
+class RegistrationForm(django_registration.forms.RegistrationForm):
     class Meta:
         model = User
         fields = ['email', 'username']

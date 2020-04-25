@@ -16,8 +16,9 @@ import re
 def SnippetFromList(games, populate_authors=True):
     posters = (GameURL.objects.filter(category__symbolic_id='poster').filter(
         game__in=games).select_related('url', 'category'))
-    screenshots = (GameURL.objects.filter(category__symbolic_id='screenshot')
-                   .filter(game__in=games).select_related('url'))
+    screenshots = (GameURL.objects.filter(
+        category__symbolic_id='screenshot').filter(
+            game__in=games).select_related('url'))
 
     g2p = {}
     for x in posters:
@@ -162,8 +163,8 @@ def ComputeHonors(author=None):
         votes = votes.filter(author=author)
 
     for x in votes:
-        xs.setdefault(x.author, {}).setdefault(x.gameid, []).append(
-            x.star_rating)
+        xs.setdefault(x.author, {}).setdefault(x.gameid,
+                                               []).append(x.star_rating)
 
     res = dict()
     for a, games in xs.items():
@@ -257,7 +258,7 @@ def RenderMarkdown(content, snippet_provider=None):
     extensions = [
         'markdown.extensions.extra', 'markdown.extensions.meta',
         'markdown.extensions.smarty', 'markdown.extensions.wikilinks',
-        'del_ins'
+        'markdown_del_ins'
     ]
     if snippet_provider:
         extensions.append(MarkdownSnippet(snippet_provider))

@@ -35,14 +35,14 @@
                         <input type="submit" value="🔍">
                     </form>
                     {% if user.is_authenticated %}
-                        <form class="loginbox" method="post" action="{% url 'auth_logout' %}">
+                        <form class="loginbox" method="post" action="{% url 'logout' %}">
                             {% csrf_token %}
                             Вы <b>{{ user.username }}</b>.
                             <input type="submit" value="Выйти" />
                             <input type="hidden" name="next" value="{{ request.path }}" />
                         </form>
                     {% else %}
-                        <form class="loginbox" method="post" action="{% url 'auth_login' %}">
+                        <form class="loginbox" method="post" action="{% url 'login' %}">
                             {% csrf_token %}
                             <input placeholder="E-mail" type="text" name="username" id="id_username" required maxlength="254" />
                             <input placeholder="Пароль" type="password" name="password" id="id_password" required />
