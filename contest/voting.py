@@ -108,7 +108,6 @@ class VotingForm(forms.Form):
             if widget_name:
                 widget_class = widget = WIDGETS[widget_name]
                 if getattr(widget_class, 'needs_game', False):
-                    print(widget_kwargs)
                     widget = WIDGETS[widget_name](game=self.game,
                                                   **widget_kwargs)
                 else:
@@ -125,7 +124,7 @@ class VotingForm(forms.Form):
                                  disabled=True)
 
 
-def RenderVotingImpl(request, comp, voting, preview):
+def RenderVotingImpl(request, comp, voting, group, preview):
     if not preview:
         if not voting:
             return {'error': 'В этом соревновании голосование не проводится.'}
@@ -160,6 +159,11 @@ def RenderVotingImpl(request, comp, voting, preview):
     fss = []
     before = []
     for i, section in enumerate(voting.get('sections', [])):
+        if group:
+            fieldlist = section['groups'][group]
+        else:
+            fieldlist = map(lambda x: x['name'], section['fields'])
+
         nomination_id = section['nomination']
         gamelist = GameListEntry.objects.filter(
             gamelist__competition=comp,
@@ -188,7 +192,9 @@ def RenderVotingImpl(request, comp, voting, preview):
             initials.append(initial)
         fs = Fs(request.POST or None,
                 prefix='f%d' % i,
-                fields=section['fields'],
+                fields=list(
+                    filter(lambda x: x['name'] in fieldlist,
+                           section['fields'])),
                 games=gamelist,
                 nomination_id=nomination_id,
                 initial=initials)
@@ -212,11 +218,12 @@ def RenderVotingImpl(request, comp, voting, preview):
                         competition=comp,
                         user=request.user,
                         nomination_id=fs.nomination_id,
+                        field__in=fieldlist,
                         game=cd['game_id']).delete()
                     continue
 
-                for field in fs.fields:
-                    print(field, dir(field))
+                for field in filter(lambda x: x['name'] in fieldlist,
+                                    fs.fields):
                     try:
                         vote = CompetitionVote.objects.get(
                             competition=comp,
@@ -251,9 +258,9 @@ def RenderVotingImpl(request, comp, voting, preview):
     return res
 
 
-def RenderVoting(request, comp, preview=False):
+def RenderVoting(request, comp, group, preview=False):
     options = json.loads(comp.options)
     voting = options.get('voting')
-    res = RenderVotingImpl(request, comp, voting, preview=preview)
+    res = RenderVotingImpl(request, comp, voting, group, preview=preview)
 
     return render_to_string('contest/voting.html', res, request=request)

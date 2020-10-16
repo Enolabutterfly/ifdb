@@ -221,7 +221,7 @@ def PartitionItems(queryset, partitions, catfield='category', follow=None):
     return res + [rest]
 
 
-SNIPPET_PATTERN = re.compile(r'{{(\w+)}}')
+SNIPPET_PATTERN = re.compile(r'{{\s*([\w\d\s]+)\s*}}')
 
 
 class MarkdownSnippetProcessor(BlockProcessor):
@@ -231,10 +231,11 @@ class MarkdownSnippetProcessor(BlockProcessor):
     def run(self, parent, blocks):
         block = blocks.pop(0)
         m = SNIPPET_PATTERN.match(block)
-        snippet_call = "render_%s" % m.group(1)
+        params = m.group(1).split()
+        snippet_call = "render_%s" % params[0]
         if hasattr(self.provider, snippet_call):
             val = self.md.htmlStash.store(
-                getattr(self.provider, snippet_call)())
+                getattr(self.provider, snippet_call)(*params[1:]))
         else:
             val = self.md.htmlStash.store(m.group(1) + '??')
 

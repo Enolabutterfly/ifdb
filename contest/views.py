@@ -136,11 +136,11 @@ class SnippetProvider:
     def render_PARTICIPANTS(self):
         return self.render_RESULTS()
 
-    def render_VOTING(self):
-        return RenderVoting(self.request, self.comp)
+    def render_VOTING(self, group=None):
+        return RenderVoting(self.request, self.comp, group)
 
-    def render_VOTING_PREVIEW(self):
-        return RenderVoting(self.request, self.comp, preview=True)
+    def render_VOTING_PREVIEW(self, group=None):
+        return RenderVoting(self.request, self.comp, group, preview=True)
 
 
 def show_competition(request, slug, doc=''):
