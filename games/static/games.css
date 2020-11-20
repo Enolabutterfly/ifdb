@@ -98,7 +98,6 @@ a.author-link:hover {
 
 .contestvote-controls {
     margin: 5px;
-    min-width: 400px;
 }
 
 .contestvote-controls-label {
@@ -138,7 +137,6 @@ a.author-link:hover {
 .slider {
     width: calc(100% - 3em);
     margin: 5px auto;
-    min-width: 200px;
 }
 
 .ui-slider .ui-slider-handle.slider-handle {
