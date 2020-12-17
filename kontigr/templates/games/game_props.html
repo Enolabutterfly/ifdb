@@ -40,6 +40,7 @@
 -->    
     {% if tags %}
         <div class="rightpane">
+	<hr>
         <table>
             {% for cat in tags %}
                 {% for tag in cat.items %}
@@ -56,6 +57,7 @@
                 {% endfor %}
             {% endfor %}
         </table>
+	<hr>
         </div>
     {% endif %}
 <!--    
