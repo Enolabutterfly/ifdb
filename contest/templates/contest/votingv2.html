@@ -56,7 +56,7 @@
           {% if form.additional_label %}
             <div class="contestvote-gameinfo-additional-label">
               <span class="contestvote-gameinfo-line-value">
-                {{ form.additional_label }}
+                {{ form.additional_label | safe }}
               </span>
             </div>
           {% endif %}
