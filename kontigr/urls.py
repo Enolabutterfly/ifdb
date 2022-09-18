@@ -19,12 +19,18 @@ urlpatterns = [
         {'slug': 'kontigr-2020'},
         name='show_competition',
     ),
+    url(
+        r'^2021/(?P<doc>.*)$',
+        show_competition,
+        {'slug': 'kontigr-2021'},
+        name='show_competition',
+    ),
     url(r'^', include('games.urls'), name='games'),
     url(r'^', include('moder.urls'), name='moder'),
     url(
         r'^(?P<doc>.*)$',
         show_competition,
-        {'slug': 'kontigr-2021'},
+        {'slug': 'kontigr-2022'},
         name='show_competition',
     ),
 ]
