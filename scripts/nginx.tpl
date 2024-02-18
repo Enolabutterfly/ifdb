@@ -13,7 +13,7 @@ upstream django-kontigr {
 }
 {% elif c.conf == 'zok' %}
 upstream django-zok {
-    server unix:///home/ifdb/configs/uwsgi-zpl.socket;
+    server unix:///home/ifdb/configs/uwsgi-zok.socket;
 }
 {% endif %}
 server {
