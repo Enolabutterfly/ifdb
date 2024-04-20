@@ -145,13 +145,13 @@ class Pipeline:
     def MaybeLoadState(self):
         if os.path.isfile(self.StateFileName()):
             if click.confirm("Forgotten state found. Restore?"):
-                with open(self.StateFileName()) as f:
+                with open(self.StateFileName(), "b") as f:
                     self.context = pickle.load(f)
                     if "chdir" in self.context:
                         os.chdir(self.context["chdir"])
 
     def StoreState(self):
-        with open(self.StateFileName(), "w") as f:
+        with open(self.StateFileName(), "wb") as f:
             pickle.dump(self.context, f)
 
     def Run(self, cmd_name):
