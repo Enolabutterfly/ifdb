@@ -7,6 +7,7 @@ import difflib
 import django
 import os
 import os.path
+import pickle
 import re
 import sys
 import time
@@ -139,19 +140,19 @@ class Pipeline:
         self.steps.append(func)
 
     def StateFileName(self):
-        return CONFIGS_DIR / f"{self.cmd_name}_state.json"
+        return CONFIGS_DIR / f"{self.cmd_name}_state.pickle"
 
     def MaybeLoadState(self):
         if os.path.isfile(self.StateFileName()):
             if click.confirm("Forgotten state found. Restore?"):
                 with open(self.StateFileName()) as f:
-                    self.context = json.loads(f.read())
+                    self.context = pickle.load(f)
                     if "chdir" in self.context:
                         os.chdir(self.context["chdir"])
 
     def StoreState(self):
         with open(self.StateFileName(), "w") as f:
-            f.write(json.dumps(self.context))
+            pickle.dump(self.context, f)
 
     def Run(self, cmd_name):
         self.cmd_name = cmd_name
