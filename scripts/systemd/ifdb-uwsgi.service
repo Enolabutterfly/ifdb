@@ -3,7 +3,8 @@ Description=Ifdb Uwsgi server
 After=syslog.target
 
 [Service]
-ExecStart=/home/ifdb/virtualenv/bin/uwsgi --ini /home/ifdb/configs/uwsgi.ini
+UMask=0002
+ExecStart=/home/ifdb/venv/bin/uwsgi --ini /home/ifdb/configs/uwsgi.ini
 Restart=always
 KillSignal=SIGQUIT
 

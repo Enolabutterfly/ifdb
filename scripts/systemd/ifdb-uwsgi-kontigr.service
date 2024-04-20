@@ -1,0 +1,12 @@
+[Unit]
+Description=Ifdb Kontigr Uwsgi server
+After=syslog.target
+
+[Service]
+UMask=0002
+ExecStart=/home/ifdb/venv/bin/uwsgi --ini /home/ifdb/configs/uwsgi-kontigr.ini
+Restart=always
+KillSignal=SIGQUIT
+
+[Install]
+WantedBy=multi-user.target
