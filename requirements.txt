@@ -27,7 +27,7 @@ mediawiki-parser==0.4.1
 oauthlib==3.1.0
 pijnu==20160727
 pipreqs==0.4.10
-psycopg2-binary==2.8.5
+psycopg2-binary==2.9.9
 pudb==2019.2
 py3compat==0.4
 pycparser==2.20
