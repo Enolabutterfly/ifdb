@@ -8,7 +8,7 @@ from .insteadgames import InsteadGamesImporter
 from .questbook import QuestBookImporter
 from .ifiction import IfictionImporter
 
-REGISTERED_IMPORTERS.append(PlutImporter)
+#REGISTERED_IMPORTERS.append(PlutImporter)
 REGISTERED_IMPORTERS.append(IfwikiImporter)
 # REGISTERED_IMPORTERS.append(QspsuImporter)
 REGISTERED_IMPORTERS.append(AperoImporter)
