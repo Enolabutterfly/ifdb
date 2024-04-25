@@ -2,11 +2,6 @@
 {% load tags %}
 {% load static %}
 {% block scripts %}
-    {% if media %}
-    <link rel="stylesheet" type="text/css" href="{% static 'slick/slick.css' %}"/>
-    <link rel="stylesheet" type="text/css" href="{% static 'slick/slick-theme.css' %}"/>
-    <script type="text/javascript" src="{% static 'slick/slick.min.js' %}"></script>
-    {% endif %}
     <script src="{% static 'game-details.js'%}"></script>
 {% endblock %}
 {% block titlesection %}{{ game.title }} - {% endblock %}
@@ -92,40 +87,29 @@
                 {% endfor %}
             </div>
             {% if media %}
-            <div class="leftpane slider-container">
-                <div class="largeslider">
-                    {% for x in media %}
-                        <div class="slideritem-outer">
-                        <div class="slideritem-inner">
+            <div class="leftpane">
+                <div class="slider-container">
+                    <div id="gallery-main">
+                    </div>
+                    <div id="gallery-caption"></div>
+                    <div id="gallery-thumbs">
+                        {% for x in media %}
                             {% if x.type == 'img' %}
-                            <img src="{{ x.img }}"/>
+                            <img src="{{ x.img }}"
+                                 alt="{{ x.caption }}"/>
                             {% elif x.type == 'youtube' %}
-                                <iframe type="text/html" width="480" height="270"
-                                    src="https://www.youtube.com/embed/{{ x.id }}?origin={{ request.path|urlencode }}"
-                                    frameborder="0" marginwidth="0"></iframe>
+                            <img src="https://img.youtube.com/vi/{{ x.id }}/default.jpg"
+                                iframe-url="https://www.youtube.com/embed/{{ x.id }}?origin={{ request.path|urlencode }}"
+                                is-video="true"
+                                alt="{{ x.caption }}"/>
                             {% else %}
-                            <img src="{% static 'noposter.png' %}"/>
+                            <img src="{% static 'noposter.png' %}"
+                                 alt="{{ x.caption }}"/>
                             {% endif %}
-                        </div>
-                        </div>
-                    {% endfor %}
+                        {% endfor %}
+                    </div>
+                    <script>initGallery();</script>
                 </div>
-                {% if media|length > 1 %}
-                <div class="smallslider">
-                    {% for x in media %}
-                        {% if x.type == 'img' %}
-                        <img class="slideritem" src="{{ x.img }}"/>
-                        {% elif x.type == 'youtube' %}
-                        <div class="videothumb slideritem">
-                            <img src="https://img.youtube.com/vi/{{ x.id }}/default.jpg"/>
-                            <h2>&#9654;</h2>
-                        </div>
-                        {% else %}
-                        <img class="slideritem" src="{% static 'noposter.png' %}"/>
-                        {% endif %}
-                    {% endfor %}
-                </div>
-                {% endif %}
             </div>
             {% endif %}
             {% include "./game_props.html" %}            

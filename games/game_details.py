@@ -35,6 +35,7 @@ def AnnotateMedia(media):
         else:
             logger.error('Unexpected category: %s' % y)
             continue
+        val['caption'] = y.description
         res.append(val)
     return res
 
