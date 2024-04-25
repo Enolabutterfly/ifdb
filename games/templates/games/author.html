@@ -2,11 +2,6 @@
 {% load tags %}
 {% load static %}
 {% block scripts %}
-    {% if media %}
-    <link rel="stylesheet" type="text/css" href="{% static 'slick/slick.css' %}"/>
-    <link rel="stylesheet" type="text/css" href="{% static 'slick/slick-theme.css' %}"/>
-    <script type="text/javascript" src="{% static 'slick/slick.min.js' %}"></script>
-    {% endif %}
     <script src="{% static 'game-details.js'%}"></script>
 {% endblock %}
 {% block titlesection %}{{ name }} - {% endblock %}
