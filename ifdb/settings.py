@@ -34,6 +34,7 @@ if IS_PROD:
         "kontigr.com",
         "zok.crem.xyz",
         "zok.quest",
+        "zok.cx",
         "db-tmp.mooskagh.com",
     ]
     DATABASES = {
