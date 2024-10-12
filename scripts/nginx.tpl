@@ -30,7 +30,7 @@ server {
     access_log    /home/ifdb/logs/nginx-kontigr-access.log main;
 
 {% elif c.host == 'zok' %}
-    server_name zok.quest;
+    server_name zok.cx;
 
     error_log    /home/ifdb/logs/nginx-zok-error.log;
     access_log    /home/ifdb/logs/nginx-zok-access.log main;
