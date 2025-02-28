@@ -30,7 +30,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         _('email address'),
         unique=True,
         error_messages={
-            'unique': _("A user with that email already exists."),
+            'unique': _("Пользователь с таким адресом электронной почты уже существует."),
         })
     username = models.CharField(
         _('username'),
@@ -42,11 +42,11 @@ class User(AbstractBaseUser, PermissionsMixin):
         validators=[
             RegexValidator(
                 r'^[\w\d_\.,\-]+(?: [\w\d_\.,\-]+)*$',
-                _('Enter a valid username. This value may contain only '
-                  'letters, numbers and _ character.'), 'invalid'),
+                _('Введите допустимое имя пользователя. Оно может содержать только  '
+                  'буквы цифры и символ _ подчёркивания.'), 'недопустимо'),
         ],
         error_messages={
-            'unique': _("The username is already taken."),
+            'unique': _("Это имя пользователя уже занято."),
         })
     is_staff = models.BooleanField(
         _('Staff Status'),
