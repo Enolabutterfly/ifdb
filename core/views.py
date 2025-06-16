@@ -85,7 +85,7 @@ def fetchpackage(request):
         response = {
             "error": "Не удалось удостовериться в подлинности запроса."
         }
-    except:
+    except Exception:
         response = {"error": "Неведомая ошибка."}
         logger.exception("Exception in fetchpackage")
     return HttpResponse(json.dumps(response))

@@ -22,7 +22,7 @@ class CompetitionAdminzAction(CompetitionAction):
 
 
 @RegisterAction
-class CompetitionAdminzAction(CompetitionAction):
+class CompetitionAdminPageAction(CompetitionAction):
     TITLE = "Админка (page)"
 
     def GetUrl(self):

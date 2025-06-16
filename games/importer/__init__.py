@@ -2,8 +2,6 @@ from .apero import AperoImporter
 from .ifiction import IfictionImporter
 from .ifwiki import IfwikiImporter
 from .insteadgames import InsteadGamesImporter
-from .plut import PlutImporter
-from .qspsu import QspsuImporter
 from .questbook import QuestBookImporter
 from .rilarhiv import RilarhivImporter
 from .tools import REGISTERED_IMPORTERS, Importer

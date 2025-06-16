@@ -761,9 +761,9 @@ def MultipartSnippet(request, parts, default_age=0, force_age=None):
 
 def ItemsSnippet(request, items, age=None):
     for i in items:
-        for l in i.get("lines", []):
-            if isinstance(l.get("style"), str):
-                l["style"] = [l["style"]]
+        for line in i.get("lines", []):
+            if isinstance(line.get("style"), str):
+                line["style"] = [line["style"]]
 
     res = {"content": render_to_string("core/snippet.html", {"items": items})}
     if age is not None:

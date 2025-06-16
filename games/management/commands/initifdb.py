@@ -2,7 +2,6 @@ from django.core.management.base import BaseCommand
 
 from contest.models import CompetitionURLCategory
 from games.models import (
-    URL,
     GameAuthorRole,
     GameTag,
     GameTagCategory,

@@ -7,13 +7,11 @@ from logging import getLogger
 from time import mktime
 
 import feedparser
-import vk
-from django.conf import settings
 from django.utils import timezone
 from html2text import HTML2Text
 
 from .crawler import FetchUrlToString
-from .models import BlogFeed, FeedCache
+from .models import FeedCache
 
 logger = getLogger("worker")
 

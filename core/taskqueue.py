@@ -30,7 +30,7 @@ def NotifyWorker():
             with open(settings.WORKER_PID_FILE, "r") as f:
                 pid = int(f.read())
                 os.kill(pid, signal.SIGUSR1)
-        except:
+        except Exception:
             pass
 
 

@@ -199,7 +199,7 @@ logging.config.dictConfig(
             "": {
                 "level": 0,
                 "handlers": ["debug", "warnings", "mail_admins", "console"],
-                #'handlers': ['debug', 'warnings', 'console'],
+                # 'handlers': ['debug', 'warnings', 'console'],
             },
             "django": {
                 "handlers": ["web"],
@@ -309,7 +309,8 @@ WSGI_APPLICATION = "ifdb.wsgi.application"
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": (
-            "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
+            "django.contrib.auth.password_validation."
+            "UserAttributeSimilarityValidator"
         ),
     },
     {

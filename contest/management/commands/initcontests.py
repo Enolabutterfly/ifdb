@@ -52,7 +52,8 @@ COMPETITION_URLS_OLD = (
         for x in range(2010, 2017)
     ]
     + [
-        "https://ifwiki.ru/%D0%9F%D0%B0%D1%80%D0%BE%D0%B2%D0%BE%D0%B7%D0%B8%D0%BA_3"
+        "https://ifwiki.ru/"
+        "%D0%9F%D0%B0%D1%80%D0%BE%D0%B2%D0%BE%D0%B7%D0%B8%D0%BA_3"
     ]
     + [
         "https://ifwiki.ru/%D0%9B%D0%9E%D0%9A_" + str(x)
@@ -69,8 +70,12 @@ COMPETITION_URLS_OLD2 = [
 ]
 
 COMPETITION_URLS = [
-    "https://ifwiki.ru/%D0%97%D0%BE%D0%BB%D0%BE%D1%82%D0%BE%D0%B9_%D0%A5%D0%BE%D0%BC%D1%8F%D0%BA_"
-    + str(x)
+    (
+        "https://ifwiki.ru/"
+        "%D0%97%D0%BE%D0%BB%D0%BE%D1%82%D0%BE%D0%B9_%D0%A5%D0%BE%D0%BC%"
+        "D1%8F%D0%BA_"
+        + str(x)
+    )
     for x in range(2009, 2016)
 ]
 

@@ -51,7 +51,9 @@ def GetGameList():
 # SUBLIST_RE = re.compile(r'href="(\./viewforum\.php\?id=36&list=\d+)"')
 
 # def ParseSublists(html_text, base):
-#     return [urljoin(base, m.group(1)) for m in SUBLIST_RE.finditer(html_text)]
+#     return [
+#         urljoin(base, m.group(1)) for m in SUBLIST_RE.finditer(html_text)
+#     ]
 
 GAME_RE = re.compile(r'<a href="(\./viewtopic\.php\?id=\d+)">')
 

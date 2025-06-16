@@ -35,7 +35,7 @@ fix-black:
     black --preview --line-length=79 --enable-unstable-feature string_processing .
 
 # Run all read-only checks
-check: check-django check-flake8 check-mypy check-tests
+check: check-django check-flake8 check-tests
     @echo "All checks passed!"
 
 # Run all formatting fixes

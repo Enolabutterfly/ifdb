@@ -46,9 +46,9 @@ ALLOW_INTERNAL_LINKS = False
 
 
 def _batch(iterable, n=40):
-    l = len(iterable)
-    for ndx in range(0, l, n):
-        yield iterable[ndx : min(ndx + n, l)]
+    length = len(iterable)
+    for ndx in range(0, length, n):
+        yield iterable[ndx : min(ndx + n, length)]
 
 
 def GetDirtyUrls(age_minutes):
@@ -132,7 +132,7 @@ def WikiQuote(name):
     return quote(CapitalizeFirstLetter(name.replace(" ", "_")))
 
 
-REDIRECT_RE = re.compile("#(?:REDIRECT|ПЕРЕНАПРАВЛЕНИЕ)\s*\[\[(.*)\]\]")
+REDIRECT_RE = re.compile(r"#(?:REDIRECT|ПЕРЕНАПРАВЛЕНИЕ)\s*\[\[(.*)\]\]")
 
 
 def ImportAuthorFromIfwiki(url, res=None):

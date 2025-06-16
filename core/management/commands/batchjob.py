@@ -26,7 +26,7 @@ logger = getLogger("worker")
 
 
 def IfwikiCapitalizeFile():
-    r = re.compile("^(.*ifwiki.ru/files/)(\w)(.*)$")
+    r = re.compile(r"^(.*ifwiki.ru/files/)(\w)(.*)$")
     for x in URL.objects.all():
         m = r.match(x.original_url)
         if m and m.group(2).islower():
@@ -192,7 +192,7 @@ def BuildLoonchatableLinks():
                 os.path.join(DSTDIR, filename), "w", encoding="utf-8"
             ) as f:
                 f.write(json.dumps(d, indent=2, ensure_ascii=False))
-        except:
+        except Exception:
             pass
         count += 1
 

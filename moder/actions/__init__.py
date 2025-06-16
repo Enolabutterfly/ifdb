@@ -1,3 +1,3 @@
-from . import author_action, comp_actions, games_action, tools
+from . import tools
 
 GetModerActions = tools.GetModerActions

@@ -3,7 +3,7 @@ from urllib.parse import quote, urljoin, urlparse, urlsplit, urlunsplit
 
 from .enrichment import enricher
 
-RE_WORD = re.compile("\w+")
+RE_WORD = re.compile(r"\w+")
 MIN_SIMILARITY = 0.67
 REGISTERED_IMPORTERS = []
 

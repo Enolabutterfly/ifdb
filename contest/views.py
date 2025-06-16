@@ -483,9 +483,7 @@ def list_votes(request, id):
     if nomination_form.is_valid():
         selected_nomination = int(nomination_form.cleaned_data["category"])
         prefix = "n%d" % selected_nomination
-        nom = next(
-            x for x in voting["view_nominations"] if x == selected_nomination
-        )
+        next(x for x in voting["view_nominations"] if x == selected_nomination)
         if "%s-shown" % prefix in request.GET:
             details_form = VotesToShow(
                 request.GET, fields=voting["fields"], prefix=prefix
