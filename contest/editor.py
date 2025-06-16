@@ -41,9 +41,15 @@ class UrlForm(forms.Form):
     category = forms.ChoiceField(
         label='Тип ссылки',
         required=True,
-        choices=[(None, '(надо выбрать)')] +
-        [(x.id, x.title)
-         for x in CompetitionURLCategory.objects.order_by('order')])
+        choices=[])
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['category'].choices = (
+            [(None, '(надо выбрать)')] +
+            [(x.id, x.title)
+             for x in CompetitionURLCategory.objects.order_by('order')]
+        )
 
 
 class NominationsForm(forms.Form):
