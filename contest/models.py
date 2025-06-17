@@ -161,7 +161,7 @@ class CompetitionVote(models.Model):
     )
     game = models.ForeignKey(Game, on_delete=models.CASCADE)
     field = models.CharField(max_length=255)
-    bool_val = models.NullBooleanField(null=True, blank=True)
+    bool_val = models.BooleanField(null=True, blank=True)
     int_val = models.IntegerField(null=True, blank=True)
     text_val = models.TextField(null=True, blank=True)
     ip_addr = models.CharField(max_length=50, null=True, blank=True)

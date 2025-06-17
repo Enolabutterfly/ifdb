@@ -40,7 +40,7 @@ if IS_PROD:
     ]
     DATABASES = {
         "default": {
-            "ENGINE": "django.db.backends.postgresql_psycopg2",
+            "ENGINE": "django.db.backends.postgresql",
             "NAME": "ifdb",
             "USER": "ifdb",
             "PASSWORD": open("/home/ifdb/configs/db-pass.txt").read().strip(),
@@ -75,7 +75,7 @@ if IS_PROD:
     )
 
 else:
-    SILENCED_SYSTEM_CHECKS = ["captcha.recaptcha_test_key_error"]
+    SILENCED_SYSTEM_CHECKS = ["django_recaptcha.recaptcha_test_key_error"]
     SECRET_KEY = "l3uja(27m53i#c)#9ziwmf*3n^e59eieal=3i$z0j@&$0i$!hr"
     VK_SERVICE_KEY = open("/home/crem/my/vk.key").read().strip()
     DISCORD_WEBHOOK = None
@@ -89,7 +89,7 @@ else:
     # }
     DATABASES = {
         "default": {
-            "ENGINE": "django.db.backends.postgresql_psycopg2",
+            "ENGINE": "django.db.backends.postgresql",
             "NAME": "ifdbdev",
             "USER": "ifdbdev",
             "PASSWORD": "ifdb",
@@ -255,7 +255,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.sites",
     "games",
-    "captcha",
+    "django_recaptcha",
     "core",
     "moder",
     "contest",
@@ -407,3 +407,32 @@ REQUIRE_ACCOUNT_ACTIVATION = True
 ACCOUNT_ACTIVATION_DAYS = 7
 INCLUDE_AUTH_URLS = True
 REGISTRATION_OPEN = True
+
+# Django 5.2 compatibility settings
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# CSRF settings for Django 4.0+
+CSRF_TRUSTED_ORIGINS = [
+    "https://db.crem.xyz",
+    "https://db-staging.crem.xyz",
+    "https://kontigr.com",
+    "https://kontigr.crem.xyz",
+    "https://zok.quest",
+    "https://zok.crem.xyz",
+    "https://zok.cx",
+    "https://db-tmp.mooskagh.com",
+]
+
+# Updated media handling for Django 5.2
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+        "OPTIONS": {
+            "location": MEDIA_ROOT,
+            "base_url": MEDIA_URL,
+        },
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}

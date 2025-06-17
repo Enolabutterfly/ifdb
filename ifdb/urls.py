@@ -15,19 +15,19 @@ Including another URLconf
 """
 
 from django.conf import settings
-from django.conf.urls import include, url
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.http.response import HttpResponseRedirect
+from django.urls import include, re_path
 
 urlpatterns = [
-    url(r"^$", lambda r: HttpResponseRedirect("index/")),
-    url(r"^adminz/", admin.site.urls, name="admin"),
-    url(r"^", include("core.urls"), name="api"),
-    url(r"^", include("games.urls"), name="games"),
-    url(r"^", include("moder.urls"), name="moder"),
-    url(r"^jam/", include("contest.urls"), name="contest"),
-    url(r"^rss/", include("rss.urls"), name="rss"),
+    re_path(r"^$", lambda r: HttpResponseRedirect("index/")),
+    re_path(r"^adminz/", admin.site.urls, name="admin"),
+    re_path(r"^", include("core.urls"), name="api"),
+    re_path(r"^", include("games.urls"), name="games"),
+    re_path(r"^", include("moder.urls"), name="moder"),
+    re_path(r"^jam/", include("contest.urls"), name="contest"),
+    re_path(r"^rss/", include("rss.urls"), name="rss"),
 ]
 
 if settings.DEBUG:

@@ -1,7 +1,7 @@
-from django.conf.urls import url
+from django.urls import re_path
 
 from moder.actions.tools import HandleAction
 
 urlpatterns = [
-    url(r"^json/action/$", HandleAction, name="handle_action"),
+    re_path(r"^json/action/$", HandleAction, name="handle_action"),
 ]

@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.db import models
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 # Create your models here.
 
@@ -155,7 +155,7 @@ class InterpretedGameUrl(models.Model):
     recoded_filename = models.CharField(null=True, blank=True, max_length=255)
     recoded_url = models.CharField(null=True, blank=True, max_length=255)
     recoding_date = models.DateTimeField()
-    is_playable = models.NullBooleanField()
+    is_playable = models.BooleanField(null=True, blank=True)
     configuration_json = models.CharField(
         null=True, blank=True, max_length=255
     )
