@@ -1,16 +1,16 @@
 from django.conf import settings
-from django.conf.urls import include, url
 from django.conf.urls.static import static
 from django.contrib import admin
+from django.urls import include, re_path
 
 from contest.views import show_competition
 
 urlpatterns = [
-    url(r"^rss/", include("rss.urls"), name="rss"),
-    url(r"^adminz/", admin.site.urls, name="admin"),
-    url(r"^", include("games.urls"), name="games"),
-    url(r"^", include("moder.urls"), name="moder"),
-    url(
+    re_path(r"^rss/", include("rss.urls"), name="rss"),
+    re_path(r"^adminz/", admin.site.urls, name="admin"),
+    re_path(r"^", include("games.urls"), name="games"),
+    re_path(r"^", include("moder.urls"), name="moder"),
+    re_path(
         r"^(?P<doc>.*)$",
         show_competition,
         {"slug": "zok-2025"},

@@ -1,6 +1,7 @@
 import re
 import statistics
 from urllib.parse import parse_qs, urlparse
+from xml.etree import ElementTree as etree
 
 import markdown
 from django import template
@@ -8,7 +9,7 @@ from django.db.models import F
 from django.utils import timezone
 from markdown.blockprocessors import BlockProcessor
 from markdown.extensions import Extension
-from markdown.util import AtomicString, etree
+from markdown.util import AtomicString
 
 from core.taskqueue import Enqueue
 from games.tasks.uploads import CloneFile, MarkBroken

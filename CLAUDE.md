@@ -14,7 +14,7 @@ db.crem.xyz is a Django-based web platform serving as a comprehensive database f
 - All python files should be formatted with ruff with line length=79 and preview mode enabled.
 - ruff and mypy are installed system-wide, so run them without `python -m` prefix.
 - Do not do `manage.py runserver`, developer has it running in a separate window
-- When creating the todo list for particular task, always add the following items in the end:
+- When creating the todo list for particular task, always add the following items in the end, unless explicitly told "no todo epilogue":
   - Check for opportunities to make code more idiomatic, elegant, concise, beautiful, nice and short.
   - Are there any useful tests that are easy to add and.
   - Run `just fix_and_check`, fix any issues.
