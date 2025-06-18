@@ -13,21 +13,27 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 import logging.config
 import os
 import os.path
-import socket
 
+import environ
 from django.core.files.storage import FileSystemStorage
 
-IS_PROD = socket.gethostname() in ["crem.xyz", "flatty"]
+env = environ.Env(
+    DEBUG=(bool, False)
+)
+
+# Read .env file
+environ.Env.read_env(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '.env'))
+
+DEBUG = env('DEBUG')
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 VERSION = open(os.path.join(BASE_DIR, "version.txt")).read().strip()
 
 # SECURITY WARNING: keep the secret key used in production secret!
-if IS_PROD:
+if not DEBUG:
     SECRET_KEY = open("/home/ifdb/configs/django-secret.txt").read().strip()
     VK_SERVICE_KEY = open("/home/ifdb/configs/vk.txt").read().strip()
-    DEBUG = False
     ALLOWED_HOSTS = [
         "db.crem.xyz",
         "db-staging.crem.xyz",
@@ -79,7 +85,6 @@ else:
     SECRET_KEY = "l3uja(27m53i#c)#9ziwmf*3n^e59eieal=3i$z0j@&$0i$!hr"
     VK_SERVICE_KEY = open("/home/crem/my/vk.key").read().strip()
     DISCORD_WEBHOOK = None
-    DEBUG = True
     ALLOWED_HOSTS = []
     # DATABASES = {
     #     'default': {
