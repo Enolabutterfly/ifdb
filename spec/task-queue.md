@@ -269,10 +269,11 @@ This document outlines a simplified migration strategy from the current custom d
 
 ## Migration Overview
 
-Since the task queue will be empty at migration time, this is a straightforward replacement:
+Since the task queue will be empty at migration time, this is a straightforward replacement with 3 phases:
 
-1. **Coding Phase**: Implement Celery tasks and configuration
-2. **Deployment Phase**: Install Redis, deploy code, switch services
+1. **Prepare Production System**: Install Redis and configure environment without affecting running service
+2. **Implement Changes**: Code implementation and configuration
+3. **Deploy Changes**: Switch services and validate
 
 The migration involves only 4 tasks total:
 - **Periodic**: `ImportGames`, `FetchFeeds` (cron-based)
@@ -280,9 +281,83 @@ The migration involves only 4 tasks total:
 
 Note: `ForceReimport` and `ImportForceUpdateUrls` are CLI-only and don't use the task queue.
 
-## Part 1: Coding Changes (Pre-RabbitMQ Installation)
+## Part 1: Prepare Production System
 
-### 1.1 Dependencies and Requirements
+### 1.1 Redis Installation and Configuration
+
+**Install Redis on Debian production server:**
+```bash
+# Update package lists
+sudo apt-get update
+
+# Install Redis server
+sudo apt-get install -y redis-server
+
+# Enable and start Redis service
+sudo systemctl enable redis-server
+sudo systemctl start redis-server
+
+# Test Redis installation
+redis-cli ping  # Should return PONG
+```
+
+**Configure Redis:**
+```bash
+# Create Redis configuration file
+sudo tee /etc/redis/redis.conf << EOF
+# Network settings
+bind 127.0.0.1
+port 6379
+
+# Security settings
+requirepass <secure_password>
+
+# Memory and persistence settings
+maxmemory 256mb
+maxmemory-policy allkeys-lru
+save 900 1
+save 300 10
+save 60 10000
+
+# Database settings
+databases 16
+
+# Logging
+loglevel notice
+logfile /var/log/redis/redis-server.log
+
+# Performance settings
+tcp-keepalive 300
+timeout 0
+EOF
+
+# Set proper permissions
+sudo chown redis:redis /etc/redis/redis.conf
+sudo chmod 640 /etc/redis/redis.conf
+
+# Restart Redis to apply configuration
+sudo systemctl restart redis-server
+```
+
+### 1.2 Environment Configuration
+
+**Update production environment variables:**
+```bash
+# Add to /home/ifdb/configs/environment or .env
+CELERY_BROKER_URL=redis://:secure_password@localhost:6379/0
+CELERY_RESULT_BACKEND=redis://:secure_password@localhost:6379/1
+```
+
+### 1.3 Create User Account (if needed)
+
+```bash
+# Redis typically runs as redis user (created during installation)
+# No additional user setup needed for Redis
+```
+
+## Part 2: Implement Changes
+
+### 2.1 Dependencies and Requirements
 
 **Update `requirements.txt`:**
 ```python
@@ -294,7 +369,7 @@ redis==5.0.1  # Redis client for Python
 ```
 
 
-### 1.2 Celery Configuration
+### 2.2 Celery Configuration
 
 **Create `ifdb/celery.py`:**
 ```python
@@ -313,7 +388,7 @@ app.config_from_object('django.conf:settings', namespace='CELERY')
 ```
 
 
-### 1.3 Django Settings Integration
+### 2.3 Django Settings Integration
 
 **Add to `ifdb/settings.py`:**
 ```python
@@ -363,7 +438,7 @@ INSTALLED_APPS += [
 ]
 ```
 
-### 1.4 Task Conversion
+### 2.4 Task Conversion
 
 **Convert existing task functions to Celery tasks:**
 
@@ -454,7 +529,7 @@ def FetchFeeds():
     # ... existing implementation ...
 ```
 
-### 1.5 Update Code That Calls Tasks
+### 2.5 Update Code That Calls Tasks
 
 **Update files that call `Enqueue()` to use Celery tasks directly:**
 
@@ -484,7 +559,7 @@ from games.tasks.uploads import recode_game
 recode_game.delay(game_url.id)
 ```
 
-### 1.6 Set Up Periodic Tasks
+### 2.6 Set Up Periodic Tasks
 
 **Create `core/management/commands/setup_periodic_tasks.py`:**
 ```python
@@ -534,7 +609,7 @@ class Command(BaseCommand):
         self.stdout.write("Periodic tasks set up successfully")
 ```
 
-### 1.7 Monitoring and Management
+### 2.7 Monitoring and Management
 
 **Create `core/management/commands/celery_status.py`:**
 ```python
@@ -570,74 +645,9 @@ class Command(BaseCommand):
 ```
 
 
-## Part 2: Deployment Phase
+## Part 3: Deploy Changes
 
-### 2.1 Redis Installation and Configuration
-
-**Install Redis on Debian production server:**
-```bash
-# Update package lists
-sudo apt-get update
-
-# Install Redis server
-sudo apt-get install -y redis-server
-
-# Enable and start Redis service
-sudo systemctl enable redis-server
-sudo systemctl start redis-server
-
-# Test Redis installation
-redis-cli ping  # Should return PONG
-```
-
-**Configure Redis:**
-```bash
-# Create Redis configuration file
-sudo tee /etc/redis/redis.conf << EOF
-# Network settings
-bind 127.0.0.1
-port 6379
-
-# Security settings
-requirepass <secure_password>
-
-# Memory and persistence settings
-maxmemory 256mb
-maxmemory-policy allkeys-lru
-save 900 1
-save 300 10
-save 60 10000
-
-# Database settings
-databases 16
-
-# Logging
-loglevel notice
-logfile /var/log/redis/redis-server.log
-
-# Performance settings
-tcp-keepalive 300
-timeout 0
-EOF
-
-# Set proper permissions
-sudo chown redis:redis /etc/redis/redis.conf
-sudo chmod 640 /etc/redis/redis.conf
-
-# Restart Redis to apply configuration
-sudo systemctl restart redis-server
-```
-
-### 2.2 Environment Configuration
-
-**Update production environment variables:**
-```bash
-# Add to /home/ifdb/configs/environment or .env
-CELERY_BROKER_URL=redis://:secure_password@localhost:6379/0
-CELERY_RESULT_BACKEND=redis://:secure_password@localhost:6379/1
-```
-
-### 2.3 Systemd Service Configuration
+### 3.1 Systemd Service Configuration
 
 **Create Celery worker service `/etc/systemd/system/ifdb-celery-worker.service`:**
 ```ini
@@ -727,7 +737,7 @@ SyslogIdentifier=ifdb-celery-flower
 WantedBy=multi-user.target
 ```
 
-### 2.4 Deployment Steps
+### 3.2 Deployment Steps
 
 **Step 1: Deploy code changes**
 ```bash
@@ -799,7 +809,7 @@ pkill -f "manage.py ifdbworker"
 ./manage.py celery_status
 ```
 
-### 2.5 Rollback Plan
+### 3.3 Rollback Plan
 
 **If issues arise, rollback steps:**
 ```bash
@@ -815,7 +825,7 @@ git checkout <previous_commit>
 ./manage.py ifdbworker &
 ```
 
-### 2.6 Monitoring and Maintenance
+### 3.4 Monitoring and Maintenance
 
 **Set up monitoring scripts:**
 
@@ -866,7 +876,7 @@ exit 0
 0 2 * * 0 cd /home/ifdb/ifdb && ./manage.py celery_cleanup_results --days=7
 ```
 
-### 2.7 Performance Tuning
+### 3.5 Performance Tuning
 
 **Redis tuning for production:**
 ```bash
@@ -910,19 +920,19 @@ ExecStart=/home/ifdb/ifdb/venv/bin/celery -A ifdb worker \
 
 ## Migration Timeline
 
-**Day 1-2: Code Preparation**
+**Day 1: Production System Preparation**
+- Install and configure Redis on production server
+- Update environment configuration
+- Test Redis connectivity
+
+**Day 2-3: Code Implementation**
 - Implement Celery configuration and task conversion
 - Update Enqueue() calls to use Celery tasks directly
 - Test in development environment
 
-**Day 3: Deployment Preparation**
-- Set up Redis on staging environment
-- Test full migration process on staging
-- Prepare monitoring and rollback procedures
-
-**Day 4: Production Migration**
-- Install and configure Redis
-- Deploy code changes
+**Day 4: Deployment**
+- Deploy code changes with requirements.txt updates
+- Set up systemd services
 - Switch from ifdbworker to Celery services
 - Set up periodic tasks
 
