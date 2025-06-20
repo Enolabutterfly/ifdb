@@ -18,8 +18,7 @@ from pathlib import Path
 import django
 from django.conf import settings
 from django.template import Context, Template
-from plumbum import cli, local
-from plumbum.colorlib import FG, BOLD
+from plumbum import cli, local, colors
 from plumbum.commands import ProcessExecutionError
 
 # --- Django Setup (unchanged) ---
@@ -61,8 +60,9 @@ def GenerateStringFromTemplate(template, params, gen_header):
 
 def RunCmdStep(cmd_line, doc=None):
     """Factory for a pipeline step that runs a shell command."""
+
     def f(context):
-        print(FG.Yellow | f"$ {cmd_line}")
+        print(colors.yellow | f"$ {cmd_line}")
         try:
             # Use shlex.split to handle quoted arguments correctly
             args = shlex.split(cmd_line)
@@ -70,8 +70,8 @@ def RunCmdStep(cmd_line, doc=None):
             cmd[args[1:]].run_foreground()
             return True
         except (ProcessExecutionError, FileNotFoundError) as e:
-            print(FG.Red | f"Error executing command: {e}")
-            print(f"The command was: {FG.Yellow | cmd_line}")
+            print(colors.red | f"Error executing command: {e}")
+            print(f"The command was: {colors.yellow | cmd_line}")
             return False
 
     if doc:
@@ -99,7 +99,7 @@ def CheckFromTemplate(template, dst):
 
         m = re.match(r"# Gen-hdr: ([^\n]+)\n(.*)", cnt, re.DOTALL)
         if not m:
-            print(FG.Red | f"Header not found in {dst}")
+            print(colors.red | f"Header not found in {dst}")
             return False
         parms = json.loads(m.group(1))
         cnt = [x.rstrip() for x in m.group(2).split("\n")]
@@ -110,9 +110,9 @@ def CheckFromTemplate(template, dst):
         diff = list(difflib.context_diff(tpl, cnt))
         if not diff:
             return True
-        print(BOLD | FG.Red | "Regenerated file does not match:")
+        print(colors.bold & colors.red | "Regenerated file does not match:")
         for line in diff:
-            print(FG.Red | line.rstrip())
+            print(colors.red | line.rstrip())
         return False
 
     f.__doc__ = "Check file %s with template" % dst
@@ -121,7 +121,7 @@ def CheckFromTemplate(template, dst):
 
 def RetryPrompt():
     while True:
-        print(FG.Cyan | "(retry/ignore/abort)")
+        print(colors.cyan | "(retry/ignore/abort)")
         value = cli.prompt("", prompt_suffix=">>>>>>> ")
         if value == "retry":
             return True
@@ -163,7 +163,7 @@ class Pipeline:
         self.cmd_name = cmd_name
         if self.list_only:
             for i, n in enumerate(self.steps):
-                print(f"{FG.Green | (i + 1):>2}. {n.__doc__}")
+                print(f"{colors.green | (i + 1):>2}. {n.__doc__}")
             return
         cli.term.clear()
 
@@ -179,7 +179,10 @@ class Pipeline:
             task_f = self.steps[self.context["idx"]]
             try:
                 print(
-                    (FG.Green | f"[{self.context['idx'] + 1:2d}/{len(self.steps):2d}]")
+                    (
+                        colors.green
+                        | f"[{self.context['idx'] + 1:2d}/{len(self.steps):2d}]"
+                    )
                     + f" {task_f.__doc__}..."
                 )
                 if self.step_by_step:
@@ -193,18 +196,17 @@ class Pipeline:
             except Jump as jmp:
                 self.context["idx"] += jmp.whereto
                 print(
-                    BOLD
-                    | FG.Green
+                    colors.bold & colors.green
                     | f"[ JMP ] Jumping to {self.context['idx'] + 1} ({self.steps[self.context['idx']].__doc__})"
                 )
                 continue
             except Exception:
-                print(FG.Red | traceback.format_exc())
+                print(colors.red | traceback.format_exc())
 
-            print(BOLD | FG.Red | "[ FAIL ]")
+            print(colors.bold & colors.red | "[ FAIL ]")
             if not RetryPrompt():
                 self.context["idx"] += 1
-        print(BOLD | FG.Green | "The pipeline has finished.")
+        print(colors.bold & colors.green | "The pipeline has finished.")
         os.remove(self.StateFileName())
 
 
@@ -233,7 +235,9 @@ class DeployTool(cli.Application):
 
     def main(self):
         """This method is run if no subcommand is given."""
-        print(FG.Red | "No command specified. Use --help to see available commands.")
+        print(
+            colors.red | "No command specified. Use --help to see available commands."
+        )
         return 1
 
     # --------------------------------------------------------------------------
@@ -355,12 +359,16 @@ class DeployTool(cli.Application):
             )
             p.AddStep(StagingDiff(PROD_SUBDIR / "scripts/nginx.tpl"))
             p.AddStep(
-                RunCmdStep(f"{python_dir} {DISTRIB_DIR}/manage.py collectstatic --clear")
+                RunCmdStep(
+                    f"{python_dir} {DISTRIB_DIR}/manage.py collectstatic --clear"
+                )
             )
             p.AddStep(StagingDiff("static/"))
             p.AddStep(RunCmdStep(f"chmod -R a+rX {STAGING_DIR}/static"))
             p.AddStep(
-                RunCmdStep(f"{virtualenv_dir}/bin/uwsgi {CONFIGS_DIR}/uwsgi-staging.ini")
+                RunCmdStep(
+                    f"{virtualenv_dir}/bin/uwsgi {CONFIGS_DIR}/uwsgi-staging.ini"
+                )
             )
             p.AddStep(CheckFromTemplate("nginx.tpl", "nginx.conf"))
             p.AddStep(
@@ -413,15 +421,22 @@ class DeployTool(cli.Application):
     class DeployCommand(cli.Application):
         """Deploy a new version to production."""
 
-        hot = cli.Flag("--hot", help="Perform a hot-deploy (restarts uWSGI but no downtime).")
-        from_master = cli.Flag("--from-master", help="Merge from master before deploying.", group="Merge Strategy")
-        no_from_master = cli.Flag("--no-from-master", help="Do not merge from master.", group="Merge Strategy")
+        hot = cli.Flag(
+            "--hot", help="Perform a hot-deploy (restarts uWSGI but no downtime)."
+        )
+        from_master = cli.Flag(
+            "--from-master",
+            help="Merge from master before deploying.",
+            group="Merge Strategy",
+        )
+        no_from_master = cli.Flag(
+            "--no-from-master", help="Do not merge from master.", group="Merge Strategy"
+        )
 
         def main(self):
             if self.from_master == self.no_from_master:
                 print(
-                    BOLD
-                    | FG.Red
+                    colors.bold & colors.red
                     | "Error: Please specify either --from-master or --no-from-master, but not both."
                 )
                 raise cli.Abort()
@@ -497,9 +512,7 @@ class DeployTool(cli.Application):
                         f"{virtualenv_dir}/bin/pip install -r {DISTRIB_DIR}/requirements.txt --no-cache-dir"
                     )
                 )
-                p.AddStep(
-                    RunCmdStep(f"{python_dir} {DISTRIB_DIR}/manage.py migrate")
-                )
+                p.AddStep(RunCmdStep(f"{python_dir} {DISTRIB_DIR}/manage.py migrate"))
                 p.AddStep(
                     RunCmdStep(
                         f"pg_dump ifdb > {BACKUPS_DIR / 'database' / time.strftime('%Y%m%d_%H%M-postmigr')}"
@@ -517,9 +530,7 @@ class DeployTool(cli.Application):
                     )
                 )
             if not self.hot:
-                p.AddStep(
-                    RunCmdStep(f"{python_dir} {DISTRIB_DIR}/manage.py initifdb")
-                )
+                p.AddStep(RunCmdStep(f"{python_dir} {DISTRIB_DIR}/manage.py initifdb"))
 
             if self.hot:
                 p.AddStep(RunCmdStep("sudo /bin/systemctl restart ifdb-uwsgi"))
@@ -610,12 +621,12 @@ def JumpIfExists(var, if_true=1, if_false=1):
         jmp = None
         if var in ctx:
             print(
-                FG.Yellow
+                colors.yellow
                 | f"{var} exists and equal to {ctx[var]}, jumping %+d" % if_true
             )
             jmp = if_true
         else:
-            print(FG.Yellow | f"{var} is not in context, jumping %+d" % if_false)
+            print(colors.yellow | f"{var} is not in context, jumping %+d" % if_false)
             jmp = if_false
         if jmp == 1:
             return True
@@ -629,14 +640,14 @@ def JumpIfExists(var, if_true=1, if_false=1):
 def MaybeCreateNewBugfixVersion(ctx):
     """Creates a new bugfix version if needed."""
     if "new-version" in ctx:
-        print(FG.Yellow | f"New version {ctx['new-version']} already known.")
+        print(colors.yellow | f"New version {ctx['new-version']} already known.")
         return True
     if RunCmdStep("git describe --exact-match HEAD")(ctx):
-        print(FG.Yellow | "No changes since last version.")
+        print(colors.yellow | "No changes since last version.")
         return True
     v = GetCurrentVersion()
     v = BuildVersionStr(v[0], v[1], v[2] + 1)
-    print(FG.Yellow | f"New version is {v}.")
+    print(colors.yellow | f"New version is {v}.")
     ctx["new-version"] = v
     return True
 
@@ -660,7 +671,7 @@ def GetCurrentVersion():
     cnt = open(DISTRIB_DIR / "version.txt").read().strip()
     m = version_re.match(cnt)
     if not m:
-        print(FG.Red | f"version.txt contents is [{cnt}], doesn't parse as version")
+        print(colors.red | f"version.txt contents is [{cnt}], doesn't parse as version")
         return None
     return (
         int(m.group(1)),
@@ -683,7 +694,7 @@ def GetNextVersion(ctx):
     while True:
         print(f"Current version is {BuildVersionStr(*v)}. What will be the new one?")
         for i, n in enumerate(variants):
-            print(FG.Yellow | f"{i + 1}. {BuildVersionStr(*n)}")
+            print(colors.yellow | f"{i + 1}. {BuildVersionStr(*n)}")
         r = cli.prompt("", prompt_suffix=">>>>>>> ")
         try:
             r = int(r) - 1
@@ -696,7 +707,7 @@ def GetNextVersion(ctx):
 
 def Message(msg, text="Press Enter to continue..."):
     def f(ctx):
-        print(FG.Yellow | msg)
+        print(colors.yellow | msg)
         cli.prompt(text)
         return True
 
@@ -732,7 +743,7 @@ def BuildVersionStr(major, minor, bugfix):
 def LoopStep(func, text="Should I?"):
     def f(ctx):
         while True:
-            print(FG.Yellow | f"Want to run [{func.__doc__}]")
+            print(colors.yellow | f"Want to run [{func.__doc__}]")
             if not cli.ask(text):
                 return True
             if not func(ctx):
@@ -745,13 +756,13 @@ def LoopStep(func, text="Should I?"):
 def print_diff_files(dcmp):
     diff = False
     for name in dcmp.diff_files:
-        print(FG.Red | f"* {name}")
+        print(colors.red | f"* {name}")
         diff = True
     for name in dcmp.left_only:
-        print(FG.Red | f"- {name}")
+        print(colors.red | f"- {name}")
         diff = True
     for name in dcmp.right_only:
-        print(FG.Red | f"+ {name}")
+        print(colors.red | f"+ {name}")
         diff = True
     for sub_dcmp in dcmp.subdirs.values():
         diff = print_diff_files(sub_dcmp) or diff
@@ -774,9 +785,9 @@ def StagingDiff(filename):
             diff = list(difflib.context_diff(t1, t2))
             if not diff:
                 return True
-            print(BOLD | FG.Red | f"File {filename} does not match:")
+            print(colors.bold & colors.red | f"File {filename} does not match:")
             for line in diff:
-                print(FG.Red | line.rstrip())
+                print(colors.red | line.rstrip())
 
         if cli.ask("Do you want to continue?"):
             return True
