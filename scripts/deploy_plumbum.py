@@ -17,7 +17,7 @@ from pathlib import Path
 import django
 from django.conf import settings
 from django.template import Context, Template
-from plumbum import cli, colors, local, FG
+from plumbum import FG, cli, colors, local
 
 TEMPLATES = [
     {
