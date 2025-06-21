@@ -285,28 +285,27 @@ Note: `ForceReimport` and `ImportForceUpdateUrls` are CLI-only and don't use the
 
 ### 1.1 Redis Installation and Configuration
 
-**Install Redis on Debian production server:**
+**Install Docker and run Redis container:**
 ```bash
-# Update package lists
+# Install Docker if not already present
 sudo apt-get update
+sudo apt-get install -y docker.io docker-compose
 
-# Install Redis server
-sudo apt-get install -y redis-server
+# Enable and start Docker service
+sudo systemctl enable docker
+sudo systemctl start docker
 
-# Enable and start Redis service
-sudo systemctl enable redis-server
-sudo systemctl start redis-server
-
-# Test Redis installation
-redis-cli ping  # Should return PONG
+# Create Redis data directory
+sudo mkdir -p /home/ifdb/redis-data
+sudo chown $(id -u):$(id -g) /home/ifdb/redis-data
 ```
 
-**Configure Redis:**
+**Create Redis configuration file:**
 ```bash
 # Create Redis configuration file
-sudo tee /etc/redis/redis.conf << EOF
+sudo tee /home/ifdb/redis.conf << EOF
 # Network settings
-bind 127.0.0.1
+bind 0.0.0.0
 port 6379
 
 # Security settings
@@ -324,19 +323,45 @@ databases 16
 
 # Logging
 loglevel notice
-logfile /var/log/redis/redis-server.log
 
 # Performance settings
 tcp-keepalive 300
 timeout 0
 EOF
+```
 
-# Set proper permissions
-sudo chown redis:redis /etc/redis/redis.conf
-sudo chmod 640 /etc/redis/redis.conf
+**Create Docker Compose configuration:**
+```bash
+# Create docker-compose.yml for Redis
+sudo tee /home/ifdb/docker-compose.redis.yml << EOF
+version: '3.8'
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: ifdb-redis
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - /home/ifdb/redis-data:/data
+      - /home/ifdb/redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "<secure_password>", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+EOF
+```
 
-# Restart Redis to apply configuration
-sudo systemctl restart redis-server
+**Start Redis container:**
+```bash
+# Start Redis container
+cd /home/ifdb
+sudo docker-compose -f docker-compose.redis.yml up -d
+
+# Test Redis installation
+docker exec ifdb-redis redis-cli -a <secure_password> ping  # Should return PONG
 ```
 
 ### 1.2 Environment Configuration
@@ -347,11 +372,12 @@ sudo systemctl restart redis-server
 REDIS_URL=redis://:secure_password@localhost:6379/0
 ```
 
-### 1.3 Create User Account (if needed)
+### 1.3 Docker Container Management
 
 ```bash
-# Redis typically runs as redis user (created during installation)
-# No additional user setup needed for Redis
+# Docker container will run with appropriate user permissions
+# No additional user setup needed for Redis container
+# Container data persisted in /home/ifdb/redis-data volume
 ```
 
 ## Part 2: Implement Changes
@@ -715,8 +741,8 @@ class Command(BaseCommand):
 ```ini
 [Unit]
 Description=IFDB Redis Task Queue Worker
-After=network.target redis-server.service postgresql.service
-Requires=redis-server.service postgresql.service
+After=network.target docker.service postgresql.service
+Requires=docker.service postgresql.service
 
 [Service]
 Type=exec
@@ -724,6 +750,7 @@ User=ifdb
 Group=ifdb
 EnvironmentFile=/home/ifdb/configs/environment
 WorkingDirectory=/home/ifdb/ifdb
+ExecStartPre=/usr/bin/docker-compose -f /home/ifdb/docker-compose.redis.yml up -d
 ExecStart=/home/ifdb/ifdb/venv/bin/python manage.py ifdbworker
 ExecReload=/bin/kill -s HUP $MAINPID
 KillSignal=SIGTERM
@@ -745,9 +772,21 @@ WantedBy=multi-user.target
 
 ### 3.2 Deployment Steps
 
-**Step 1: Deploy code changes**
+**Step 1: Start Redis container**
 ```bash
 # On production server
+cd /home/ifdb
+
+# Start Redis container
+sudo docker-compose -f docker-compose.redis.yml up -d
+
+# Verify container is running
+docker ps | grep ifdb-redis
+```
+
+**Step 2: Deploy code changes**
+```bash
+# Deploy application code
 cd /home/ifdb/ifdb
 git pull origin master
 
@@ -758,13 +797,13 @@ git pull origin master
 ./manage.py setup_periodic_tasks
 ```
 
-**Step 2: Test Redis connection**
+**Step 3: Test Redis connection**
 ```bash
 # Test Redis connection and queue status
 ./manage.py redis_queue_status
 ```
 
-**Step 3: Restart worker service**
+**Step 4: Restart worker service**
 ```bash
 # Restart the existing worker service (it will now use Redis)
 sudo systemctl restart ifdb-worker
@@ -773,7 +812,7 @@ sudo systemctl restart ifdb-worker
 sudo systemctl status ifdb-worker
 ```
 
-**Step 4: Monitor and validate**
+**Step 5: Monitor and validate**
 ```bash
 # Monitor worker logs
 sudo journalctl -u ifdb-worker -f
@@ -786,7 +825,12 @@ sudo journalctl -u ifdb-worker -f
 
 **If issues arise, rollback steps:**
 ```bash
+# Stop Redis container
+cd /home/ifdb
+sudo docker-compose -f docker-compose.redis.yml down
+
 # Revert code changes
+cd /home/ifdb/ifdb
 git checkout <previous_commit>
 
 # Restart worker service (will use database backend again)
@@ -809,10 +853,10 @@ if [ "$WORKER" != "active" ]; then
     exit 2
 fi
 
-# Check if Redis is running
-REDIS=$(systemctl is-active redis-server)
-if [ "$REDIS" != "active" ]; then
-    echo "CRITICAL: Redis not running"
+# Check if Redis container is running
+REDIS=$(docker ps --filter "name=ifdb-redis" --filter "status=running" --format "{{.Names}}")
+if [ "$REDIS" != "ifdb-redis" ]; then
+    echo "CRITICAL: Redis container not running"
     exit 2
 fi
 
@@ -827,7 +871,7 @@ fi
 echo "OK: Redis task queue system healthy"
 
 # Check Redis connection
-REDIS_PING=$(redis-cli -a "$REDIS_PASSWORD" ping 2>/dev/null)
+REDIS_PING=$(docker exec ifdb-redis redis-cli -a "$REDIS_PASSWORD" ping 2>/dev/null)
 if [ "$REDIS_PING" != "PONG" ]; then
     echo "WARNING: Redis ping failed"
     exit 1
@@ -977,6 +1021,111 @@ python manage.py makemigrations core --empty
 python manage.py migrate
 ```
 
+## Required Changes to Deployment Script
+
+The `scripts/deploy_plumbum.py` script manages the deployment process and systemd services. The following changes are needed to support Docker Redis:
+
+### 2.8 Update Deploy Script for Docker Redis
+
+**Add Redis container management functions to `scripts/deploy_plumbum.py`:**
+
+```python
+def StartRedisContainer(ctx):
+    """Start Redis Docker container"""
+    return RunCmdStep(
+        f"cd {ROOT_DIR} && sudo docker-compose -f docker-compose.redis.yml up -d",
+        "Start Redis container"
+    )(ctx)
+
+def StopRedisContainer(ctx):
+    """Stop Redis Docker container"""
+    return RunCmdStep(
+        f"cd {ROOT_DIR} && sudo docker-compose -f docker-compose.redis.yml down",
+        "Stop Redis container"
+    )(ctx)
+
+def CheckRedisContainer(ctx):
+    """Check if Redis container is running"""
+    return RunCmdStep(
+        'docker ps --filter "name=ifdb-redis" --filter "status=running" --format "{{.Names}}" | grep -q "ifdb-redis"',
+        "Check Redis container status"
+    )(ctx)
+```
+
+**Modify the `RedCommand` class (maintenance mode) to include Redis management:**
+
+```python
+# In RedCommand.main(), add after stopping worker:
+p.AddStep(StopRedisContainer)
+```
+
+**Modify the `GreenCommand` class (exit maintenance) to include Redis management:**
+
+```python
+# In GreenCommand.main(), add before starting worker:
+p.AddStep(StartRedisContainer)
+p.AddStep(CheckRedisContainer)
+```
+
+**Modify the `DeployCommand` class to manage Redis container:**
+
+```python
+# In DeployCommand.main(), add after stopping worker:
+if not self.hot:
+    p.AddStep(StopRedisContainer)
+
+# Later, add before starting worker:
+if not self.hot:
+    p.AddStep(StartRedisContainer)
+    p.AddStep(CheckRedisContainer)
+```
+
+**Complete deployment pipeline changes:**
+
+1. **Red (Maintenance) Mode**: Stop worker → Stop Redis container
+2. **Green (Exit Maintenance)**: Start Redis container → Check container → Start worker  
+3. **Deploy**: 
+   - For cold deploy: Stop worker → Stop Redis container → [deploy steps] → Start Redis container → Start worker
+   - For hot deploy: Keep Redis running throughout
+
+**Update service dependencies in deployment validation:**
+
+```python
+def ValidateServices(ctx):
+    """Validate all required services are running"""
+    services = [
+        ("docker", "Docker service"),
+        ("ifdb-redis", "Redis container"),
+        ("ifdb-worker", "Task queue worker"),
+        ("ifdb-uwsgi", "Main application"),
+        ("nginx", "Web server")
+    ]
+    
+    for service, description in services:
+        if service == "ifdb-redis":
+            # Check Docker container
+            result = RunCmdStep(
+                'docker ps --filter "name=ifdb-redis" --format "{{.Names}}" | grep -q "ifdb-redis"'
+            )(ctx)
+        else:
+            # Check systemd service
+            result = RunCmdStep(f"systemctl is-active {service}")(ctx)
+        
+        if not result:
+            print(f"❌ {description} is not running")
+            return False
+    
+    print("✅ All services are running")
+    return True
+```
+
+These changes ensure that:
+
+1. Redis container is properly managed during deployment cycles
+2. Container health is verified before proceeding with deployment steps
+3. Service dependencies are maintained (Redis must be running before starting the worker)
+4. Proper shutdown order is maintained during maintenance operations
+
 ## Additional Notes
 
 1. **Database Model Retention:**
@@ -991,11 +1140,15 @@ python manage.py migrate
    pip install croniter==1.4.1
    ```
 
-4. **Migration Benefits:**
+4. **Deployment Script Integration:**
+   The deployment script ensures proper service orchestration with Docker container management integrated into the existing pipeline.
+
+5. **Migration Benefits:**
    - Zero API changes required
    - Significant performance improvement
    - Reduced database load
    - Better scalability options
    - Simpler monitoring and debugging
+   - Integrated deployment pipeline support
 
 This simplified migration plan provides a direct path from the custom database-backed task queue system to a production-ready Redis implementation with minimal complexity and risk.
