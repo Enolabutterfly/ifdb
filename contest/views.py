@@ -278,11 +278,11 @@ def _render_snippet_html(items):
             if item.get("link"):
                 target = ' target="_blank"' if item.get("newtab") else ""
                 parts.append(
-                    f'<a class="grid-box-subheader" '
+                    f'<a class="card--subheader" '
                     f'href="{item["link"]}"{target}>{text}</a>'
                 )
             else:
-                parts.append(f'<div class="grid-box-subheader">{text}</div>')
+                parts.append(f'<div class="card--subheader">{text}</div>')
         else:
             # Main item
             if item.get("link"):

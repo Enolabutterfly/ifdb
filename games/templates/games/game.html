@@ -6,6 +6,15 @@
 {% endblock %}
 {% block titlesection %}{{ game.title }} - {% endblock %}
 {% block content %}
+
+<main>
+<div class="card">
+    <div class="card--header">{{ game.title }}</div>
+</div>
+</main>
+
+{% comment "This is an optional note for comments" %}
+
     <div class="content-box-outer">
         {% include 'moder/moder_line.html' with actions=moder_actions only %}
         <div class="content-box-inner">
@@ -194,4 +203,8 @@
         <div style="clear: both;"></div>
     </div>
 </div>
+
+{% endcomment %}
+
+
 {% endblock %}
