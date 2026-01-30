@@ -56,12 +56,19 @@
     --movelist-pv-divider: #ccc; */
 
     --card-bg-color: #ffffff;
+    --tag-bg-color: #f0f0f0;
+    --tag-bg-color-hover: #e8e8e8;
+    --tag-genre-bg-color: #efe8f5;
+    --tag-genre-bg-color-hover: #e5dae8;
+    --tag-genre-text-color: #5c4494;
 
-    --link-color: #ff5431;
+    --link-color: #2a6496;
     --background-color: #f1f1f1;
     --text-color: #31322D;
+    --text-color-secondary: #625B61;
+    --text-muted-color: #888;
 
-    --font-size-normal: 13px;
+    --font-size-normal: 14px;
     --card-box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 
     --card-header-bg-default: #757575;
@@ -85,13 +92,16 @@
     --card-black-bg: #000000;
     --card-black-bg-light: #424242;
     --card-purple-bg: #673ab7;
-    --card-purple-bg-light: #9575cd;    
+    --card-purple-bg-light: #9575cd;
+
+    --card-panel-bg: #f8f8f8;
 }
 
 *,
 *::before,
 *::after {
     box-sizing: inherit;
+    margin: 0;
 }
 
 body {
@@ -268,16 +278,153 @@ a.card--subheader:hover {
     background-color: var(--card-purple-bg-light);
 }
 
-a {
-    color: var(--link-color);
+.button {
+    padding: 8px 20px;
+    font-size: 13px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
 }
 
-a.author-link {
-    color: inherit;
+.button svg {
+    width: 14px;
+    height: 14px;
+}
+
+.button:hover {
     text-decoration: none;
 }
 
-a.author-link:hover {
+.button-salad {
+    background-color: var(--card-salad-bg);
+    color: #fff;
+}
+
+.button-salad:hover {
+    background-color: #479e47;
+    color: #fff;
+}
+
+.button-gray {
+    background-color: #e8e8e8;
+    color: #000;
+}
+
+.button-gray:hover {
+    background-color: #d8d8d8;
+}
+
+.button-orange {
+    background-color: #ff5431;
+    color: #fff;
+}
+
+.button-orange:hover {
+    background-color: #d8482c;
+}
+
+.game--layout {
+    display: flex;
+    gap: 15px;
+}
+
+.game--authors {
+    margin-bottom: 13px;
+}
+
+.game--media {
+    width: 320px;
+    flex-shrink: 0;
+}
+
+.game--info {
+    flex: 1;
+    min-width: 0;
+}
+
+.game--title {
+    font-size: 22px;
+    font-weight: 600;
+    margin: 0 0 5px;
+}
+
+.game--meta-panel {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 5px 20px;
+    font-size: var(--font-size-normal);
+    margin-bottom: 12px;
+    padding: 10px;
+    background: var(--card-panel-bg);
+}
+
+.game--voting-panel {
+    display: flex;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 5px 20px;
+    font-size: var(--font-size-normal);
+    margin-bottom: 12px;
+    padding: 10px;
+    background: var(--card-panel-bg);
+    justify-content: flex-start;
+}
+
+
+.game--meta-item {
+    display: flex;
+    gap: 8px;
+}
+
+.game--meta-label {
+    color: var(--text-muted-color);
+    min-width: 80px;
+}
+
+.game--tag-line {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 12px;
+}
+
+.game--tag {
+    padding: 3px 10px;
+    background: var(--tag-bg-color);
+    color: var(--text-color-secondary);
+    font-size: 12px;
+    border-radius: 3px;
+}
+
+.game--tag-genre {
+    background: var(--tag-genre-bg-color);
+    color: var(--tag-genre-text-color);
+}
+
+.game--tag:hover {
+    background: var(--tag-bg-color-hover);
+    text-decoration: none;
+}
+
+.game--tag-genre:hover {
+    background: var(--tag-genre-bg-color-hover);
+}
+
+.game--buttons-panel {
+    display: flex;
+    row-gap: 3px;
+    flex-wrap: wrap;
+}
+
+a {
+    color: var(--link-color);
+    text-decoration: none;
+}
+
+a:hover {
     text-decoration: underline;
 }
 
@@ -475,6 +622,10 @@ a.author-link:hover {
 
 .grid-box {
     margin-bottom: 30px;
+}
+
+.card--body {
+    padding: 12px;
 }
 
 .card--async {
@@ -1552,6 +1703,7 @@ span.gameinfo-author {
 
 .prop-value {
     color: #31322D;
+    margin: auto 0;
 }
 
 .prop-value a {
@@ -1984,7 +2136,7 @@ progress::-webkit-progress-value {
     box-shadow: 0 1px 3px rgba(0, 0, 0, .3);
     cursor: pointer;
     display: inline-block;
-    max-height: 90px;
+    max-height: 50px;
 }
 
 .slideritem-selected {
@@ -2001,7 +2153,7 @@ progress::-webkit-progress-value {
 
 #gallery-main {
     width: 100%;
-    height: 360px;
+    height: 200px;
     display: flex;
     justify-content: center;
     align-items: center;
