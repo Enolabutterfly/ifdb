@@ -15,6 +15,9 @@
             <div class="card--header">Описание</div>
             <div class="card--body game--content-text">{{ markdown|safe }}</div>
         </div>
+        {% if comment_perm or comments %}
+            {% include './game_comments.html' %}
+        {% endif %}
     </div>
     <div class="game--content-sidebar">
         {% include 'moder/moder_block.html' with actions=moder_actions only %}
@@ -91,25 +94,44 @@
                 </div>
         {% endif %}
 
-        {% if metadata.secondary_properties %}
-            <div class="card card--blue">
-                <div class="card--header">Информация</div>
-                <div class="card--listbody">
-                {% for category, tags in metadata.secondary_properties %}
-                    <div class="game--info-row">
-                        <div class="game--info-row-label">
-                                {{ category.name }}:
-                        </div>
-                        <div class="game--info-row-value">
-                            {% for tag in tags %}
-                                <a href="{{ tag.search_query }}">{{ tag.name }}</a>
-                            {% endfor %}
-                        </div>
+        <div class="card card--blue">
+            <div class="card--header">Информация</div>
+            <div class="card--listbody">
+            {% for category, tags in metadata.secondary_properties %}
+                <div class="game--info-row">
+                    <div class="game--info-row-label">
+                            {{ category.name }}
                     </div>
-                {% endfor %}
+                    <div class="game--info-row-value">
+                        {% for tag in tags %}
+                            <a href="{{ tag.search_query }}">{{ tag.name }}</a>
+                        {% endfor %}
+                    </div>
                 </div>
+            {% endfor %}
+
+                <div class="game--info-row">
+                    <div class="game--info-row-label">
+                            Добавлено
+                    </div>
+                    <div class="game--info-row-value">
+                        {{ added_date }}
+                    </div>
+                </div>
+
+                {% if last_edit_date %}
+                <div class="game--info-row">
+                    <div class="game--info-row-label">
+                            Обновлено
+                    </div>
+                    <div class="game--info-row-value">
+                        {{ last_edit_date }}
+                    </div>
+                </div>
+                {% endif %}                
+
             </div>
-        {% endif %}
+        </div>
 
     </div>
 </div>
